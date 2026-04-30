@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>about — saveliy sharkov</title>
+
+<style>
+  body {
+    margin: 0;
+    background: #050505;
+    color: rgba(255,255,255,0.88);
+    font-family: monospace;
+    overflow: hidden;
+  }
+
+  canvas {
+    display: block;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100vh;
+    z-index: 0;
+  }
+
+  /* ================== BIO (центральная колонка) ================== */
+  .content {
+    position: relative;
+    z-index: 3;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 120px 40px 160px;
+    min-height: 100vh;
+    box-sizing: border-box;
+    line-height: 1.7;
+    font-size: 14px;
+    letter-spacing: 0.2px;
+  }
+
+  .bio p {
+    margin: 0 0 18px 0;
+  }
+
+  .cv-btn {
+    display: inline-block;
+    margin-top: 40px;
+    padding: 10px 24px;
+    border: 1px solid rgba(255,255,255,0.55);
+    color: rgba(255,255,255,0.92);
+    text-decoration: none;
+    font-family: monospace;
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    transition: all 0.25s ease;
+    background: rgba(5,5,5,0.3);
+  }
+
+  .cv-btn:hover {
+    background: rgba(255,255,255,0.92);
+    color: #050505;
+    box-shadow:
+      0 0 12px rgba(255,180,80,0.5),
+      0 0 28px rgba(255,80,30,0.3);
+    border-color: rgba(255,255,255,0.92);
+  }
+
+  /* ================== BACK link ================== */
+  .back {
+    position: fixed;
+    left: 20px;
+    bottom: 20px;
+    color: rgba(255,255,255,0.55);
+    text-decoration: none;
+    font-size: 13px;
+    z-index: 10;
+    font-family: monospace;
+    letter-spacing: 0.3px;
+    transition: color 0.3s ease;
+  }
+
+  .back:hover {
+    color: #fff;
+    animation: burn 0.14s infinite alternate;
+  }
+
+  @keyframes burn {
+    0% {
+      text-shadow:
+        0 0 4px  rgba(255, 100, 40, 1),
+        0 0 12px rgba(255, 60, 20, 0.9),
+        0 0 24px rgba(255, 30, 0, 0.7);
+      transform: translate(0, 0);
+    }
+    100% {
+      text-shadow:
+        0 0 6px  rgba(255, 220, 100, 1),
+        0 0 16px rgba(255, 100, 30, 1),
+        0 0 32px rgba(255, 40, 0, 0.8);
+      transform: translate(0.5px, -0.3px);
+    }
+  }
+
+  .hint {
+    position: fixed;
+    left: 20px;
+    bottom: 50px;
+    color: rgba(255,255,255,0.3);
+    font-size: 11px;
+    z-index: 10;
+    pointer-events: none;
+    letter-spacing: 0.3px;
+    transition: opacity 0.8s ease;
+  }
+
+  .hint.hidden { opacity: 0; }
+</style>
+</head>
+
+<body>
+
+<a class="back" href="index.html">← back</a>
+<div class="hint" id="hint">click for sound</div>
+
+<audio id="bg" src="sound.mp3" loop></audio>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+
+<!-- ================== SHADER: спокойный с лёгким дыханием ================== -->
+<script>
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 100);
+camera.position.z = 2;
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
+
+const geometry = new THREE.PlaneGeometry(2, 2, 128, 128);
+
+const mouse = new THREE.Vector2(0.5, 0.5);
+
+const material = new THREE.ShaderMaterial({
+  uniforms: {
+    uTime:  { value: 0 },
+    uMouse: { value: mouse }
+  },
+  vertexShader: `
+    varying vec2 vUv;
+    void main() {
+      vUv = uv;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    }
+  `,
+  fragmentShader: `
+    uniform float uTime;
+    uniform vec2  uMouse;
+    varying vec2 vUv;
+
+    void main() {
+      float dist = distance(vUv, uMouse);
+
+      // стабильный большой ореол — световой квадрат на всю страницу
+      float influence = smoothstep(1.6, 0.0, dist);
+      float core      = smoothstep(0.18, 0.0, dist);
+
+      // медленный цикл белый ↔ серый, период ~20 секунд
+      float cycle = (sin(uTime * 0.524) * 0.5 + 0.5);
+      vec3 white = vec3(1.0);
+      vec3 gray  = vec3(0.55);
+      vec3 tint  = mix(white, gray, cycle);
+
+      // ЛЁГКОЕ ДЫХАНИЕ — две гармоники, суммарная амплитуда ~0.1
+      float breath = sin(uTime * 0.7) * 0.07 + sin(uTime * 1.3) * 0.04;
+
+      vec3 base = vec3(0.035);
+      vec3 color = base;
+
+      // halo слегка пульсирует за счёт breath
+      color += influence * tint * (0.32 + breath);
+      // core тоже чуть-чуть дышит, своя фаза
+      color += core * tint * (0.75 + sin(uTime * 0.9) * 0.12);
+
+      float grain = fract(sin(vUv.x * 900.0 + vUv.y * 900.0 + uTime) * 43758.0);
+      color += grain * 0.012;
+
+      gl_FragColor = vec4(color, 1.0);
+    }
+  `
+});
+
+const mesh = new THREE.Mesh(geometry, material);
+scene.add(mesh);
+
+window.addEventListener('mousemove', (e) => {
+  mouse.x = e.clientX / window.innerWidth;
+  mouse.y = 1.0 - e.clientY / window.innerHeight;
+});
+
+function animate() {
+  requestAnimationFrame(animate);
+  material.uniforms.uTime.value += 0.01;
+  material.uniforms.uMouse.value = mouse;
+  renderer.render(scene, camera);
+}
+animate();
+
+window.addEventListener('resize', () => {
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+});
+
+// ================== AUDIO (4%, константа) ==================
+const audio = document.getElementById('bg');
+const hint  = document.getElementById('hint');
+audio.volume = 0.04;
+
+let audioStarted = false;
+function startAudio() {
+  if (audioStarted) return;
+  audio.play().then(() => {
+    audioStarted = true;
+    hint.classList.add('hidden');
+  }).catch(() => {});
+}
+window.addEventListener('click', startAudio);
+window.addEventListener('touchstart', startAudio);
+</script>
+
+<!-- ================== BIO CONTENT ================== -->
+<div class="content">
+  <div class="bio">
+    <p>Artist, filmmaker, and curator working at the intersection of moving image, AI-driven generation, sound and time-based digital systems.</p>
+    <p>Guest Tutor at Sandberg Instituut Amsterdam (A for Facts MA). Art Director at Schrocher Gallery, program director at Dust.Tbilisi.</p>
+    <p>Founder of Capsule, a time-locked digital storage platform investigating temporal ethics.</p>
+  </div>
+
+  <a class="cv-btn" href="cv.pdf" target="_blank" rel="noopener">cv →</a>
+</div>
+
+</body>
+</html>

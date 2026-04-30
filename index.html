@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Reactive Memory Breakdown Surface</title>
+
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: #050505;
+      font-family: monospace;
+      cursor: none;
+    }
+
+    canvas { display: block; }
+
+    .face, .email {
+      position: fixed;
+      bottom: 20px;
+      color: rgba(255,255,255,0.78);
+      text-decoration: none;
+      z-index: 20;
+      letter-spacing: 0.3px;
+      font-family: monospace;
+      cursor: none;
+      user-select: none;
+      white-space: nowrap;
+      will-change: transform;
+    }
+
+    .face  { left: 20px;  font-size: 16.5px; }
+    .email { right: 20px; font-size: 15.4px; }
+
+    .face span, .email span {
+      display: inline-block;
+      transition: none;
+      will-change: transform, text-shadow;
+    }
+
+    .hint {
+      position: fixed;
+      left: 20px;
+      bottom: 55px;
+      color: rgba(255,255,255,0.35);
+      font-size: 12px;
+      z-index: 10;
+      pointer-events: none;
+      letter-spacing: 0.3px;
+      transition: opacity 0.8s ease;
+    }
+    .hint.hidden { opacity: 0; }
+
+    .flash-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0);
+      pointer-events: none;
+      z-index: 5;
+      transition: background-color 80ms linear;
+    }
+
+    /* чёрная вспышка на всю страницу — строб на высокой активности */
+    .black-strobe {
+      position: fixed;
+      inset: 0;
+      background: #000;
+      opacity: 0;
+      z-index: 6;
+      pointer-events: none;
+      transition: opacity 40ms linear;
+    }
+
+    /* кричащий рот — появляется стробом вместе с чёрным */
+    .scream-mouth {
+      position: fixed;
+      top: 50%; left: 50%;
+      width: 280px;
+      height: 320px;
+      opacity: 0;
+      z-index: 7;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      transition: opacity 40ms linear;
+      will-change: transform, opacity;
+      filter: drop-shadow(0 0 18px rgba(255, 30, 30, 0.75));
+    }
+
+    .cursor {
+      position: fixed;
+      top: 0; left: 0;
+      width: 22px;
+      height: 16px;
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-3px, -3px);
+      mix-blend-mode: difference;
+    }
+
+    /* частицы-артефакты вокруг курсора */
+    .particle {
+      position: fixed;
+      top: 0; left: 0;
+      width: 9px;
+      height: 9px;
+      background: #ffffff;
+      pointer-events: none;
+      z-index: 15;
+      mix-blend-mode: screen;
+      will-change: transform, opacity, clip-path;
+      opacity: 0;
+      filter: blur(0.4px) contrast(1.4);
+    }
+  </style>
+</head>
+
+<body>
+
+<a class="face" href="about.html">─=≡Σ((((͡× ͜ʖ ͡×)</a>
+<a class="email" href="mailto:savelsharkov@gmail.com" id="emailBtn">savelsharkov@gmail.com</a>
+
+<div class="hint" id="hint">click for sound</div>
+
+<div class="flash-overlay" id="flashOverlay"></div>
+<div class="black-strobe" id="blackStrobe"></div>
+
+<svg class="scream-mouth" id="screamMouth" viewBox="0 0 220 240" xmlns="http://www.w3.org/2000/svg">
+  <!-- внутренность рта — тёмно-кровавая -->
+  <ellipse cx="110" cy="120" rx="98" ry="112" fill="#080000" stroke="#b0001a" stroke-width="3"/>
+  <!-- язык-тень -->
+  <ellipse cx="110" cy="155" rx="55" ry="28" fill="#3a0008" opacity="0.6"/>
+  <!-- верхние зубы -->
+  <g fill="#f2efe4" stroke="#888" stroke-width="0.5">
+    <polygon points="16,52 52,52 34,118"/>
+    <polygon points="52,58 84,58 68,120"/>
+    <polygon points="84,58 118,58 101,120"/>
+    <polygon points="118,58 150,58 134,120"/>
+    <polygon points="150,58 182,58 166,120"/>
+    <polygon points="182,52 204,52 190,115"/>
+  </g>
+  <!-- нижние зубы -->
+  <g fill="#e8e3d2" stroke="#888" stroke-width="0.5">
+    <polygon points="26,188 58,188 42,128"/>
+    <polygon points="58,182 90,182 74,128"/>
+    <polygon points="90,182 122,182 106,128"/>
+    <polygon points="122,182 154,182 138,128"/>
+    <polygon points="154,188 186,188 170,128"/>
+  </g>
+</svg>
+
+<div class="cursor" id="cursor">
+  <svg width="22" height="16" viewBox="0 0 22 16" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="3"  cy="3" r="1.4" fill="white"/>
+    <circle cx="9"  cy="3" r="1.4" fill="white"/>
+    <circle cx="17" cy="11" r="1.4" fill="white"/>
+    <line x1="12" y1="6" x2="17" y2="11" stroke="white" stroke-width="0.6" stroke-linecap="round" opacity="0.55"/>
+  </svg>
+</div>
+
+<audio id="bg" src="sound.mp3" loop crossorigin="anonymous"></audio>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+
+<script>
+// ============================================================
+// SCENE
+// ============================================================
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(45, innerWidth/innerHeight, 0.1, 100);
+camera.position.z = 2;
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+document.body.appendChild(renderer.domElement);
+
+const geometry = new THREE.PlaneGeometry(2, 2, 256, 256);
+
+// ============================================================
+// MEMORY TEXTURE
+// ============================================================
+const size = 128;
+const memData = new Float32Array(size * size * 4);
+const memoryTexture = new THREE.DataTexture(memData, size, size, THREE.RGBAFormat, THREE.FloatType);
+memoryTexture.needsUpdate = true;
+
+// ============================================================
+// STATE
+// ============================================================
+const mouse = new THREE.Vector2(0.5, 0.5);
+const lastMouse = new THREE.Vector2(0.5, 0.5);
+
+let speed = 0;
+let activity = 0;
+let charge = 0;
+let colorPhase = 0;
+let lightning = 0;
+let nuclear = 0;
+let bgFlashStrength = 0;
+const bgFlashColor = new THREE.Vector3(0, 0, 0);
+
+let lastMoveMs = 0;
+let lastFastMoveMs = 0;
+let fastStartMs = 0;
+let peakActivity = 0;
+let flashSeqRunning = false;
+let lastLightningFlashMs = 0;
+let lastStrobeMs = 0;
+
+// ============================================================
+// AUDIO
+// ============================================================
+const audio = document.getElementById('bg');
+const hint  = document.getElementById('hint');
+const flashOverlay = document.getElementById('flashOverlay');
+const blackStrobe  = document.getElementById('blackStrobe');
+const screamMouth  = document.getElementById('screamMouth');
+
+let audioCtx, srcNode, gainNode, distortion, filter;
+let lastCurveAmount = -1;
+let audioStarted = false;
+
+function makeDistortionCurve(amount) {
+  const samples = 4096, curve = new Float32Array(samples);
+  const deg = Math.PI / 180;
+  for (let i = 0; i < samples; i++) {
+    const x = (i * 2) / samples - 1;
+    curve[i] = ((3 + amount) * x * 20 * deg) / (Math.PI + amount * Math.abs(x));
+  }
+  return curve;
+}
+function updateDistortion(a) {
+  if (!distortion || Math.abs(a - lastCurveAmount) < 3) return;
+  lastCurveAmount = a;
+  distortion.curve = makeDistortionCurve(a);
+  distortion.oversample = '2x';
+}
+function setupAudioGraph() {
+  if (audioCtx) return;
+  const AC = window.AudioContext || window.webkitAudioContext;
+  audioCtx = new AC();
+  srcNode    = audioCtx.createMediaElementSource(audio);
+  distortion = audioCtx.createWaveShaper();
+  filter     = audioCtx.createBiquadFilter();
+  gainNode   = audioCtx.createGain();
+  filter.type = 'highshelf';
+  filter.frequency.value = 2500;
+  filter.gain.value = 0;
+  srcNode.connect(distortion);
+  distortion.connect(filter);
+  filter.connect(gainNode);
+  gainNode.connect(audioCtx.destination);
+  updateDistortion(0);
+  gainNode.gain.value = 0.02;
+}
+function startAudio() {
+  if (audioStarted) return;
+  setupAudioGraph();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  audio.play().then(() => {
+    audioStarted = true;
+    hint.classList.add('hidden');
+  }).catch(()=>{});
+}
+addEventListener('click', startAudio);
+addEventListener('dblclick', startAudio);
+addEventListener('touchstart', startAudio);
+
+// ============================================================
+// SHADER — оригинальная волнистая поверхность с halo
+// ============================================================
+const material = new THREE.ShaderMaterial({
+  uniforms: {
+    uTime:        { value: 0 },
+    uMouse:       { value: mouse },
+    uMemory:      { value: memoryTexture },
+    uSpeed:       { value: 0 },
+    uActivity:    { value: 0 },
+    uCharge:      { value: 0 },
+    uColorPhase:  { value: 0 },
+    uLightning:   { value: 0 },
+    uNuclear:     { value: 0 },
+    uBgFlash:     { value: 0 },
+    uBgFlashColor:{ value: new THREE.Vector3(0,0,0) }
+  },
+
+  vertexShader: /* glsl */`
+    uniform float uTime;
+    uniform vec2  uMouse;
+    uniform sampler2D uMemory;
+    uniform float uSpeed;
+    uniform float uActivity;
+    uniform float uCharge;
+
+    varying vec2 vUv;
+
+    float noise(vec2 p){
+      return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
+    }
+
+    void main() {
+      vUv = uv;
+
+      float mem = texture2D(uMemory, uv).r;
+      float dist = distance(uv, uMouse);
+
+      // halo радиус растёт вместе с charge, но базовый размер есть всегда
+      float expand = uCharge * 3.2 + uActivity * 0.6;
+      float haloR  = 0.45 + expand;
+      float influence = smoothstep(haloR, 0.0, dist);
+
+      float chaos = uSpeed * 3.0;
+      // burn: увеличенная базовая амплитуда → более шершавый, дрожащий край
+      float burn = 0.006 + uActivity * 0.035 + uCharge * 0.04;
+
+      // ---- многооктавный шум для рваной, шершавой фактуры ----
+      // октав 1: низкая частота, основной рельеф
+      float n1 = noise(uv * (6.0 + chaos * 10.0) + uTime);
+      // октав 2: средняя частота, даёт "шерсть" на поверхности
+      float n2 = noise(uv * (18.0 + chaos * 14.0) + uTime * 1.7) * 0.55;
+      // октав 3: мелкая зерневая деталь
+      float n3 = noise(uv * (42.0 + chaos * 10.0) - uTime * 1.3) * 0.3;
+
+      float n = n1 + n2 + n3;
+
+      // высокочастотное временнóе дрожание — рябит сильнее чем была
+      float tremble = (noise(uv * 55.0 + uTime * 7.0) - 0.5)
+                    * (0.012 + uActivity * 0.03 + uCharge * 0.025);
+
+      // базовые волны
+      float wave = sin(uv.x * 10.0 + uTime) * 0.06
+                 + sin(uv.y * 12.0 + uTime) * 0.06;
+
+      // амплитуда главного шума увеличена (было 0.04, стало 0.055)
+      float displacement = n * (0.055 + chaos * 0.12);
+      displacement += tremble;
+      displacement += mem * 0.6;
+      displacement += influence * (0.4 + chaos * 0.4 + uCharge * 0.3);
+      displacement += wave;
+
+      // высокочастотные ридж-гребни (sin 80/90) + дополнительный 140 для более жёсткой бахромы
+      displacement += sin(uv.x * 80.0 + uTime * 25.0) * burn;
+      displacement += sin(uv.y * 90.0 - uTime * 20.0) * burn;
+      displacement += sin(uv.x * 140.0 - uTime * 32.0) * burn * 0.5;
+      displacement += sin(uv.y * 160.0 + uTime * 28.0) * burn * 0.45;
+
+      vec3 pos = position;
+      pos.z += displacement;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
+    }
+  `,
+
+  fragmentShader: /* glsl */`
+    uniform float uTime;
+    uniform vec2  uMouse;
+    uniform sampler2D uMemory;
+    uniform float uSpeed;
+    uniform float uActivity;
+    uniform float uCharge;
+    uniform float uColorPhase;
+    uniform float uLightning;
+    uniform float uNuclear;
+    uniform float uBgFlash;
+    uniform vec3  uBgFlashColor;
+
+    varying vec2 vUv;
+
+    // палитра: red → white → yellow → white → red (без зелёного, удвоенный белый)
+    vec3 cyclePalette(float t){
+      t = fract(t);
+      vec3 red    = vec3(1.0, 0.12, 0.08);
+      vec3 white  = vec3(1.0, 1.0, 1.0);
+      vec3 yellow = vec3(1.0, 0.9, 0.15);
+      float seg = t * 4.0;
+      float i = floor(seg);
+      float f = smoothstep(0.0, 1.0, fract(seg));
+      if (i < 1.0) return mix(red,    white,  f);
+      if (i < 2.0) return mix(white,  yellow, f);
+      if (i < 3.0) return mix(yellow, white,  f);
+      return            mix(white,  red,    f);
+    }
+
+    float hash(vec2 p){ return fract(sin(dot(p, vec2(41.3, 289.1))) * 43758.5); }
+
+    void main() {
+      float mem = texture2D(uMemory, vUv).r;
+      float dist = distance(vUv, uMouse);
+
+      float expand = uCharge * 3.2 + uActivity * 0.6;
+      float haloR  = 0.45 + expand;
+      float coreR  = 0.15 + expand * 0.4;
+
+      float influence = smoothstep(haloR, 0.0, dist);
+      float core      = smoothstep(coreR, 0.0, dist);
+
+      // пульс и форма — ВСЕГДА (не gated), чтобы halo светился и в покое
+      float pulse = sin(uTime * 2.0) * 0.5 + 0.5;
+      float shape = sin(vUv.x * 10.0 + uTime * 2.0) * 0.5 + 0.5;
+
+      float halo = influence * (0.5 + pulse * 0.6 + shape * 0.3);
+      core *= (0.6 + sin(uTime * 1.5) * 0.4);
+
+      float aberration = uSpeed * 2.0;
+
+      vec3 base = vec3(0.03);
+      vec3 mid  = vec3(0.12);
+
+      vec3 accent     = cyclePalette(uColorPhase);
+      vec3 restColor  = vec3(0.6, 0.08, 0.08);
+      vec3 activeAcc  = mix(restColor, accent, uCharge);
+
+      vec3 color = mix(base, mid, mem);
+
+      // след памяти
+      color += mem * mix(vec3(0.4, 0.1, 0.1), accent, uCharge) * 1.2;
+
+      // halo начинается с базового красного и сдвигается в accent при заряде
+      color += halo * mix(vec3(0.35, 0.08, 0.08), accent * (0.9 + aberration), uCharge);
+      color += core * activeAcc;
+
+      // глобальный ап яркости при высоком заряде — убивает чёрные углы
+      color += accent * uCharge * uCharge * 0.22;
+
+      // ---- LIGHTNING ----
+      if (uLightning > 0.01){
+        float b1 = smoothstep(0.988, 1.0, hash(vec2(floor(vUv.x * 140.0), floor(uTime * 35.0))));
+        float b2 = smoothstep(0.988, 1.0, hash(vec2(floor(vUv.y * 110.0), floor(uTime * 28.0) + 13.0)));
+        float sp = smoothstep(0.996, 1.0, hash(floor(vUv * 220.0) + floor(uTime * 45.0)));
+        float bolts = (b1 + b2) * uLightning;
+        color += bolts * vec3(1.0, 0.95, 0.85) * 2.5;
+        color += sp    * uLightning * vec3(1.0) * 3.5;
+      }
+
+      // ---- NUCLEAR SHOCKWAVE ----
+      if (uNuclear > 0.01){
+        float d = distance(vUv, uMouse);
+        for (int i = 0; i < 3; i++){
+          float phase = fract(uTime * 0.9 + float(i) * 0.333);
+          float radius = phase * 1.6;
+          float ring = smoothstep(0.045, 0.0, abs(d - radius));
+          color += ring * uNuclear * (1.0 - phase) * vec3(1.0, 0.85, 0.55) * 3.0;
+        }
+        float coreBlast = smoothstep(0.3 + uNuclear * 0.2, 0.0, d);
+        color += coreBlast * uNuclear * vec3(1.0, 0.7, 0.3) * 0.7;
+      }
+
+      // ---- BG FLASH: вспышка везде КРОМЕ центральной зоны вокруг курсора ----
+      // шилд защищает фигуру (0-0.15 UV от курсора полностью, плавно до 0.38)
+      // остальное — чёрный фон, где и должна быть вспышка
+      float flashShield = smoothstep(0.15, 0.38, dist);
+      color = mix(color, uBgFlashColor, uBgFlash * flashShield);
+
+      float grain = fract(sin(vUv.x * 900.0 + vUv.y * 900.0 + uTime) * 43758.0);
+      color += grain * 0.02;
+
+      gl_FragColor = vec4(color, 1.0);
+    }
+  `
+});
+
+const mesh = new THREE.Mesh(geometry, material);
+scene.add(mesh);
+
+// ============================================================
+// MEMORY
+// ============================================================
+function writeMemoryPixel(x, y, amount) {
+  const ix = Math.floor(x * size), iy = Math.floor(y * size);
+  if (ix < 0 || ix >= size || iy < 0 || iy >= size) return;
+  const idx = (ix + iy * size) * 4;
+  memData[idx] = Math.min(1.0, memData[idx] + amount);
+}
+function writeMemoryLine(x0, y0, x1, y1, amount) {
+  const dx = x1 - x0, dy = y1 - y0;
+  const d = Math.sqrt(dx*dx + dy*dy);
+  const steps = Math.max(1, Math.ceil(d * size));
+  for (let i = 0; i <= steps; i++){
+    const t = i / steps;
+    writeMemoryPixel(x0 + dx*t, y0 + dy*t, (amount / steps) * 2.0);
+  }
+}
+function decay() {
+  for (let i = 0; i < memData.length; i += 4) memData[i] *= 0.97;
+}
+
+// ============================================================
+// INPUT (mouse)
+// ============================================================
+addEventListener('mousemove', (e) => {
+  const now = performance.now();
+  const newX = e.clientX / innerWidth;
+  const newY = 1.0 - e.clientY / innerHeight;
+
+  const dx = newX - lastMouse.x;
+  const dy = newY - lastMouse.y;
+  const rawSpeed = Math.sqrt(dx*dx + dy*dy);
+
+  speed = speed * 0.85 + rawSpeed * 0.15;
+
+  activity += rawSpeed * 1.2;
+  if (activity > 1.0) activity = 1.0;
+
+  // colorPhase теперь обновляется в animate() по rate, зависящему от charge/activity
+  lastMoveMs = now;
+  if (rawSpeed > 0.008){
+    if (now - lastFastMoveMs > 180) fastStartMs = now;
+    lastFastMoveMs = now;
+  }
+
+  if (activity > peakActivity) peakActivity = activity;
+
+  if (charge > 0.75 && rawSpeed > 0.055 && (now - lastLightningFlashMs) > 350){
+    lastLightningFlashMs = now;
+    lightning = Math.min(1, lightning + rawSpeed * 5.0);
+    flashOverlay.style.background = `rgba(255,255,255,${Math.min(0.10, charge * 0.10)})`;
+    setTimeout(() => { flashOverlay.style.background = 'rgba(255,255,255,0)'; }, 50);
+  }
+
+  writeMemoryLine(lastMouse.x, lastMouse.y, newX, newY, 0.15 + rawSpeed * 1.5);
+
+  lastMouse.x = newX; lastMouse.y = newY;
+  mouse.x = newX;     mouse.y = newY;
+});
+
+// ============================================================
+// FLASH SEQUENCE (grey → white)
+// ============================================================
+function triggerFlashSequence() {
+  if (flashSeqRunning) return;
+  flashSeqRunning = true;
+  const duration = 250;   // четверть секунды каждая фаза
+
+  bgFlashColor.set(0.55, 0.55, 0.55);
+  bgFlashStrength = 0.9;
+
+  setTimeout(() => {
+    bgFlashColor.set(1.0, 1.0, 1.0);
+    bgFlashStrength = 1.0;
+
+    setTimeout(() => {
+      bgFlashStrength = 0;
+      setTimeout(() => { flashSeqRunning = false; }, 200);
+    }, duration);
+  }, duration);
+}
+
+// ============================================================
+// ANIMATION LOOP
+// ============================================================
+let frameCount = 0;
+let prevFrameMs = performance.now();
+
+function animate() {
+  requestAnimationFrame(animate);
+  frameCount++;
+
+  const now = performance.now();
+  const dt = Math.min(64, now - prevFrameMs);
+  prevFrameMs = now;
+
+  material.uniforms.uTime.value += dt * 0.001;
+
+  speed     *= 0.95;
+  activity  *= 0.985;
+  lightning *= 0.82;
+  nuclear   *= 0.96;
+
+  const inFastMode = (now - lastFastMoveMs) < 120;
+  if (inFastMode){
+    charge += dt / 3000;
+  } else {
+    charge -= dt / 2500;
+  }
+  charge = Math.max(0, Math.min(1, charge));
+
+  // цветовой цикл: скорость переключения по нарастающей от активности и charge
+  // покой: 0. умеренное движение: медленно. быстрое+заряд: стремительно
+  const cycleRate = activity * 0.6 + charge * charge * 3.5 + activity * activity * 4.0;
+  colorPhase += (dt / 1000) * cycleRate;
+
+  const sustainedFastMs = inFastMode ? (now - fastStartMs) : 0;
+  if (sustainedFastMs > 1000){
+    nuclear = Math.min(1, nuclear + dt / 700);
+  }
+
+  if (!flashSeqRunning && (now - lastMoveMs) > 260 && peakActivity > 0.35){
+    triggerFlashSequence();
+    peakActivity = 0;
+  }
+  if ((now - lastMoveMs) > 100) peakActivity *= 0.98;
+
+  decay();
+  memoryTexture.needsUpdate = true;
+
+  const u = material.uniforms;
+  u.uMouse.value      = mouse;
+  u.uSpeed.value      = speed;
+  u.uActivity.value   = activity;
+  u.uCharge.value     = charge;
+  u.uColorPhase.value = colorPhase;
+  u.uLightning.value  = lightning;
+  u.uNuclear.value    = nuclear;
+  u.uBgFlash.value    = bgFlashStrength;
+  u.uBgFlashColor.value.copy(bgFlashColor);
+
+  if (audioStarted && gainNode){
+    const target = 0.02 + charge * 0.83;
+    gainNode.gain.setTargetAtTime(target, audioCtx.currentTime, 0.2);
+    if (frameCount % 4 === 0){
+      updateDistortion(charge * 140);
+      filter.gain.setTargetAtTime(charge * 7, audioCtx.currentTime, 0.25);
+    }
+  }
+
+  // ======== BLACK STROBE + SCREAMING MOUTH при charge > 0.8 ========
+  if (charge > 0.8){
+    // интервал строба: от 260мс (на 0.8) до 140мс (на 1.0) — ускоряется
+    const strobeInterval = 260 - (charge - 0.8) * 600;
+    if (now - lastStrobeMs > strobeInterval){
+      lastStrobeMs = now;
+      // случайное смещение и поворот рта — хаос
+      const mx = (Math.random() - 0.5) * 90;
+      const my = (Math.random() - 0.5) * 70;
+      const mr = (Math.random() - 0.5) * 24;
+      const ms = 0.85 + Math.random() * 0.5;
+      screamMouth.style.transform =
+        `translate(calc(-50% + ${mx}px), calc(-50% + ${my}px)) rotate(${mr}deg) scale(${ms})`;
+      blackStrobe.style.opacity = 1;
+      screamMouth.style.opacity = 0.96;
+      setTimeout(() => {
+        blackStrobe.style.opacity = 0;
+        screamMouth.style.opacity = 0;
+      }, 80);
+    }
+  }
+
+  if (typeof updateParticles === 'function') updateParticles(dt);
+  if (typeof updateLetterParticles === 'function') updateLetterParticles(dt);
+
+  renderer.render(scene, camera);
+}
+// animate() вызывается в самом конце скрипта — после инициализации всех ресурсов
+
+// ============================================================
+// RESIZE
+// ============================================================
+addEventListener('resize', () => {
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.setSize(innerWidth, innerHeight);
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+});
+
+// ============================================================
+// CUSTOM CURSOR
+// ============================================================
+const cursorEl = document.getElementById('cursor');
+const cursorScreen = { x: innerWidth / 2, y: innerHeight / 2 };
+addEventListener('mousemove', (e) => {
+  cursorScreen.x = e.clientX;
+  cursorScreen.y = e.clientY;
+  cursorEl.style.transform = `translate(${e.clientX - 3}px, ${e.clientY - 3}px)`;
+});
+
+// ============================================================
+// CURSOR PARTICLES — рваные хаотичные артефакты, втягиваются внутрь при скорости
+// ============================================================
+const PARTICLE_POOL = 140;
+const particleEls = [];
+const particles = [];
+
+// набор рваных clip-path полигонов — генерируем заранее для разнообразия
+const JAGGED_SHAPES = [];
+for (let i = 0; i < 24; i++){
+  const pts = [];
+  const n = 6 + Math.floor(Math.random() * 4);   // 6-9 вершин
+  for (let j = 0; j < n; j++){
+    const a = (j / n) * Math.PI * 2 + Math.random() * 0.6;
+    const r = 0.3 + Math.random() * 0.7;          // радиусы очень разные → рваный край
+    const x = 50 + Math.cos(a) * r * 50;
+    const y = 50 + Math.sin(a) * r * 50;
+    pts.push(`${x.toFixed(1)}% ${y.toFixed(1)}%`);
+  }
+  JAGGED_SHAPES.push(`polygon(${pts.join(',')})`);
+}
+
+for (let i = 0; i < PARTICLE_POOL; i++){
+  const el = document.createElement('div');
+  el.className = 'particle';
+  document.body.appendChild(el);
+  particleEls.push(el);
+}
+let particleCursor = 0;
+
+function spawnParticle(x, y, intensity){
+  const el = particleEls[particleCursor];
+  particleCursor = (particleCursor + 1) % PARTICLE_POOL;
+
+  const existingIdx = particles.findIndex(p => p.el === el);
+  if (existingIdx >= 0) particles.splice(existingIdx, 1);
+
+  const angle = Math.random() * Math.PI * 2;
+  // базовая радиальная скорость — наружу
+  const outSpeed = 0.04 + Math.random() * 0.14;
+  // случайный рваный шейп
+  el.style.clipPath = JAGGED_SHAPES[(Math.random() * JAGGED_SHAPES.length) | 0];
+
+  particles.push({
+    el, x, y,
+    vx: Math.cos(angle) * outSpeed,
+    vy: Math.sin(angle) * outSpeed,
+    seed: Math.random() * 100,
+    rot: Math.random() * 360,
+    rotVel: (Math.random() - 0.5) * 12,
+    life: 0,
+    maxLife: 400 + Math.random() * 500,
+    size: 0.6 + Math.random() * 1.8
+  });
+}
+
+addEventListener('mousemove', (e) => {
+  const dx = e.movementX || 0;
+  const dy = e.movementY || 0;
+  const pxSpeed = Math.sqrt(dx*dx + dy*dy);
+  const count = Math.min(7, Math.floor(pxSpeed / 6));
+  for (let i = 0; i < count; i++){
+    spawnParticle(
+      e.clientX + (Math.random() - 0.5) * 14,
+      e.clientY + (Math.random() - 0.5) * 14,
+      Math.min(1, pxSpeed / 60)
+    );
+  }
+});
+
+function updateParticles(dt){
+  // сила втягивания к курсору — растёт со скоростью движения
+  // speed нормализованная (0..~0.1), умножаем на пиксели
+  const pull = Math.min(1, speed * 28);   // 0..1
+  const cx = cursorScreen.x;
+  const cy = cursorScreen.y;
+
+  for (let i = particles.length - 1; i >= 0; i--){
+    const p = particles[i];
+    p.life += dt;
+    if (p.life >= p.maxLife){
+      p.el.style.opacity = 0;
+      particles.splice(i, 1);
+      continue;
+    }
+
+    // позиция: интегрируем скорость
+    p.x += p.vx * dt;
+    p.y += p.vy * dt;
+
+    // при высокой скорости — сильный pull к текущему курсору, halo сжимается внутрь
+    if (pull > 0.01){
+      const toX = cx - p.x;
+      const toY = cy - p.y;
+      const dist = Math.sqrt(toX*toX + toY*toY) + 0.01;
+      const accel = pull * 0.0022;            // сила
+      p.vx += (toX / dist) * accel * dt;
+      p.vy += (toY / dist) * accel * dt;
+      // дополнительно душим радиальную скорость — чтобы не улетали
+      p.vx *= (1 - pull * 0.006 * dt * 0.06);
+      p.vy *= (1 - pull * 0.006 * dt * 0.06);
+    }
+
+    // дрожание поверх траектории — две гармоники
+    const t = p.life;
+    const jx = Math.sin(t * 0.05 + p.seed) * 2.5 + Math.sin(t * 0.11 + p.seed * 2) * 1.2;
+    const jy = Math.cos(t * 0.055 + p.seed) * 2.5 + Math.cos(t * 0.12 + p.seed * 1.7) * 1.2;
+
+    const progress = t / p.maxLife;
+    const opacity = (1 - progress) * (0.75 + pull * 0.25);
+
+    p.rot += p.rotVel * dt * 0.06;
+
+    // периодически менять clip-path для мерцающего шума (раз в ~100мс)
+    if (((t / 80) | 0) !== p._lastShapeTick){
+      p._lastShapeTick = (t / 80) | 0;
+      p.el.style.clipPath = JAGGED_SHAPES[(Math.random() * JAGGED_SHAPES.length) | 0];
+    }
+
+    p.el.style.opacity = opacity;
+    p.el.style.transform = `translate(${p.x + jx}px, ${p.y + jy}px) rotate(${p.rot}deg) scale(${p.size})`;
+  }
+}
+
+// ============================================================
+// INTERACTIVE BUTTONS — ускорение ∝ радиусу + след из буквенных частиц
+// ============================================================
+
+// система буквенных частиц-следов — оседают от летящих букв кнопки
+const letterParticles = [];
+const MAX_LETTER_PARTICLES = 250;
+
+function spawnLetterParticle(x, y, char, fontSize, color){
+  if (letterParticles.length >= MAX_LETTER_PARTICLES){
+    const old = letterParticles.shift();
+    old.el.remove();
+  }
+  const el = document.createElement('span');
+  el.textContent = char;
+  el.style.cssText = `
+    position: fixed;
+    left: 0; top: 0;
+    font-family: monospace;
+    font-size: ${fontSize}px;
+    color: ${color};
+    pointer-events: none;
+    z-index: 18;
+    will-change: transform, opacity;
+    transform: translate(${x}px, ${y}px) rotate(${(Math.random()*60-30).toFixed(1)}deg);
+    text-shadow: 0 0 8px rgba(255,120,40,0.7);
+  `;
+  document.body.appendChild(el);
+  letterParticles.push({
+    el, x, y,
+    vx: (Math.random() - 0.5) * 0.3,
+    vy: (Math.random() - 0.5) * 0.3,
+    rot: Math.random()*60 - 30,
+    rotVel: (Math.random() - 0.5) * 0.08,
+    life: 0,
+    maxLife: 800 + Math.random() * 700
+  });
+}
+
+function updateLetterParticles(dt){
+  for (let i = letterParticles.length - 1; i >= 0; i--){
+    const p = letterParticles[i];
+    p.life += dt;
+    if (p.life >= p.maxLife){
+      p.el.remove();
+      letterParticles.splice(i, 1);
+      continue;
+    }
+    p.x += p.vx * dt;
+    p.y += p.vy * dt;
+    p.rot += p.rotVel * dt;
+    const o = (1 - p.life / p.maxLife) * 0.8;
+    p.el.style.opacity = o;
+    p.el.style.transform = `translate(${p.x}px, ${p.y}px) rotate(${p.rot}deg)`;
+  }
+}
+
+function setupInteractiveButton(el) {
+  const text = el.textContent;
+  el.textContent = '';
+  const chars = [];
+  // стартовые позиции букв запоминаем при первом hover
+  for (const c of text) {
+    const span = document.createElement('span');
+    span.textContent = (c === ' ') ? '\u00A0' : c;
+    el.appendChild(span);
+    span._char = c;
+    span._dir  = Math.random() * Math.PI * 2;
+    span._seed = Math.random() * 100;
+    span._posX = 0;
+    span._posY = 0;
+    span._originX = 0;
+    span._originY = 0;
+    chars.push(span);
+  }
+
+  const state = { intensity: 0, hovering: false, lastSpawnMs: 0 };
+
+  el.addEventListener('mouseenter', () => {
+    state.hovering = true;
+    // фиксируем origin каждой буквы на экране (её текущий bbox)
+    for (const c of chars){
+      const r = c.getBoundingClientRect();
+      c._originX = r.left;
+      c._originY = r.top;
+      c._posX = 0;
+      c._posY = 0;
+      c._dir = Math.random() * Math.PI * 2;
+    }
+  });
+  el.addEventListener('mouseleave', () => {
+    state.hovering = false;
+    // сброс позиций плавно
+    for (const c of chars){
+      c._posX = 0; c._posY = 0;
+    }
+  });
+
+  let prevMs = performance.now();
+
+  function frame() {
+    const now = performance.now();
+    const dt = Math.min(48, now - prevMs);
+    prevMs = now;
+
+    if (state.hovering) {
+      state.intensity = Math.min(1, state.intensity + dt / 3000);
+    } else {
+      state.intensity = Math.max(0, state.intensity - dt / 300);
+    }
+
+    const I = state.intensity;
+
+    if (I > 0.001) {
+      const lensT = (now * 0.0012) % 2;
+      const lensNorm = lensT < 1 ? lensT : (2 - lensT);
+      const lensPos  = lensNorm * (chars.length - 1);
+      const lensWidth = 2.4;
+
+      for (let i = 0; i < chars.length; i++) {
+        const span = chars[i];
+        const d = Math.abs(i - lensPos);
+        const falloff = Math.max(0, 1 - d / lensWidth);
+        const scale = 1 + falloff * I * 1.0;
+
+        if (state.hovering){
+          // velocity: медленный старт (базовая в 3x ниже), резкий разгон к середине-концу
+          // vel ∝ radius² — почти не движется первые кадры, потом стремительно
+          const radius = Math.sqrt(span._posX*span._posX + span._posY*span._posY);
+          const baseVel = 0.027;                          // было 0.08 → в 3 раза медленнее
+          const rScale  = radius * 0.01;                  // нормализуем радиус в ~сотни
+          const vel = baseVel + rScale * rScale * 0.18;   // квадратичный разгон
+          const dx = Math.cos(span._dir) * vel * dt;
+          const dy = Math.sin(span._dir) * vel * dt;
+          span._posX += dx;
+          span._posY += dy;
+        } else {
+          // возврат к origin
+          span._posX *= 0.9;
+          span._posY *= 0.9;
+        }
+
+        // дрожание
+        const jitter = 3 + I * 25;
+        const jx = (Math.random() - 0.5) * jitter;
+        const jy = (Math.random() - 0.5) * jitter;
+
+        // burn наращивается быстро — огонь загорается сразу при hover, не ждёт 3сек
+        const burnBase = Math.pow(I, 0.3);   // I=0.1 → burnBase≈0.5, I=0.5 → ≈0.8
+        const burn = burnBase * (0.7 + 0.3 * Math.sin(now * 0.04 + i * 0.4));
+
+        span.style.transform = `translate(${span._posX + jx}px, ${span._posY + jy}px) scale(${scale})`;
+        span.style.textShadow =
+          `0 0 ${5 * burn}px rgba(255,150,60,${burn}),` +
+          `0 0 ${14 * burn}px rgba(255,80,25,${burn * 0.95}),` +
+          `0 0 ${28 * burn}px rgba(255,45,0,${burn * 0.85}),` +
+          `0 0 ${50 * burn}px rgba(255,220,90,${burn * 0.55})`;
+        span.style.color = `rgb(255, ${Math.max(170, 255 - 80 * burn)|0}, ${Math.max(120, 255 - 130 * burn)|0})`;
+      }
+
+      // спавн letter-particles: чем дальше буквы разлетелись, тем чаще
+      if (state.hovering){
+        // найти средний радиус разлёта
+        let avgR = 0;
+        for (const c of chars){
+          avgR += Math.sqrt(c._posX*c._posX + c._posY*c._posY);
+        }
+        avgR /= chars.length;
+
+        // интервал спавна: 100мс при avgR=0, 20мс при avgR=500
+        const interval = Math.max(20, 120 - avgR * 0.2);
+        if (now - state.lastSpawnMs > interval && avgR > 10){
+          state.lastSpawnMs = now;
+          // спавним частицу от случайной буквы на её текущей позиции
+          const srcChar = chars[(Math.random() * chars.length) | 0];
+          const srcX = srcChar._originX + srcChar._posX;
+          const srcY = srcChar._originY + srcChar._posY;
+          const fontSize = parseFloat(getComputedStyle(el).fontSize) * (0.7 + Math.random() * 0.6);
+          spawnLetterParticle(
+            srcX + (Math.random()-0.5)*8,
+            srcY + (Math.random()-0.5)*8,
+            srcChar._char === ' ' ? '·' : srcChar._char,
+            fontSize,
+            `rgba(255,${180 + (Math.random()*75)|0},${100 + (Math.random()*60)|0},0.85)`
+          );
+        }
+      }
+    } else {
+      for (const span of chars) {
+        span.style.transform = '';
+        span.style.textShadow = '';
+        span.style.color = '';
+      }
+    }
+
+    requestAnimationFrame(frame);
+  }
+  frame();
+}
+
+setupInteractiveButton(document.querySelector('.face'));
+setupInteractiveButton(document.querySelector('.email'));
+
+document.getElementById('emailBtn').addEventListener('click', () => {
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText('savelsharkov@gmail.com').catch(()=>{});
+  }
+});
+
+// теперь, когда все ресурсы инициализированы, запускаем главный цикл
+animate();
+</script>
+
+</body>
+</html>
