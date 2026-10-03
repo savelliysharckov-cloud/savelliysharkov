@@ -714,7 +714,9 @@ function placeTour(st){
 }
 function nextTour(){ if(!tourOn()) return; if(tourI>=TOUR.length-1) endTour(); else{ tourI++; showTourStep(); } }
 // the layer keeps catching clicks while it fades, so the click that ends it does not land on a button under it
-function endTour(){ if(!tourOn()) return; tourI=-1; tourEl.classList.remove('on'); clearTimeout(tourT); tourT=setTimeout(()=>{ tourEl.hidden=true; },500); }
+function endTour(){ if(!tourOn()) return; tourI=-1; tourEl.classList.remove('on'); clearTimeout(tourT); tourT=setTimeout(()=>{ tourEl.hidden=true; },500);
+  // the welcome ends with the sheet already moving: Drift on, at 8×
+  if(view==='sheet'){ setSpeed(8); setDrift(true); } }
 tourEl.addEventListener('click',nextTour);
 window.addEventListener('resize',()=>{ if(tourOn()) showTourStep(); });
 function introSkip(){ vt=null; if(ready){ s=fit; clamp(); } introDone(); }
@@ -1002,7 +1004,8 @@ window.addEventListener('hashchange',route);
 tape.addEventListener('input',()=>{ setDrift(false); tween=null; v=parseFloat(tape.value); ui(); invalidate(); });
 chips.forEach(b=>b.addEventListener('click',()=>goTo(+b.dataset.k)));
 driftBtn.addEventListener('click',()=>setDrift(!drift));
-speedBtns.forEach(b=>b.addEventListener('click',()=>{ speed=+b.dataset.speed; speedBtns.forEach(q=>q.setAttribute('aria-pressed',String(q===b))); setDrift(true); }));
+function setSpeed(n){ speed=n; speedBtns.forEach(q=>q.setAttribute('aria-pressed',String(+q.dataset.speed===n))); }
+speedBtns.forEach(b=>b.addEventListener('click',()=>{ setSpeed(+b.dataset.speed); setDrift(true); }));
 motionBtns.forEach(b=>b.addEventListener('click',()=>{ motion=b.dataset.motion; motionBtns.forEach(q=>q.setAttribute('aria-pressed',String(q===b))); setDrift(true); }));
 modeBtns.forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.mode)));
 const mixOut=inp=>{ const l=inp.closest('label'); l.querySelector('output').textContent=inp.value; l.classList.toggle('on',+inp.value>0); };
