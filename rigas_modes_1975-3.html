@@ -124,16 +124,20 @@ body.intro .site,body.intro .bar,body.intro .dock,body.intro .guide,body.intro #
 /* the tour after the pull-back: the motto, then pointers to the controls; each click moves on */
 .tour{position:fixed;inset:0;z-index:40;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 .tour .say,.tarrow,.tcap,.tring,.tcue{opacity:0;transition:opacity .35s}
+.tcap,.tarrow{transition:opacity .18s}
 .tour.on .show{opacity:1}
 .tarrow{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;pointer-events:none;filter:drop-shadow(0 1px 1.5px rgba(0,0,0,.5)) drop-shadow(0 2px 10px rgba(0,0,0,.3))}
 .tcap{position:absolute;left:0;top:0;isolation:isolate;width:max-content;max-width:min(440px,calc(100vw - 28px));text-align:center;pointer-events:none}
-.tcap::before{content:"";position:absolute;inset:-34px -56px;z-index:-1;background:radial-gradient(closest-side,rgba(0,0,0,.3),rgba(0,0,0,.12) 60%,rgba(0,0,0,0))}
+.tcap::before{content:"";position:absolute;inset:-34px -56px;z-index:-1;background:radial-gradient(closest-side,rgba(0,0,0,.42),rgba(0,0,0,.18) 60%,rgba(0,0,0,0))}
 .tcap .tt{font:500 clamp(19px,1.9vw,27px)/1.18 var(--sans);letter-spacing:-.01em;color:#FFFFFF;text-shadow:0 1px 1.5px rgba(0,0,0,.45),0 2px 16px rgba(0,0,0,.4)}
 .tcap .tn,.tcue{margin-top:9px;font:400 12px/1.2 var(--sans);letter-spacing:.03em;color:rgba(255,255,255,.88);text-shadow:0 1px 2px rgba(0,0,0,.55),0 0 10px rgba(0,0,0,.35)}
 .tcue{position:absolute;left:0;right:0;top:0;text-align:center;pointer-events:none}
-.tring{position:absolute;border-radius:6px;pointer-events:none;box-shadow:0 0 0 1.5px rgba(255,255,255,.95),0 0 0 4px rgba(0,0,0,.1),0 2px 16px 1px rgba(0,0,0,.35)}
+/* the ring's huge shadow dims everything but the control it frames */
+.tring{position:absolute;border-radius:6px;pointer-events:none;box-shadow:0 0 0 1.5px rgba(255,255,255,.95),0 0 0 200vmax rgba(0,0,0,.56);
+  transition:opacity .35s,left .35s ease,top .35s ease,width .35s ease,height .35s ease}
 .tour::before,.intro-layer::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .6s;
   background:radial-gradient(ellipse 50% 36% at 50% 50%,rgba(0,0,0,.26),rgba(0,0,0,.1) 55%,rgba(0,0,0,0) 80%)}
+.tour::before{transition:opacity .35s;background:radial-gradient(ellipse 60% 48% at 50% 50%,rgba(0,0,0,.66),rgba(0,0,0,.56) 70%)}
 .tour.on.saystep::before,.intro-layer.ask::before{opacity:1}
 /* giant words: white with a black outline, broken into the lines that make them fill the screen (laid out by script) */
 .say{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;pointer-events:none}
@@ -644,7 +648,8 @@ const SAY_SCALE=.7;  // the title lines sit at 70% of the size that would fill t
 function sayLayout(text,W,H){
   const words=text.split(/\s+/); sayCtx.font=sayFont(100); const wd=t=>sayCtx.measureText(t).width;
   let best=null;
-  for(let n=1;n<=Math.min(6,words.length);n++){
+  // at most about two words a line, so a phrase never falls apart into single words
+  for(let n=1;n<=Math.min(6,Math.ceil(words.length/2.3));n++){
     // every way to break the words into n lines; keep the one whose longest line is shortest
     let lines=null, widest=Infinity;
     const walk=(i,k,acc)=>{
@@ -653,7 +658,7 @@ function sayLayout(text,W,H){
     };
     walk(0,n,[]);
     const fs=Math.min(W*.74*100/widest,H*.6/(n*SAY_LH));
-    if(!best||fs>best.fs*1.04) best={fs,lines};
+    if(!best||fs>best.fs*1.1) best={fs,lines};  // another line has to buy a clearly bigger size
   }
   return best;
 }
@@ -682,15 +687,20 @@ let tourI=-1, tourT=0;
 const tourOn=()=>tourI>=0;
 function startTour(){ if(view!=='sheet') return; clearTimeout(tourT); tourI=0; tourEl.hidden=false; showTourStep();
   requestAnimationFrame(()=>requestAnimationFrame(()=>tourEl.classList.add('on'))); }
+let tourTok=0;
 function showTourStep(){
-  const st=TOUR[tourI], n=TOUR.length, count=`${tourI+1} / ${n} · ${tapWord} to ${tourI===n-1?'start':'continue'}`;
+  const st=TOUR[tourI], n=TOUR.length, tok=++tourTok, count=`${tourI+1} / ${n} · ${tapWord} to ${tourI===n-1?'start':'continue'}`;
+  const moving=tourCap.classList.contains('show');
   tourSay.classList.toggle('show',!!st.say); tourCue.classList.toggle('show',!!st.say); tourEl.classList.toggle('saystep',!!st.say);
-  for(const el of [tourCap,tourArrow,tourRing]) el.classList.toggle('show',!st.say);
+  tourRing.classList.toggle('show',!st.say); tourCap.classList.remove('show'); tourArrow.classList.remove('show');
   tourText.textContent=st.say?tourSay.dataset.say:st.text;
   if(st.say){ renderSay(tourSay); tourCue.textContent=count; tourCue.style.top=Math.round(tourSay._bottom+14)+'px'; return; }
-  tourCap.querySelector('.tt').textContent=st.text; tourCap.querySelector('.tn').textContent=count;
-  placeTour(st);
+  const go=()=>{ if(tok!==tourTok||!tourOn()) return;
+    tourCap.querySelector('.tt').textContent=st.text; tourCap.querySelector('.tn').textContent=count;
+    placeTour(st); tourCap.classList.add('show'); tourArrow.classList.add('show'); };
+  if(moving) setTimeout(go,180); else go();
 }
+function relayoutTour(){ const st=TOUR[tourI]; if(st.say){ renderSay(tourSay); tourCue.style.top=Math.round(tourSay._bottom+14)+'px'; } else placeTour(st); }
 function unionRect(els){ let l=Infinity,t=Infinity,r=-Infinity,b=-Infinity;
   for(const el of els){ if(!el) continue; const q=el.getBoundingClientRect(); if(!q.width||!q.height) continue; l=Math.min(l,q.left); t=Math.min(t,q.top); r=Math.max(r,q.right); b=Math.max(b,q.bottom); }
   return isFinite(l)?{l,t,r,b,w:r-l,h:b-t,cx:(l+r)/2,cy:(t+b)/2}:null; }
@@ -718,7 +728,7 @@ function endTour(){ if(!tourOn()) return; tourI=-1; tourEl.classList.remove('on'
   // the welcome ends with the sheet already moving: Drift on, at 8×
   if(view==='sheet'){ setSpeed(8); setDrift(true); } }
 tourEl.addEventListener('click',nextTour);
-window.addEventListener('resize',()=>{ if(tourOn()) showTourStep(); });
+window.addEventListener('resize',()=>{ if(tourOn()) relayoutTour(); });
 function introSkip(){ vt=null; if(ready){ s=fit; clamp(); } introDone(); }
 introEl.addEventListener('click',introNext);
 
