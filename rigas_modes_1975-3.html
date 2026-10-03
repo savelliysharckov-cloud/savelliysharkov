@@ -15,21 +15,14 @@
   --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace;
 }
-@media (prefers-color-scheme:dark){
-  :root:not([data-theme="light"]){
-    color-scheme:dark;
-    --bg:#121212; --fg:#ECEBE6; --muted:#9C9B95; --faint:#64635F; --rule:#2C2C2A; --hover:#1E1E1D; --stage:#080808;
-    --accent:#FF6A5C; --accent-ink:#121212;
-  }
-}
-:root[data-theme="dark"]{
+:root[data-mode="mix"]{
   color-scheme:dark;
   --bg:#121212; --fg:#ECEBE6; --muted:#9C9B95; --faint:#64635F; --rule:#2C2C2A; --hover:#1E1E1D; --stage:#080808;
   --accent:#FF6A5C; --accent-ink:#121212;
 }
 *,*::before,*::after{box-sizing:border-box}
 html,body{height:100%}
-body{margin:0;background:var(--bg);color:var(--fg);font:400 13px/1.35 var(--sans);overflow:hidden;-webkit-font-smoothing:antialiased}
+body{margin:0;transition:background-color .25s,color .25s;background:var(--bg);color:var(--fg);font:400 13px/1.35 var(--sans);overflow:hidden;-webkit-font-smoothing:antialiased}
 button,select,input,output{font:inherit;color:inherit}
 :focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 [hidden]{display:none!important}
@@ -77,6 +70,28 @@ button,select,input,output{font:inherit;color:inherit}
 .seg .btn:last-child{border-right:0}
 .seg .btn[aria-selected="true"],.seg .btn[aria-pressed="true"]{background:var(--fg);color:var(--bg)}
 .seg.sm .btn{height:22px;padding:0 7px;font-size:12px}
+.modes{display:inline-flex;align-items:stretch;gap:0;padding:2px;border:1px solid var(--fg);border-radius:4px}
+.modes .btn{height:30px;padding:0 14px;border:0;border-radius:2px;font-size:14px;font-weight:600;letter-spacing:.01em;gap:7px;opacity:.42;transition:opacity .15s}
+.modes .btn:hover{opacity:.75}
+.modes .btn[aria-selected="true"]{opacity:1;box-shadow:inset 0 -2px 0 var(--accent)}
+.modes .btn kbd{font:500 10px var(--mono);opacity:.55}
+.modes .m-light,.modes .m-light:hover{background:#F4F3EE;color:#151515}
+.modes .m-dark,.modes .m-dark:hover{background:#151515;color:#F0EFEA}
+.modes .m-light::before,.modes .m-dark::before{content:"";width:8px;height:8px;border-radius:50%;border:1px solid currentColor}
+.modes .m-dark::before{background:currentColor}
+
+/* on-screen guide, shown at start; H toggles */
+.guide{position:fixed;left:12px;z-index:4;max-width:min(340px,calc(100vw - 24px));padding:9px 11px 10px;font-size:11.5px;line-height:1.45;
+  color:color-mix(in srgb,var(--fg) 78%,transparent);background:color-mix(in srgb,var(--bg) 58%,transparent);border-radius:3px;
+  pointer-events:none;transition:opacity .5s,visibility .5s}
+.guide.off{opacity:0;visibility:hidden}
+.guide .h{font-weight:600;color:var(--fg);margin-bottom:5px;pointer-events:auto;cursor:pointer;width:max-content}
+.guide .h kbd{font:600 11px var(--mono)}
+.guide dl{margin:0;display:grid;grid-template-columns:max-content 1fr;gap:1px 10px}
+.guide dt{grid-column:1/-1;margin-top:6px;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.guide dd{margin:0}
+.guide dd:nth-of-type(odd){font-weight:500;color:var(--fg);white-space:nowrap}
+.guide kbd{font:500 10.5px var(--mono)}
 #zVal{min-width:38px;text-align:center;font-size:12px}
 .right{margin-left:auto}
 
@@ -142,9 +157,9 @@ input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;bac
 <body>
 <header class="bar">
   <div class="mark cl"><b>Rigas Modes</b><span class="num">1975/3</span><i>— the sheet as an LLM sees it</i></div>
-  <div class="seg cl" role="tablist" aria-label="Mode">
-    <button class="btn" role="tab" aria-selected="true" data-mode="morph" title="One layer at a time, morphing between neighbours (M)">Diffusion</button>
-    <button class="btn" role="tab" aria-selected="false" data-mode="mix" title="Stack several layers at chosen strengths (M)">Overlay</button>
+  <div class="modes cl" role="tablist" aria-label="Mode">
+    <button class="btn m-light" role="tab" aria-selected="true" data-mode="morph" title="One layer at a time, morphing between neighbours (M)">Diffusion</button>
+    <button class="btn m-dark" role="tab" aria-selected="false" data-mode="mix" title="Stack several layers at chosen strengths (M)">Overlay</button>
   </div>
   <div class="sep"></div>
   <div class="grp cl">
@@ -171,8 +186,29 @@ input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;bac
     <output id="zVal" class="num" aria-live="off">×1.0</output>
     <button id="zFit" class="btn" title="Fit the whole sheet (Esc, double-click)">Fit</button>
     <button id="mapBtn" class="btn" aria-pressed="true" title="Overview map">Map</button>
+    <button id="guideBtn" class="btn" aria-pressed="true" title="Show or hide the guide (H)">Guide <kbd>H</kbd></button>
   </div>
 </header>
+<aside class="guide" id="guide" aria-label="How to use">
+  <div class="h"><kbd>(H)</kbd> hide this guide</div>
+  <dl>
+    <dt>Two modes · top left</dt>
+    <dd>Diffusion</dd><dd>light. One layer at a time; the scale 1–13 at the bottom morphs between them</dd>
+    <dd>Overlay</dd><dd>dark. Stack layers: a strength fader for each, blend mode above</dd>
+    <dd><kbd>M</kbd></dd><dd>switch mode</dd>
+    <dt>Tools · top</dt>
+    <dd>Flashlight <kbd>F</kbd></dd><dd>another layer under the cursor; menu picks it, <kbd>[ ]</kbd> or Alt + scroll resizes</dd>
+    <dd>Draw <kbd>T</kbd></dd><dd>lines draw themselves; menu picks which</dd>
+    <dt>View · top right</dt>
+    <dd>Scroll, pinch</dd><dd>zoom; drag to move</dd>
+    <dd>Fit <kbd>Esc</kbd></dd><dd>whole sheet; double-click does the same</dd>
+    <dd>Map</dd><dd>overview at bottom right; click to jump</dd>
+    <dt>Diffusion bar · bottom</dt>
+    <dd>1–13</dd><dd>click a layer, or drag the red marker between them</dd>
+    <dd>Drift <kbd>Space</kbd></dd><dd>play through layers; motion and speed beside it</dd>
+    <dd><kbd>← →</kbd> <kbd>1–9</kbd></dd><dd>step / jump to a layer</dd>
+  </dl>
+</aside>
 <main class="stage" id="stage" aria-label="Rigas Modes 1975/3 pattern sheet" title="Scroll or pinch to zoom, drag to move, double-click to fit">
   <div class="loading">Loading layers…</div>
   <canvas id="view" aria-hidden="true"></canvas>
@@ -313,6 +349,10 @@ function schedule(t){
   tween={a:v,b:target,t0:t,d:Math.max(35,Math.min(120,350*gap)),snap:true};
   rh.next+=gap; if(rh.next<now) rh.next=now+gap;
 }
+const guideEl=$('guide'), guideBtn=$('guideBtn'); let guideT=0;
+function setGuide(on){ clearTimeout(guideT); guideEl.classList.toggle('off',!on); guideBtn.setAttribute('aria-pressed',String(on)); }
+guideEl.querySelector('.h').addEventListener('click',()=>setGuide(false));
+guideBtn.addEventListener('click',()=>setGuide(guideEl.classList.contains('off')));
 const maxS=()=>Math.max(3,fit);
 let insT=0, insB=0; const barEl=document.querySelector('.bar'), dockEl=document.querySelector('.dock');
 const CY=()=>insT+(H-insT-insB)/2;
@@ -324,7 +364,7 @@ function resize(){
   W=Math.max(1,r.width); H=Math.max(1,r.height); dpr=Math.min(window.devicePixelRatio||1,2);
   cv.width=base.width=Math.round(W*dpr); cv.height=base.height=Math.round(H*dpr);
   nav.width=NAVW*dpr; nav.height=NAVH*dpr; nav.style.width=NAVW+'px'; nav.style.height=NAVH+'px';
-  insT=barEl.offsetHeight; insB=dockEl.offsetHeight; measureCl(); nav.style.bottom=(insB+12)+'px'; nav.style.top='';
+  insT=barEl.offsetHeight; insB=dockEl.offsetHeight; guideEl.style.top=(insT+12)+'px'; measureCl(); nav.style.bottom=(insB+12)+'px'; nav.style.top='';
   fit=Math.min(W/IW,Math.max(40,H-insT-insB)/IH); if(atFit||s<fit) s=fit; clamp(); invalidate();
 }
 function blit(c2,img,alpha,op,ox,oy,cw,ch){
@@ -408,7 +448,7 @@ function goTo(k){
   tween={a:v,b:k,t0:performance.now(),d:600+380*Math.min(4,Math.abs(k-v))}; kick();
 }
 function setMode(m){
-  mode=m; accent=getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()||'#E25A8D'; morphUI.hidden=m!=='morph'; mixUI.hidden=m!=='mix';
+  mode=m; document.documentElement.dataset.mode=m; accent=getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()||'#E25A8D'; morphUI.hidden=m!=='morph'; mixUI.hidden=m!=='mix';
   modeBtns.forEach(b=>b.setAttribute('aria-selected',String(b.dataset.mode===m)));
   if(m==='mix'){ drift=false; tween=null; driftBtn.setAttribute('aria-pressed','false'); }
   lastNear=-1; ui(); measureCl(); invalidate();
@@ -478,6 +518,7 @@ document.addEventListener('keydown',e=>{
   else if(e.key==='ArrowRight'){ e.preventDefault(); goTo(Math.round(v)+1); }
   else if(e.key==='ArrowLeft'){ e.preventDefault(); goTo(Math.round(v)-1); }
   else if(e.key===' '){ e.preventDefault(); setDrift(!drift); }
+  else if(e.key==='h'||e.key==='H'){ setGuide(guideEl.classList.contains('off')); }
   else if(e.key==='m'||e.key==='M'){ setMode(mode==='morph'?'mix':'morph'); }
   else if(e.key==='f'||e.key==='F'){ setTorch(!torch.on); }
   else if(e.key==='t'||e.key==='T'){ setTrace(!draw_.on); }
@@ -489,6 +530,8 @@ document.addEventListener('keydown',e=>{
 });
 accent=getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()||accent;
 if(window.matchMedia('(max-width:720px)').matches){ nav.hidden=true; mapBtn.setAttribute('aria-pressed','false'); }
+document.documentElement.dataset.mode='morph'; accent=getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()||accent;
+guideT=setTimeout(()=>setGuide(false),40000);
 resize(); ui();
 Promise.all(layers.map(i=>i.decode?i.decode().catch(()=>{}):Promise.resolve())).then(()=>{
   layers.forEach(img=>{ const c=document.createElement('canvas'); c.width=NAVW*2; c.height=NAVH*2; const g=c.getContext('2d'); g.imageSmoothingQuality='high'; g.drawImage(img,0,0,c.width,c.height); thumbs.push(c); });
