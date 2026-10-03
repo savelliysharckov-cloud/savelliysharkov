@@ -33,7 +33,7 @@ button,select,input,output{font:inherit;color:inherit}
 .stage.grabbing{cursor:grabbing}
 .stage.torch{cursor:none}
 .stage.torch.grabbing{cursor:grabbing}
-#view{position:absolute;inset:0;width:100%;height:100%;display:block;opacity:0;transition:opacity .3s}
+#view{position:absolute;inset:0;width:100%;height:100%;display:block;opacity:0;transition:opacity .6s}
 .stage.ready #view{opacity:1}
 .loading{position:absolute;inset:0;display:grid;place-items:center;color:var(--muted);font-size:12px;letter-spacing:.04em}
 .stage.ready .loading{display:none}
@@ -45,7 +45,7 @@ button,select,input,output{font:inherit;color:inherit}
 .stage.ready #nav{opacity:1}
 
 /* bars */
-.bar,.dock{position:fixed;left:0;right:0;z-index:5;background:color-mix(in srgb,var(--bg) 22%,transparent);
+.bar,.dock{position:fixed;left:0;right:0;z-index:5;transition:opacity .8s;background:color-mix(in srgb,var(--bg) 22%,transparent);
   -webkit-backdrop-filter:blur(1px);backdrop-filter:blur(1px)}
 /* a control cluster gets its own backing + hairline outline only while the sheet is under it (--o set by script) */
 .cl{--b:color-mix(in srgb,var(--bg) calc(var(--o,0) * 90%),transparent);border-radius:3px;background-color:var(--b);
@@ -83,6 +83,19 @@ button,select,input,output{font:inherit;color:inherit}
 .modes .m-dark,.modes .m-dark:hover{background:#151515;color:#F0EFEA}
 .modes .m-light::before,.modes .m-dark::before{content:"";width:8px;height:8px;border-radius:50%;border:1px solid currentColor}
 .modes .m-dark::before{background:currentColor}
+
+/* intro: a close crop of the sheet -> the question -> the camera pulls back to the whole sheet */
+body.intro .bar,body.intro .dock,body.intro .guide,body.intro #nav{opacity:0!important;pointer-events:none}
+.intro-layer{position:fixed;inset:0;z-index:8;display:grid;place-items:center;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.intro-layer.out{cursor:default}
+.intro-layer .veil{position:absolute;inset:0;background:color-mix(in srgb,var(--bg) 80%,transparent);opacity:0;transition:opacity .7s}
+.intro-layer .q{position:relative;margin:0 16px;text-align:center;font:500 clamp(26px,3vw,50px)/1.15 var(--sans);letter-spacing:-.01em;color:var(--fg);
+  opacity:0;transform:translateY(6px);transition:opacity .7s,transform .7s}
+.intro-layer.ask .veil,.intro-layer.ask .q{opacity:1;transform:none}
+.intro-layer .cue{position:absolute;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);padding:3px 8px 4px;border-radius:3px;
+  font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:color-mix(in srgb,var(--bg) 58%,transparent);opacity:0;transition:opacity .8s}
+.intro-layer .cue.on{opacity:.85}
+.intro-layer.out .veil,.intro-layer.out .q,.intro-layer.out .cue{opacity:0;transition-duration:.5s}
 
 /* on-screen guide, shown at start; H toggles */
 .guide{position:fixed;left:12px;z-index:4;max-width:min(340px,calc(100vw - 24px));padding:9px 11px 10px;font-size:11.5px;line-height:1.45;
@@ -158,7 +171,12 @@ input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;bac
 @media (prefers-reduced-motion:reduce){ #view,#nav{transition:none} }
 </style>
 </head>
-<body>
+<body class="intro">
+<div class="intro-layer" id="intro" role="button" aria-label="Start">
+  <div class="veil"></div>
+  <p class="q">Can you find a dress?</p>
+  <span class="cue">click</span>
+</div>
 <header class="bar">
   <div class="mark cl"><b>Rigas Modes</b><span class="num">1975/3</span><i>— the sheet as an LLM sees it</i></div>
   <div class="modes cl" role="tablist" aria-label="Mode">
@@ -361,6 +379,28 @@ const guideEl=$('guide'), guideBtn=$('guideBtn'); let guideT=0;
 function setGuide(on){ clearTimeout(guideT); guideEl.classList.toggle('off',!on); guideBtn.setAttribute('aria-pressed',String(on)); }
 guideEl.querySelector('.h').addEventListener('click',()=>setGuide(false));
 guideBtn.addEventListener('click',()=>setGuide(guideEl.classList.contains('off')));
+// the first frame: left edge of the line field (rows 73-63) with its numbers, the title column left out
+const INTRO={x:492,y:960,w:1980,h:1485}, introEl=$('intro'), introCue=introEl.querySelector('.cue');
+let introStep=0, cueT=0;
+introCue.textContent=window.matchMedia('(pointer:coarse)').matches?'tap':'click';
+function introCam(){ s=Math.max(W/INTRO.w,H/INTRO.h); x=-INTRO.x*s; y=H/2-(INTRO.y+INTRO.h/2)*s; }
+function armCue(){ clearTimeout(cueT); introCue.classList.remove('on'); cueT=setTimeout(()=>{ if(introStep<2) introCue.classList.add('on'); },4500); }
+function introNext(){
+  if(!ready) return;
+  if(introStep===0){ introStep=1; introEl.classList.add('ask'); armCue(); return; }
+  if(introStep!==1) return;
+  introStep=2; clearTimeout(cueT); introEl.classList.remove('ask'); introEl.classList.add('out');
+  const [x1,y1]=clampTo(fit,0,0), px=(W/2-x)/s, py=(H/2-y)/s;
+  vt={io:true,s0:s,x0:x,y0:y,s1:fit,x1,y1,px,py,ax0:W/2,ay0:H/2,ax1:x1+px*fit,ay1:y1+py*fit,t0:performance.now(),d:reduce?1:2600};
+  setTimeout(()=>document.body.classList.remove('intro'),reduce?0:1400);
+  kick();
+}
+function introDone(){
+  introStep=3; clearTimeout(cueT); document.body.classList.remove('intro'); introEl.hidden=true;
+  guideT=setTimeout(()=>setGuide(false),40000); setTimeout(resize,0);
+}
+function introSkip(){ if(!ready) return; vt=null; s=fit; introDone(); }
+introEl.addEventListener('click',introNext);
 const maxS=()=>Math.max(3,fit);
 let insT=0, insB=0; const barEl=document.querySelector('.bar'), dockEl=document.querySelector('.dock');
 const CY=()=>insT+(H-insT-insB)/2;
@@ -373,7 +413,7 @@ function resize(){
   cv.width=base.width=lens.width=Math.round(W*dpr); cv.height=base.height=lens.height=Math.round(H*dpr);
   nav.width=NAVW*dpr; nav.height=NAVH*dpr; nav.style.width=NAVW+'px'; nav.style.height=NAVH+'px';
   insT=barEl.offsetHeight; insB=dockEl.offsetHeight; guideEl.style.top=(insT+12)+'px'; measureCl(); nav.style.bottom=(insB+12)+'px'; nav.style.top='';
-  fit=Math.min(W/IW,Math.max(40,H-insT-insB)/IH); if(atFit||s<fit) s=fit; clamp(); invalidate();
+  fit=Math.min(W/IW,Math.max(40,H-insT-insB)/IH); if(introStep<2) introCam(); else{ if(atFit||s<fit) s=fit; clamp(); } invalidate();
 }
 function blit(c2,img,alpha,op,ox,oy,cw,ch){
   if(alpha<=0.001) return;
@@ -454,8 +494,11 @@ function ui(){
 }
 function loop(t){
   raf=0; const dt=lastT?Math.min(.1,(t-lastT)/1000):0; lastT=t;
-  if(vt){ const p=Math.min(1,(t-vt.t0)/vt.d), e=1-Math.pow(1-p,3);
-    s=vt.s0+(vt.s1-vt.s0)*e; x=vt.x0+(vt.x1-vt.x0)*e; y=vt.y0+(vt.y1-vt.y0)*e; if(p>=1) vt=null; baseDirty=true; dirty=true; }
+  if(vt){ const p=Math.min(1,(t-vt.t0)/vt.d);
+    if(vt.io){ const e=p<.5?4*p*p*p:1-Math.pow(-2*p+2,3)/2;
+      s=vt.s0*Math.pow(vt.s1/vt.s0,e); x=vt.ax0+(vt.ax1-vt.ax0)*e-vt.px*s; y=vt.ay0+(vt.ay1-vt.ay0)*e-vt.py*s; }
+    else{ const e=1-Math.pow(1-p,3); s=vt.s0+(vt.s1-vt.s0)*e; x=vt.x0+(vt.x1-vt.x0)*e; y=vt.y0+(vt.y1-vt.y0)*e; }
+    if(p>=1){ vt=null; if(introStep===2) introDone(); } baseDirty=true; dirty=true; }
   if(drift&&motion!=='smooth') schedule(t);
   if(tween){ const p=Math.min(1,(t-tween.t0)/tween.d); const e=tween.snap?1-Math.pow(1-p,3):(p<.5?4*p*p*p:1-Math.pow(-2*p+2,3)/2);
     v=tween.a+(tween.b-tween.a)*e; if(p>=1) tween=null; baseDirty=true; dirty=true; ui(); }
@@ -550,6 +593,7 @@ const ro=new ResizeObserver(resize); ro.observe(stage); ro.observe(barEl); ro.ob
 window.addEventListener('resize',measureCl); if(document.fonts) document.fonts.ready.then(()=>{ measureCl(); invalidate(false); });
 dockEl.addEventListener('scroll',()=>{ measureCl(); halos(); },{passive:true});
 document.addEventListener('keydown',e=>{
+  if(introStep<3){ if(e.key==='Escape') introSkip(); else if([' ','Enter','ArrowRight','ArrowDown'].includes(e.key)){ e.preventDefault(); introNext(); } return; }
   if(e.target.closest&&e.target.closest('input,select,textarea')&&!['Escape','ArrowLeft','ArrowRight'].includes(e.key)) return;
   if(e.key>='1'&&e.key<='9'){ goTo(+e.key-1); }
   else if(e.key==='ArrowRight'){ e.preventDefault(); goTo(Math.round(v)+1); }
@@ -568,11 +612,10 @@ document.addEventListener('keydown',e=>{
 accent=getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()||accent;
 if(window.matchMedia('(max-width:720px)').matches){ nav.hidden=true; mapBtn.setAttribute('aria-pressed','false'); }
 document.documentElement.dataset.mode='morph'; accent=getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()||accent;
-guideT=setTimeout(()=>setGuide(false),40000);
 resize(); ui();
 Promise.all(layers.map(i=>i.decode?i.decode().catch(()=>{}):Promise.resolve())).then(()=>{
   layers.forEach(img=>{ const c=document.createElement('canvas'); c.width=NAVW*2; c.height=NAVH*2; const g=c.getContext('2d'); g.imageSmoothingQuality='high'; g.drawImage(img,0,0,c.width,c.height); thumbs.push(c); });
-  ready=true; stage.classList.add('ready'); resize();
+  ready=true; stage.classList.add('ready'); resize(); if(introStep<1) armCue();
 });
 })();
 </script>
