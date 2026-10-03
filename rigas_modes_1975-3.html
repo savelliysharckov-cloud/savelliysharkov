@@ -923,7 +923,9 @@ zRange.addEventListener('pointerdown',()=>{ zDrag=true; });
 window.addEventListener('pointerup',()=>{ zDrag=false; });
 zRange.addEventListener('input',()=>{ const t=zRange.value/1000; zoomTo(fit*Math.exp(t*Math.log(maxS()/fit)),W/2,CY(),false); });
 torchBtn.addEventListener('click',()=>setTorch(!torch.on));
-torchSel.addEventListener('change',()=>{ torch.layer=+torchSel.value; invalidate(false); });
+torchSel.addEventListener('pointerdown',()=>{ torchSel._ptr=true; });
+torchSel.addEventListener('keydown',()=>{ torchSel._ptr=false; });
+torchSel.addEventListener('change',()=>{ torch.layer=+torchSel.value; invalidate(false); if(torchSel._ptr) torchSel.blur(); });
 torchR.addEventListener('input',()=>{ torch.r=+torchR.value; invalidate(false); });
 traceBtn.addEventListener('click',()=>setTrace(!trace.on));
 tviewBtns.forEach(b=>b.addEventListener('click',()=>setLift(b.dataset.tview==='white')));
@@ -975,24 +977,39 @@ window.addEventListener('resize',measureCl); if(document.fonts) document.fonts.r
 dockEl.addEventListener('scroll',()=>{ measureCl(); halos(); },{passive:true});
 
 /* ---------- keys (sheet only; text pages scroll as usual) ---------- */
+// a letter is the Latin letter printed on the key; on a Russian (or any non-Latin) layout, the key at that QWERTY place
+function keyOf(e){
+  if(/^[a-z]$/i.test(e.key)) return e.key.toLowerCase();
+  if(/^Key[A-Z]$/.test(e.code)) return e.code.slice(3).toLowerCase();
+  if(/^(Digit|Numpad)[0-9]$/.test(e.code)) return e.code.slice(-1);
+  if(e.code==='NumpadAdd') return '+'; if(e.code==='NumpadSubtract') return '-';
+  return e.key.length===1?e.key.toLowerCase():e.key;
+}
+const typing=el=>!!(el&&el.closest&&el.closest('textarea,[contenteditable=""],[contenteditable="true"],input:not([type=range]):not([type=checkbox]):not([type=radio]):not([type=button])'));
+// after a mouse or touch click a control gives the keys back to the page (Space then means Drift, not "press this button again")
+function dropFocus(){ const a=document.activeElement; if(a&&a.matches&&a.matches('button,input[type=range],[role=button]')) a.blur(); }
+document.addEventListener('pointerup',()=>{ dropFocus(); setTimeout(dropFocus,0); },true);
 document.addEventListener('keydown',e=>{
   tipHide(); if(view==='sheet'&&introStep>=3) flashKey(e);
   if(zm.open){
-    const k=e.key;
+    const k=keyOf(e);
     if(k==='Escape') zClose(); else if(k==='ArrowLeft') zStep(-1); else if(k==='ArrowRight') zStep(1);
     else if(k==='+'||k==='='){ const [AW,AH]=zArea(); zTo(zm.s*1.6,AW/2,AH/2); } else if(k==='-'){ const [AW,AH]=zArea(); zTo(zm.s/1.6,AW/2,AH/2); }
     else if(k==='0') zFitNow(); else return;
     e.preventDefault(); return; }
   if(introStep<3){ if(e.key==='Escape') introSkip(); else if([' ','Enter','ArrowRight','ArrowDown'].includes(e.key)){ e.preventDefault(); introNext(); } return; }
-  if(view!=='sheet') return;
-  if(e.target.closest&&e.target.closest('input,select,textarea')&&!['Escape','ArrowLeft','ArrowRight'].includes(e.key)) return;
-  if((e.metaKey||e.ctrlKey)&&!e.altKey&&(e.key==='z'||e.key==='Z')){ if(trace.on){ e.preventDefault(); undoTrace(); } return; }
+  if(view!=='sheet'||typing(e.target)) return;
+  const k=keyOf(e), t=e.target;
+  if((e.metaKey||e.ctrlKey)&&!e.altKey&&k==='z'){ if(trace.on){ e.preventDefault(); undoTrace(); } return; }
   if(e.metaKey||e.ctrlKey||e.altKey) return;
-  const k=e.key.length===1?e.key.toLowerCase():e.key;
-  if(k>='1'&&k<='9') goTo(+k-1);
+  // holding a key repeats only the keys that are meant to repeat
+  if(e.repeat&&!['z','x','+','=','-','ArrowLeft','ArrowRight'].includes(k)) return;
+  // a fader or a menu reached with Tab keeps its own arrow keys
+  if(k.startsWith('Arrow')&&t.matches&&t.matches('select,input[type=range]:not(#tape)')) return;
+  if(k.length===1&&k>='1'&&k<='9') goTo(+k-1);
   else if(k==='ArrowRight'){ e.preventDefault(); goTo(Math.round(v)+1); }
   else if(k==='ArrowLeft'){ e.preventDefault(); goTo(Math.round(v)-1); }
-  else if(k===' '){ if(e.target.closest&&e.target.closest('button,a')) return; e.preventDefault(); setDrift(!drift); }
+  else if(k===' '){ if(t.closest&&t.closest('button,a,select,[role=button]')) return; e.preventDefault(); setDrift(!drift); }
   else if(k==='h') setGuide(guideEl.classList.contains('off'));
   else if(k==='m') setMap(nav.hidden);
   else if(k==='d') setMode('morph');
