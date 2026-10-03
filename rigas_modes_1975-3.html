@@ -125,19 +125,20 @@ body.intro .site,body.intro .bar,body.intro .dock,body.intro .guide,body.intro #
 .tour{position:fixed;inset:0;z-index:40;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 .tour .say,.tarrow,.tcap,.tring,.tcue{opacity:0;transition:opacity .35s}
 .tour.on .show{opacity:1}
-.tarrow{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;pointer-events:none;filter:drop-shadow(0 2px 6px rgba(0,0,0,.5))}
-.tcap{position:absolute;left:0;top:0;width:max-content;max-width:min(460px,calc(100vw - 28px));text-align:center;pointer-events:none;filter:drop-shadow(0 2px 8px rgba(0,0,0,.55))}
-.tcap .tt{display:grid;font:700 clamp(20px,2.1vw,30px)/1.12 var(--sans);letter-spacing:-.01em}
-.tcap .tt>span{grid-area:1/1}
-.tcap .o{color:#000;-webkit-text-stroke:6px #000}
-.tcap .f{color:#FFFFFF}
-.tcap .tn,.tcue{margin-top:8px;font:500 12px/1.2 var(--sans);letter-spacing:.02em;color:#FFFFFF;text-shadow:0 0 3px #000,0 1px 3px #000,0 0 8px rgba(0,0,0,.6)}
+.tarrow{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;pointer-events:none;filter:drop-shadow(0 1px 1.5px rgba(0,0,0,.5)) drop-shadow(0 2px 10px rgba(0,0,0,.3))}
+.tcap{position:absolute;left:0;top:0;isolation:isolate;width:max-content;max-width:min(440px,calc(100vw - 28px));text-align:center;pointer-events:none}
+.tcap::before{content:"";position:absolute;inset:-34px -56px;z-index:-1;background:radial-gradient(closest-side,rgba(0,0,0,.3),rgba(0,0,0,.12) 60%,rgba(0,0,0,0))}
+.tcap .tt{font:500 clamp(19px,1.9vw,27px)/1.18 var(--sans);letter-spacing:-.01em;color:#FFFFFF;text-shadow:0 1px 1.5px rgba(0,0,0,.45),0 2px 16px rgba(0,0,0,.4)}
+.tcap .tn,.tcue{margin-top:9px;font:400 12px/1.2 var(--sans);letter-spacing:.03em;color:rgba(255,255,255,.88);text-shadow:0 1px 2px rgba(0,0,0,.55),0 0 10px rgba(0,0,0,.35)}
 .tcue{position:absolute;left:0;right:0;top:0;text-align:center;pointer-events:none}
-.tring{position:absolute;border-radius:6px;pointer-events:none;box-shadow:0 0 0 2px #FFFFFF,0 0 0 3.5px #000,0 2px 12px 2px rgba(0,0,0,.45)}
+.tring{position:absolute;border-radius:6px;pointer-events:none;box-shadow:0 0 0 1.5px rgba(255,255,255,.95),0 0 0 4px rgba(0,0,0,.1),0 2px 16px 1px rgba(0,0,0,.35)}
+.tour::before,.intro-layer::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .6s;
+  background:radial-gradient(ellipse 50% 36% at 50% 50%,rgba(0,0,0,.26),rgba(0,0,0,.1) 55%,rgba(0,0,0,0) 80%)}
+.tour.on.saystep::before,.intro-layer.ask::before{opacity:1}
 /* giant words: white with a black outline, broken into the lines that make them fill the screen (laid out by script) */
 .say{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;pointer-events:none}
-.say{filter:drop-shadow(0 4px 14px rgba(0,0,0,.5))}
-.say text{font-family:var(--sans);font-weight:700;fill:#FFFFFF;stroke:#000000;paint-order:stroke fill;stroke-linejoin:round}
+.say{filter:drop-shadow(0 1px 1.5px rgba(0,0,0,.4)) drop-shadow(0 4px 26px rgba(0,0,0,.38))}
+.say text{font-family:var(--sans);font-weight:500;fill:#FFFFFF;letter-spacing:-.015em}
 .intro-layer{position:fixed;inset:0;z-index:8;display:grid;place-items:center;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .intro-layer.out{cursor:default}
 .intro-layer .q{opacity:0;transform:translateY(8px);transition:opacity .7s,transform .7s}
@@ -294,7 +295,7 @@ body.intro .site,body.intro .bar,body.intro .dock,body.intro .guide,body.intro #
   <svg class="say" id="tourSay" data-say="This web page was designed to learn and play!" aria-hidden="true"></svg>
   <svg class="tarrow" id="tourArrow" aria-hidden="true"></svg>
   <div class="tring" id="tourRing"></div>
-  <div class="tcap" id="tourCap" aria-hidden="true"><div class="tt"><span class="o"></span><span class="f"></span></div><div class="tn"></div></div>
+  <div class="tcap" id="tourCap" aria-hidden="true"><div class="tt"></div><div class="tn"></div></div>
   <div class="tcue" id="tourCue" aria-hidden="true"></div>
   <p class="vh" id="tourText" aria-live="polite"></p>
 </div>
@@ -638,7 +639,8 @@ function introDone(){ const pulled=introStep===2; introStep=3; clearTimeout(cueT
   if(pulled&&view==='sheet') startTour(); }
 /* ---------- giant words: the lines and size that make the text as big as the screen allows ---------- */
 const SAY_LH=1.04, sayCtx=document.createElement('canvas').getContext('2d');
-const sayFont=px=>`700 ${px}px "Helvetica Neue", "HelveticaNeue", Helvetica, Arial, sans-serif`;
+const sayFont=px=>`500 ${px}px "Helvetica Neue", "HelveticaNeue", Helvetica, Arial, sans-serif`;
+const SAY_SCALE=.7;  // the title lines sit at 70% of the size that would fill the screen
 function sayLayout(text,W,H){
   const words=text.split(/\s+/); sayCtx.font=sayFont(100); const wd=t=>sayCtx.measureText(t).width;
   let best=null;
@@ -656,11 +658,11 @@ function sayLayout(text,W,H){
   return best;
 }
 function renderSay(svg){
-  const W=window.innerWidth, H=window.innerHeight, {fs,lines}=sayLayout(svg.dataset.say,W,H), lh=fs*SAY_LH, top=(H-lines.length*lh)/2;
+  const W=window.innerWidth, H=window.innerHeight, L=sayLayout(svg.dataset.say,W,H), lines=L.lines, fs=L.fs*SAY_SCALE, lh=fs*SAY_LH, top=(H-lines.length*lh)/2;
   svg._bottom=top+lines.length*lh; svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
   svg.replaceChildren(...lines.map((ln,i)=>{ const t=document.createElementNS('http://www.w3.org/2000/svg','text');
     t.setAttribute('x',(W/2).toFixed(1)); t.setAttribute('y',(top+(i+.5)*lh+.35*fs).toFixed(1)); t.setAttribute('text-anchor','middle');
-    t.setAttribute('font-size',fs.toFixed(1)); t.setAttribute('stroke-width',(fs*.07).toFixed(1)); t.textContent=ln; return t; }));
+    t.setAttribute('font-size',fs.toFixed(1)); t.textContent=ln; return t; }));
 }
 const says=[...document.querySelectorAll('svg.say')], renderSays=()=>says.forEach(renderSay);
 renderSays(); window.addEventListener('resize',renderSays);
@@ -668,12 +670,12 @@ if(document.fonts){ document.fonts.load(sayFont(100)).then(renderSays,()=>{}); d
 
 /* ---------- the tour after the pull-back: the motto, then five pointers to the controls; a click moves on ---------- */
 const TOUR=[
-  {say:true},
   {text:'You can drift in different rhythms and speeds', at:()=>[driftBtn.closest('.grp')], side:'above', dx:0},
   {text:'You can use flashlight or trace to interact with the pattern', at:()=>[torchBtn.closest('.tools')], side:'below', dx:180},
   {text:'You can zoom in and hide the map here', at:()=>[zFit.closest('.grp')], side:'below', dx:-260},
   {text:'Change Diffusion to Overlay to interact with several layers at once', at:()=>[document.querySelector('.modes')], side:'below', dx:170},
-  {text:'Learn about history and tracing process here', at:()=>[...document.querySelectorAll('.menu a[data-view="history"],.menu a[data-view="tracing"]')], side:'below', dx:0}];
+  {text:'Learn about history and tracing process here', at:()=>[...document.querySelectorAll('.menu a[data-view="history"],.menu a[data-view="tracing"]')], side:'below', dx:0},
+  {say:true}];
 const tourEl=$('tour'), tourSay=$('tourSay'), tourArrow=$('tourArrow'), tourRing=$('tourRing'), tourCap=$('tourCap'), tourCue=$('tourCue'), tourText=$('tourText');
 const tapWord=window.matchMedia('(pointer:coarse)').matches?'tap':'click';
 let tourI=-1, tourT=0;
@@ -681,12 +683,12 @@ const tourOn=()=>tourI>=0;
 function startTour(){ if(view!=='sheet') return; clearTimeout(tourT); tourI=0; tourEl.hidden=false; showTourStep();
   requestAnimationFrame(()=>requestAnimationFrame(()=>tourEl.classList.add('on'))); }
 function showTourStep(){
-  const st=TOUR[tourI], n=TOUR.length, count=`${tourI+1} / ${n} · ${tapWord} to continue`;
-  tourSay.classList.toggle('show',!!st.say); tourCue.classList.toggle('show',!!st.say);
+  const st=TOUR[tourI], n=TOUR.length, count=`${tourI+1} / ${n} · ${tapWord} to ${tourI===n-1?'start':'continue'}`;
+  tourSay.classList.toggle('show',!!st.say); tourCue.classList.toggle('show',!!st.say); tourEl.classList.toggle('saystep',!!st.say);
   for(const el of [tourCap,tourArrow,tourRing]) el.classList.toggle('show',!st.say);
   tourText.textContent=st.say?tourSay.dataset.say:st.text;
   if(st.say){ renderSay(tourSay); tourCue.textContent=count; tourCue.style.top=Math.round(tourSay._bottom+14)+'px'; return; }
-  tourCap.querySelector('.o').textContent=tourCap.querySelector('.f').textContent=st.text; tourCap.querySelector('.tn').textContent=count;
+  tourCap.querySelector('.tt').textContent=st.text; tourCap.querySelector('.tn').textContent=count;
   placeTour(st);
 }
 function unionRect(els){ let l=Infinity,t=Infinity,r=-Infinity,b=-Infinity;
@@ -707,7 +709,7 @@ function placeTour(st){
   const a=Math.atan2(ey-sy,ex-sx), hl=16, f=v=>v.toFixed(1);
   const d=`M${f(sx)} ${f(sy)}L${f(ex)} ${f(ey)}M${f(ex-hl*Math.cos(a-.5))} ${f(ey-hl*Math.sin(a-.5))}L${f(ex)} ${f(ey)}L${f(ex-hl*Math.cos(a+.5))} ${f(ey-hl*Math.sin(a+.5))}`;
   tourArrow.setAttribute('viewBox',`0 0 ${W} ${H}`);
-  tourArrow.replaceChildren(...[['#000000',7],['#FFFFFF',3]].map(([c,w])=>{ const pth=document.createElementNS('http://www.w3.org/2000/svg','path');
+  tourArrow.replaceChildren(...[['rgba(0,0,0,.3)',4.5],['#FFFFFF',2]].map(([c,w])=>{ const pth=document.createElementNS('http://www.w3.org/2000/svg','path');
     pth.setAttribute('d',d); pth.setAttribute('fill','none'); pth.setAttribute('stroke',c); pth.setAttribute('stroke-width',w); pth.setAttribute('stroke-linecap','round'); pth.setAttribute('stroke-linejoin','round'); return pth; }));
 }
 function nextTour(){ if(!tourOn()) return; if(tourI>=TOUR.length-1) endTour(); else{ tourI++; showTourStep(); } }
