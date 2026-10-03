@@ -16,7 +16,7 @@
   --accent:#B3261E; --accent-ink:#FFFFFF;
   --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace;
-  --barH:48px;
+  --siteH:40px; --insT:88px; --insB:90px;
 }
 /* Overlay is the dark mode of the sheet; the text pages stay light */
 :root[data-mode="mix"][data-view="sheet"]{
@@ -56,26 +56,24 @@ a{color:inherit}
 /* a control cluster gets its own backing + hairline outline only while the sheet is under it (--o set by script) */
 .cl{--b:color-mix(in srgb,var(--bg) calc(var(--o,0) * 90%),transparent);border-radius:3px;background-color:var(--b);
   box-shadow:0 0 0 4px var(--b),0 0 0 5px color-mix(in srgb,var(--fg) calc(var(--o,0) * 45%),transparent);transition:background-color .12s,box-shadow .12s}
-.bar{top:0;display:flex;align-items:center;flex-wrap:wrap;gap:6px 14px;min-height:40px;
-  padding:calc(6px + env(safe-area-inset-top,0px)) 12px 6px;border-bottom:1px solid var(--rule)}
+.bar{top:var(--siteH);display:flex;align-items:center;flex-wrap:wrap;gap:6px 14px;min-height:40px;padding:6px 12px;border-bottom:1px solid var(--rule)}
 .dock{bottom:0;padding:0 12px calc(8px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--rule);max-height:52vh;overflow-y:auto}
 .grp{display:flex;align-items:center;gap:6px}
 .sep{width:1px;align-self:stretch;background:var(--rule);margin:2px 0}
 .lbl{color:var(--muted);font-size:11px;letter-spacing:.06em;text-transform:uppercase}
 .right{margin-left:auto}
 
-/* site name + menu */
-.head{display:flex;align-items:baseline;gap:6px 12px;flex-wrap:wrap;min-width:0}
-.mark{display:flex;align-items:baseline;gap:8px;min-width:0;text-decoration:none}
-.mark b{font-weight:600;font-size:14px;white-space:nowrap}
-.mark .num{font-size:12px;color:var(--muted)}
-.mark i{font-style:normal;color:var(--muted);white-space:nowrap}
-.menu{display:flex;gap:2px}
-.menu a{padding:3px 7px 4px;border-radius:3px;color:var(--muted);text-decoration:none;font-size:13px;white-space:nowrap}
-.menu a:hover{color:var(--fg);background:var(--hover)}
-.menu a[aria-current="page"]{color:var(--fg);font-weight:600;box-shadow:inset 0 -2px 0 var(--accent)}
-:root:not([data-view="sheet"]) .sheet-only,:root:not([data-view="sheet"]) .dock,:root:not([data-view="sheet"]) .guide{display:none!important}
-:root:not([data-view="sheet"]) .bar{background:color-mix(in srgb,var(--bg) 92%,transparent)}
+/* the three sections live in their own dark strip; the bar under it belongs to the Sheet only */
+.site{position:fixed;left:0;right:0;top:0;z-index:6;display:grid;grid-template-columns:1fr auto 1fr;align-items:stretch;
+  height:calc(40px + env(safe-area-inset-top,0px));padding:env(safe-area-inset-top,0px) 12px 0;background:#141414;color:#ECEBE6;transition:opacity .8s}
+.brand{align-self:center;justify-self:start;display:flex;align-items:baseline;gap:8px;min-width:0;color:#ECEBE6;text-decoration:none;white-space:nowrap}
+.brand b{font-weight:600;font-size:14px}
+.brand .num{font-size:12px;color:#8E8D87}
+.menu{display:flex;align-items:stretch}
+.menu a{display:flex;align-items:center;padding:2px 18px 0;border-bottom:2px solid transparent;color:#8E8D87;text-decoration:none;font-size:14px;font-weight:500;letter-spacing:.02em;white-space:nowrap}
+.menu a:hover{color:#FFFFFF}
+.menu a[aria-current="page"]{color:#FFFFFF;border-bottom-color:#FF6A5C}
+:root:not([data-view="sheet"]) .bar,:root:not([data-view="sheet"]) .dock,:root:not([data-view="sheet"]) .guide,:root:not([data-view="sheet"]) .motto{display:none!important}
 
 /* buttons: hairline, pressed = solid; key hints read (X) */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;height:26px;min-width:26px;padding:0 9px;
@@ -122,7 +120,11 @@ input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;bac
 #torchR{width:80px}
 
 /* intro: a crop of the sheet -> the question -> the camera pulls back to the whole sheet */
-body.intro .bar,body.intro .dock,body.intro .guide,body.intro #nav{opacity:0!important;pointer-events:none}
+body.intro .site,body.intro .bar,body.intro .dock,body.intro .guide,body.intro #nav{opacity:0!important;pointer-events:none}
+/* after the pull-back: one line over the sheet, gone at the first touch */
+.motto{position:fixed;left:0;right:0;top:var(--insT);bottom:var(--insB);z-index:3;display:grid;place-items:center;pointer-events:none}
+.motto p{margin:0 16px;text-align:center;font:500 clamp(22px,2.4vw,40px)/1.15 var(--sans);letter-spacing:-.01em;color:var(--fg);opacity:0;transform:translateY(6px);transition:opacity .8s,transform .8s}
+.motto.on p{opacity:1;transform:none}
 .intro-layer{position:fixed;inset:0;z-index:8;display:grid;place-items:center;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .intro-layer.out{cursor:default}
 .intro-layer .q{position:relative;margin:0 16px;text-align:center;font:500 clamp(26px,3vw,50px)/1.15 var(--sans);letter-spacing:-.01em;color:var(--fg);
@@ -188,7 +190,9 @@ body.intro .bar,body.intro .dock,body.intro .guide,body.intro #nav{opacity:0!imp
 
 /* text pages: plates in the order of the presentation */
 .page{position:fixed;inset:0;z-index:4;overflow-y:auto;overscroll-behavior:contain;background:var(--bg);color:var(--fg);
-  padding:calc(var(--barH) + 44px) 0 72px;font-size:16px;line-height:1.5}
+  padding:calc(var(--siteH) + 44px) 0 72px;font-size:16px;line-height:1.5}
+#tracing{padding-top:var(--siteH)}
+.page figure img{cursor:zoom-in}
 .page:focus{outline:none}
 .col{max-width:1180px;margin:0 auto;padding:0 16px}
 .page figure{margin:0}
@@ -213,14 +217,29 @@ body.intro .bar,body.intro .dock,body.intro .guide,body.intro #nav{opacity:0!imp
 .go kbd{font:500 11px var(--mono);color:var(--muted)}
 .next{display:flex;justify-content:flex-end;border-top:1px solid var(--rule);padding-top:16px;margin-top:8px}
 /* the lightboxes: a dark room of their own, photo edges dissolved into it */
-.band{background:#140F0B linear-gradient(#16110C,#19130D 50%,#100C08);color:#ECE5D8;min-height:100svh;display:flex;justify-content:center;align-items:center;margin:0 0 72px;padding:24px 0}
+.band{position:relative;background:#140F0B linear-gradient(#16110C,#19130D 50%,#100C08);color:#ECE5D8;min-height:calc(100svh - var(--siteH));display:flex;justify-content:center;align-items:center;margin:0 0 72px;padding:24px 0 44px}
+.bhint{position:absolute;left:0;right:0;bottom:14px;margin:0!important;max-width:none!important;text-align:center;font-size:12px;color:#8A8276}
 .band figure{position:relative;width:min(46vw,64svh);aspect-ratio:4/5}
 .band img{height:100%;object-fit:cover;background:transparent;
   -webkit-mask-image:linear-gradient(transparent,#000 9%,#000 91%,transparent),linear-gradient(90deg,transparent,#000 9%,#000 91%,transparent);
   -webkit-mask-composite:source-in;mask-image:linear-gradient(transparent,#000 9%,#000 91%,transparent),linear-gradient(90deg,transparent,#000 9%,#000 91%,transparent);mask-composite:intersect}
 .band figcaption{position:absolute;left:0;right:0;bottom:3%;margin:0;text-align:center;color:#9A9184}
 
-@media (max-width:1500px){ .mark i{display:none} }
+/* close-up viewer for any picture on the text pages */
+.zoomer{position:fixed;inset:0;z-index:20;background:#0B0907;color:#ECE5D8;overflow:hidden;touch-action:none;cursor:grab;user-select:none}
+.zoomer.grabbing{cursor:grabbing}
+.zoomer>img{position:absolute;left:0;top:0;transform-origin:0 0;max-width:none;-webkit-user-drag:none;will-change:transform}
+.zload{position:absolute;inset:0;display:none;place-items:center;color:#8A8276;font-size:12px}
+.zoomer.loading .zload{display:grid}
+.zoomer.loading>img{visibility:hidden}
+.zbar{position:absolute;left:0;right:0;bottom:0;display:flex;align-items:center;gap:6px;padding:8px 12px calc(8px + env(safe-area-inset-bottom,0px));
+  background:rgba(11,9,7,.78);border-top:1px solid #2C2A27;cursor:default}
+.zbar .btn{border-color:#3A3733;color:#ECE5D8}
+.zbar .btn:hover{background:#221F1B}
+.zbar .btn kbd{color:#7C766C}
+.zbar output{min-width:38px;text-align:center;font-size:12px;color:#B8B1A5}
+.zcap{flex:1;min-width:0;text-align:center;color:#8A8276;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
 @media (max-width:1320px){ .zoomr,.hint{display:none} }
 @media (max-width:980px){ .chip span{display:none} .chip b{font-size:11px;color:inherit} }
 @media (max-width:760px){
@@ -231,24 +250,27 @@ body.intro .bar,body.intro .dock,body.intro .guide,body.intro #nav{opacity:0!imp
   .band figure{width:min(100vw,72svh)}
   .plate{margin-bottom:56px}
 }
-@media (max-width:720px){ #zOut,#zIn,#zVal,.btn kbd,.sep{display:none} .bar{gap:6px 8px} .head{flex-basis:100%;justify-content:space-between} .cap .what{flex-basis:100%} .cap .grp{flex-wrap:wrap} }
+@media (max-width:720px){ #zOut,#zIn,#zVal,.btn kbd,.sep{display:none} .bar{gap:6px 8px} .cap .what{flex-basis:100%} .cap .grp{flex-wrap:wrap} }
+@media (max-width:560px){ .site{grid-template-columns:auto 1fr} .menu{justify-self:end} .menu a{padding:2px 10px 0} .zcap{display:none} }
+@media (max-width:400px){ .brand .num{display:none} }
 @media (prefers-reduced-motion:reduce){ #view,#nav,body{transition:none} }
 </style>
 </head>
 <body class="intro">
+<div class="motto" id="motto" hidden><p>This web page was designed to learn and play.</p></div>
 <div class="intro-layer" id="intro" role="button" aria-label="Start">
   <p class="q">Can you find a dress?</p>
   <span class="cue">click</span>
 </div>
-<header class="bar">
-  <div class="head cl">
-    <a class="mark" href="#sheet"><b>Rigas Modes</b><span class="num">1975/3</span><i>— the sheet as an LLM sees it</i></a>
-    <nav class="menu" aria-label="Sections">
-      <a href="#sheet" data-view="sheet" aria-current="page">Sheet</a>
-      <a href="#history" data-view="history">History</a>
-      <a href="#tracing" data-view="tracing">Tracing</a>
-    </nav>
-  </div>
+<header class="site" id="site">
+  <a class="brand" href="#sheet"><b>Rigas Modes</b><span class="num">1975/3</span></a>
+  <nav class="menu" aria-label="Sections">
+    <a href="#sheet" data-view="sheet" aria-current="page">Sheet</a>
+    <a href="#history" data-view="history">History</a>
+    <a href="#tracing" data-view="tracing">Tracing</a>
+  </nav>
+</header>
+<header class="bar" aria-label="Sheet controls">
   <div class="modes cl sheet-only" role="tablist" aria-label="Mode">
     <button class="btn m-light" role="tab" aria-selected="true" data-mode="morph" title="One layer at a time, morphing between neighbours (D)">Diffusion <kbd>D</kbd></button>
     <button class="btn m-dark" role="tab" aria-selected="false" data-mode="mix" title="Stack several layers at chosen strengths (O)">Overlay <kbd>O</kbd></button>
@@ -259,12 +281,13 @@ body.intro .bar,body.intro .dock,body.intro .guide,body.intro #nav{opacity:0!imp
     <button id="traceBtn" class="btn" aria-pressed="false" title="Trace: tracing paper over the sheet; press and drag to roll a tracing wheel (T). Shift + drag moves the sheet">Trace <kbd>T</kbd></button>
     <div class="opts" id="torchOpts" hidden>
       <select id="torchSel" aria-label="Layer under the flashlight"><option value="0">1 Sheet</option><option value="1">2 Paper</option><option value="2">3 Raking light</option><option value="3">4 Green plate</option><option value="4">5 Pink plate</option><option value="5" selected>6 X-ray</option><option value="6">7 Density</option><option value="7">8 Directions</option><option value="8">9 Skeleton</option><option value="9">10 Crossings</option><option value="10">11 Line 14–16a</option><option value="11">12 Fragments</option><option value="12">13 Guesses</option></select>
-      <input type="range" id="torchR" min="40" max="420" value="150" aria-label="Flashlight size" title="Flashlight size (Alt + scroll, or [ and ])">
+      <input type="range" id="torchR" min="40" max="420" value="40" aria-label="Flashlight size" title="Flashlight size (Alt + scroll, or [ and ])">
     </div>
     <div class="opts" id="traceOpts" hidden>
       <button id="liftBtn" class="btn" aria-pressed="false" title="Lift the paper off the sheet: only the holes stay (L)">Lift <kbd>L</kbd></button>
       <button id="undoBtn" class="btn" title="Undo the last line (Ctrl/⌘ Z)">Undo</button>
       <button id="clearBtn" class="btn" title="Clear the paper">Clear</button>
+      <button id="pngBtn" class="btn" title="Save the trace as a PNG on a transparent background">Export PNG</button>
     </div>
   </div>
   <div class="grp right cl sheet-only" role="group" aria-label="View">
@@ -280,18 +303,17 @@ body.intro .bar,body.intro .dock,body.intro .guide,body.intro #nav{opacity:0!imp
 <aside class="guide off" id="guide" aria-label="How to use">
   <div class="h"><kbd>(H)</kbd> hide this guide</div>
   <dl>
-    <dt>Menu · top left</dt>
-    <dd>Sheet</dd><dd>this page; History and Tracing tell where such sheets come from and how a piece was copied</dd>
     <dt>Two modes</dt>
     <dd>Diffusion (D)</dd><dd>light. One layer at a time; the scale 1–13 at the bottom morphs between them</dd>
     <dd>Overlay (O)</dd><dd>dark. Stack layers: a strength fader for each, blend mode above</dd>
     <dt>Tools</dt>
-    <dd>Flashlight (F)</dd><dd>another layer under the cursor; menu picks it, <kbd>[ ]</kbd> or Alt + scroll resizes</dd>
-    <dd>&nbsp;&nbsp;press, hold</dd><dd>fuses the mask: it slowly spreads up to 10× and dissolves into the sheet</dd>
+    <dd>Flashlight (F)</dd><dd>another layer under the cursor; the menu picks it, <kbd>[ ]</kbd> or Alt + scroll resizes</dd>
+    <dd>&nbsp;&nbsp;press, hold</dd><dd>fuses the mask: it slowly spreads up to 10× and its edge dissolves into the sheet</dd>
     <dd>Trace (T)</dd><dd>tracing paper over the sheet: press and drag to roll a tracing wheel along a line. Tip: trace on layer 4 or 5, one ink at a time</dd>
     <dd>&nbsp;&nbsp;Lift (L)</dd><dd>see only the holes; Undo (Ctrl/⌘ Z) and Clear beside it</dd>
+    <dd>&nbsp;&nbsp;Export PNG</dd><dd>your trace on a transparent background, signed “user N · trace · Rigas Modes 1975/3”</dd>
     <dd>Shift + drag</dd><dd>moves the sheet while a tool is on</dd>
-    <dt>View · top right</dt>
+    <dt>View</dt>
     <dd>Scroll, pinch</dd><dd>zoom; drag to move</dd>
     <dd>Fit (Esc)</dd><dd>whole sheet; double-click does the same</dd>
     <dd>Map (M)</dd><dd>overview at bottom right; click to jump</dd>
@@ -342,18 +364,11 @@ body.intro .bar,body.intro .dock,body.intro .guide,body.intro #nav{opacity:0!imp
   <div class="col">
     <h1 class="vh" id="t-history">History</h1>
     <section class="plate">
-      <p class="kick">Can you find a dress?</p>
-      <figure><img src="rigas/img/h-four-sheets.jpg" width="2600" height="868" loading="lazy" decoding="async" alt="Four pattern sheets side by side, printed in black and red, blue, green and pink, green and red"></figure>
-    </section>
-    <section class="plate">
-      <p class="big">Some could!</p>
+      <p class="big">This format is over 150 years old.</p>
       <div class="imgs c2">
         <figure><img src="rigas/img/h-rigas-1975-3.jpg" width="1723" height="1203" loading="lazy" decoding="async" alt="Rigas Modes 1975/3: the whole sheet, a column of models on the left, green and pink lines across the rest"><figcaption>Rigas Modes 1975/3</figcaption></figure>
         <figure><img src="rigas/img/h-rigas-1972-4.jpg" width="1705" height="1169" loading="lazy" decoding="async" alt="Rigas Modes 1972/4: the whole sheet, printed in green and red"><figcaption>Rigas Modes 1972/4</figcaption></figure>
-        <figure><img src="rigas/img/h-detail-1975-3.jpg" width="1500" height="1125" loading="lazy" decoding="async" alt="Close-up of the 1975/3 sheet: green and pink lines crossing, piece numbers along the edge"></figure>
-        <figure><img src="rigas/img/h-detail-1972-4.jpg" width="1500" height="1125" loading="lazy" decoding="async" alt="Close-up of the 1972/4 sheet: green and red lines crossing"></figure>
       </div>
-      <p class="big">This format is over 150 years old.</p>
     </section>
     <section class="plate">
       <p class="mid">Sheets with patterns for dozens of garments printed on top of one another appeared in the mid-19th century.</p>
@@ -363,20 +378,23 @@ body.intro .bar,body.intro .dock,body.intro .guide,body.intro #nav{opacity:0!imp
         <figure><img src="rigas/img/h-19c-3.jpg" width="1122" height="1495" loading="lazy" decoding="async" alt="A sheet printed in green and red, folded"></figure>
       </div>
     </section>
-    <section class="plate side">
-      <div class="imgs c2">
-        <figure><img src="rigas/img/h-magazines-1.jpg" width="1197" height="1595" loading="lazy" decoding="async" alt="A blue and black sheet divided into fields by the letters B and E"></figure>
-        <figure><img src="rigas/img/h-magazines-2.jpg" width="1203" height="1606" loading="lazy" decoding="async" alt="Three sheets lying on top of each other: blue and black, green and pink, red and black"></figure>
+    <section class="plate">
+      <div class="side">
+        <div class="txt"><p>Similar inserts could be found in magazines such as Der Bazar (Berlin, from 1854), Harper's Bazar (New York, from 1867) and El Salón de la Moda (Barcelona, 1884–1916). The ones shown here come from two Soviet magazines: Zhurnal Mod (Moscow) and Rigas Modes (Riga).</p></div>
+        <div class="imgs c2">
+          <figure><img src="rigas/img/h-magazines-1.jpg" width="1197" height="1595" loading="lazy" decoding="async" alt="A blue and black sheet divided into fields by the letters B and E"></figure>
+          <figure><img src="rigas/img/h-magazines-2.jpg" width="1203" height="1606" loading="lazy" decoding="async" alt="Three sheets lying on top of each other: blue and black, green and pink, red and black"></figure>
+        </div>
       </div>
-      <div class="txt"><p>Similar inserts could be found in magazines such as Der Bazar (Berlin, from 1854), Harper's Bazar (New York, from 1867) and El Salón de la Moda (Barcelona, 1884–1916). The ones shown here come from two Soviet magazines: Zhurnal Mod (Moscow) and Rigas Modes (Riga).</p></div>
+      <figure><img src="rigas/img/h-four-sheets.jpg" width="2600" height="868" loading="lazy" decoding="async" alt="Four pattern sheets side by side, printed in black and red, blue, green and pink, green and red"></figure>
     </section>
     <section class="plate">
+      <p class="mid">The pieces were overlapped to fit as many as possible onto a single sheet.</p>
       <div class="imgs c3">
         <figure><img src="rigas/img/h-overlap-1.jpg" width="1158" height="1543" loading="lazy" decoding="async" alt="The left column of the 1975/3 sheet: small drawings of each model with the pieces it is cut from"></figure>
         <figure><img src="rigas/img/h-overlap-2.jpg" width="1158" height="1543" loading="lazy" decoding="async" alt="Several sheets fanned out: blue and black on top, red and black and green underneath"></figure>
         <figure><img src="rigas/img/h-overlap-3.jpg" width="1158" height="1543" loading="lazy" decoding="async" alt="A red and black sheet with circled piece numbers 88 to 94"></figure>
       </div>
-      <p class="mid">The pieces were overlapped to fit as many as possible onto a single sheet.</p>
     </section>
     <section class="plate">
       <figure><img src="rigas/img/h-collection.jpg" width="1744" height="1145" loading="lazy" decoding="async" alt="Four folded pattern sheets laid out in a row"></figure>
@@ -386,13 +404,20 @@ body.intro .bar,body.intro .dock,body.intro .guide,body.intro #nav{opacity:0!imp
 </article>
 
 <article class="page" id="tracing" tabindex="-1" aria-labelledby="t-tracing" hidden>
+  <h1 class="vh" id="t-tracing">Tracing</h1>
+  <section class="band" aria-label="Lightboxes">
+    <figure><img src="rigas/img/lightbox-rigas-modes.jpg" data-hi="rigas/img/lightbox-rigas-modes-hi.jpg" width="1600" height="2000" loading="lazy" decoding="async" alt="A Rigas Modes pattern sheet on a lightbox, lines of both sides showing through"><figcaption>Rigas Modes</figcaption></figure>
+    <figure><img src="rigas/img/lightbox-zhurnal-mod.jpg" data-hi="rigas/img/lightbox-zhurnal-mod-hi.jpg" width="1600" height="2000" loading="lazy" decoding="async" alt="A Zhurnal Mod pattern sheet on a lightbox, lines of both sides showing through"><figcaption>Zhurnal Mod</figcaption></figure>
+    <p class="bhint" id="bhint">Click a lightbox to look closer</p>
+  </section>
   <div class="col">
-    <h1 class="vh" id="t-tracing">Tracing</h1>
-    <section class="plate side">
-      <figure><img src="rigas/img/t-window.jpg" width="1292" height="1721" loading="lazy" decoding="async" alt="A pattern sheet held against a window: daylight shows the lines of both sides at once"><figcaption>Pattern sheet against the window</figcaption></figure>
-      <div class="txt">
-        <p>To trace a single piece, the sheet was placed against a lightbox. But more commonly a sunlit window was used. Then it was traced through tracing paper.</p>
-        <p>Prints are on both sides, so the light revealed both sides at once. The lines of one side overlapped with the lines of the other, and finding a single piece among them was not easy.</p>
+    <section class="plate">
+      <div class="side">
+        <div class="txt">
+          <p>To trace a single piece, the sheet was placed against a lightbox. But more commonly a sunlit window was used. Then it was traced through tracing paper.</p>
+          <p>Prints are on both sides, so the light revealed both sides at once. The lines of one side overlapped with the lines of the other, and finding a single piece among them was not easy.</p>
+        </div>
+        <figure><img src="rigas/img/t-window.jpg" width="1292" height="1721" loading="lazy" decoding="async" alt="A pattern sheet held against a window: daylight shows the lines of both sides at once"><figcaption>Pattern sheet against the window</figcaption></figure>
       </div>
     </section>
     <section class="plate">
@@ -402,17 +427,13 @@ body.intro .bar,body.intro .dock,body.intro .guide,body.intro #nav{opacity:0!imp
         <figure><img src="rigas/img/t-backlit-3.jpg" width="1081" height="1438" loading="lazy" decoding="async" alt="A red and black sheet against the light, circled numbers 77 to 87"></figure>
       </div>
     </section>
-  </div>
-  <section class="band" aria-label="Lightboxes">
-    <figure><img src="rigas/img/lightbox-rigas-modes.jpg" width="1600" height="2000" loading="lazy" decoding="async" alt="A Rigas Modes pattern sheet on a lightbox, lines of both sides showing through"><figcaption>Rigas Modes</figcaption></figure>
-    <figure><img src="rigas/img/lightbox-zhurnal-mod.jpg" width="1600" height="2000" loading="lazy" decoding="async" alt="A Zhurnal Mod pattern sheet on a lightbox, lines of both sides showing through"><figcaption>Zhurnal Mod</figcaption></figure>
-  </section>
-  <div class="col">
-    <section class="plate side">
-      <figure class="narrow"><img src="rigas/img/t-wheel.jpg" width="1044" height="1056" loading="lazy" decoding="async" alt="A tracing wheel: a small toothed steel wheel on a wooden handle"></figure>
-      <div class="txt">
-        <p>Another way to copy was tracing paper laid over the sheet. A tracing wheel was then rolled along a line, making holes.</p>
-        <p><a class="go" href="#trace">Try it on the sheet <kbd>(T)</kbd> →</a></p>
+    <section class="plate">
+      <div class="side">
+        <div class="txt">
+          <p>Another way to copy was tracing paper laid over the sheet. A tracing wheel was then rolled along a line, making holes.</p>
+          <p><a class="go" href="#trace">Try it on the sheet <kbd>(T)</kbd> →</a></p>
+        </div>
+        <figure class="narrow"><img src="rigas/img/t-wheel.jpg" width="1044" height="1056" loading="lazy" decoding="async" alt="A tracing wheel: a small toothed steel wheel on a wooden handle"></figure>
       </div>
     </section>
     <section class="plate">
@@ -424,6 +445,21 @@ body.intro .bar,body.intro .dock,body.intro .guide,body.intro #nav{opacity:0!imp
     <nav class="next" aria-label="Next"><a class="go" href="#sheet">Back to the sheet, layer by layer →</a></nav>
   </div>
 </article>
+
+<div class="zoomer" id="zoomer" role="dialog" aria-modal="true" aria-label="Close-up" hidden>
+  <img id="zImg" alt="" draggable="false">
+  <div class="zload">Loading…</div>
+  <div class="zbar">
+    <button id="zzOut" class="btn" aria-label="Zoom out" title="Zoom out (−)">−</button>
+    <output id="zzVal" class="num">×1.0</output>
+    <button id="zzIn" class="btn" aria-label="Zoom in" title="Zoom in (+)">+</button>
+    <button id="zzFit" class="btn" title="Whole picture (0, double-click)">Fit</button>
+    <span class="zcap" id="zCap"></span>
+    <button id="zzPrev" class="btn" aria-label="Previous picture" title="Previous (←)">←</button>
+    <button id="zzNext" class="btn" aria-label="Next picture" title="Next (→)">→</button>
+    <button id="zzClose" class="btn" title="Close (Esc)">Close <kbd>Esc</kbd></button>
+  </div>
+</div>
 
 <script>
 (()=>{
@@ -440,7 +476,7 @@ const zOut=$('zOut'), zIn=$('zIn'), zRange=$('zRange'), zVal=$('zVal'), zFit=$('
 const torchBtn=$('torchBtn'), torchOpts=$('torchOpts'), torchSel=$('torchSel'), torchR=$('torchR');
 const traceBtn=$('traceBtn'), traceOpts=$('traceOpts'), liftBtn=$('liftBtn'), undoBtn=$('undoBtn'), clearBtn=$('clearBtn');
 const guideEl=$('guide'), guideBtn=$('guideBtn'), thint=$('thint'), loadingEl=stage.querySelector('.loading');
-const barEl=document.querySelector('.bar'), dockEl=document.querySelector('.dock');
+const siteEl=$('site'), barEl=document.querySelector('.bar'), dockEl=document.querySelector('.dock'), mottoEl=$('motto'), pngBtn=$('pngBtn');
 const menuLinks=[...document.querySelectorAll('.menu a')], pages={history:$('history'),tracing:$('tracing')};
 const NAMES={sheet:'Sheet',history:'History',tracing:'Tracing'};
 const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -509,17 +545,22 @@ if(introStep===3){ introEl.hidden=true; document.body.classList.remove('intro');
 introCue.textContent=window.matchMedia('(pointer:coarse)').matches?'tap':'click';
 function introCam(){ s=Math.max(W/INTRO.w,H/INTRO.h); x=-INTRO.x*s; y=H/2-(INTRO.y+INTRO.h/2)*s; }
 function armCue(){ clearTimeout(cueT); introCue.classList.remove('on'); cueT=setTimeout(()=>{ if(introStep<2) introCue.classList.add('on'); },4500); }
+function introAsk(){ if(introStep!==0) return; introStep=1; introEl.classList.add('ask'); armCue(); }
 function introNext(){
-  if(!ready) return;
-  if(introStep===0){ introStep=1; introEl.classList.add('ask'); armCue(); return; }
-  if(introStep!==1) return;
+  if(!ready||introStep!==1) return;
   introStep=2; clearTimeout(cueT); introEl.classList.remove('ask'); introEl.classList.add('out');
   const [x1,y1]=clampTo(fit,0,0), px=(W/2-x)/s, py=(H/2-y)/s;
   vt={io:true,s0:s,x0:x,y0:y,s1:fit,x1,y1,px,py,ax0:W/2,ay0:H/2,ax1:x1+px*fit,ay1:y1+py*fit,t0:performance.now(),d:reduce?1:2600};
   setTimeout(()=>document.body.classList.remove('intro'),reduce?0:1400);
   kick();
 }
-function introDone(){ introStep=3; clearTimeout(cueT); document.body.classList.remove('intro'); introEl.hidden=true; setTimeout(resize,0); }
+function introDone(){ const pulled=introStep===2; introStep=3; clearTimeout(cueT); document.body.classList.remove('intro'); introEl.hidden=true; setTimeout(resize,0);
+  if(pulled&&view==='sheet') setTimeout(showMotto,250); }
+// "This web page was designed to learn and play": shown once after the pull-back, gone at the first touch or after a while
+let mottoT=0;
+function showMotto(){ mottoEl.hidden=false; requestAnimationFrame(()=>requestAnimationFrame(()=>mottoEl.classList.add('on'))); mottoT=setTimeout(hideMotto,7000);
+  for(const ev of ['pointerdown','keydown','wheel']) window.addEventListener(ev,hideMotto,{capture:true,passive:true,once:true}); }
+function hideMotto(){ clearTimeout(mottoT); if(mottoEl.hidden) return; mottoEl.classList.remove('on'); setTimeout(()=>{ mottoEl.hidden=true; },800); }
 function introSkip(){ vt=null; if(ready){ s=fit; clamp(); } introDone(); }
 introEl.addEventListener('click',introNext);
 
@@ -534,7 +575,8 @@ function resize(){
   W=Math.max(1,r.width); H=Math.max(1,r.height); dpr=Math.min(window.devicePixelRatio||1,2);
   cv.width=base.width=lens.width=Math.round(W*dpr); cv.height=base.height=lens.height=Math.round(H*dpr);
   nav.width=NAVW*dpr; nav.height=NAVH*dpr; nav.style.width=NAVW+'px'; nav.style.height=NAVH+'px';
-  insT=barEl.offsetHeight; insB=dockEl.offsetHeight; root.style.setProperty('--barH',insT+'px');
+  const siteH=siteEl.offsetHeight; insT=siteH+barEl.offsetHeight; insB=dockEl.offsetHeight;
+  root.style.setProperty('--siteH',siteH+'px'); root.style.setProperty('--insT',insT+'px'); root.style.setProperty('--insB',insB+'px');
   guideEl.style.top=(insT+12)+'px'; nav.style.bottom=(insB+12)+'px'; measureCl();
   fit=Math.min(W/IW,Math.max(40,H-insT-insB)/IH);
   if(introStep<2) introCam(); else{ if(!ready||atFit||s<fit) s=fit; clamp(); }
@@ -562,7 +604,7 @@ function renderBase(){
 function drawLens(){
   if(!isOk(torch.layer)) return;
   // f: how far the fuse has gone. The whole figure grows to R, and its solid core gives way to a soft feather
-  const f=fz.L/LMAX, R=torch.r*Math.exp(fz.L);
+  const f=fz.L/LMAX, R=torch.r*Math.exp(fz.L), core=torch.r*.8*(1-.55*f);
   const bx=Math.max(0,torch.mx-R), by=Math.max(0,torch.my-R), bw=Math.min(W,torch.mx+R)-bx, bh=Math.min(H,torch.my+R)-by;
   if(bw<=0||bh<=0) return;
   const dw=Math.min(lens.width,Math.ceil(bw*dpr)), dh=Math.min(lens.height,Math.ceil(bh*dpr));
@@ -570,12 +612,12 @@ function drawLens(){
   lctx.imageSmoothingEnabled=true; lctx.imageSmoothingQuality='high';
   blit(lctx,layers[torch.layer],1,'source-over',bx,by,bw,bh);
   lctx.globalAlpha=1; lctx.globalCompositeOperation='destination-in';
-  const cx=(torch.mx-bx)*dpr, cy=(torch.my-by)*dpr, c=.8-.7*f;
+  const cx=(torch.mx-bx)*dpr, cy=(torch.my-by)*dpr, c=core/R;
   const g=lctx.createRadialGradient(cx,cy,0,cx,cy,R*dpr); g.addColorStop(0,'#000');
-  for(let i=0;i<=8;i++) g.addColorStop(c+(1-c)*i/8,`rgba(0,0,0,${(.5+.5*Math.cos(Math.PI*i/8)).toFixed(3)})`);
+  for(let i=0;i<=12;i++) g.addColorStop(Math.min(1,c+(1-c)*i/12),`rgba(0,0,0,${(.5+.5*Math.cos(Math.PI*i/12)).toFixed(3)})`);
   lctx.fillStyle=g; lctx.fillRect(0,0,dw,dh); lctx.globalCompositeOperation='source-over';
   ctx.drawImage(lens,0,0,dw,dh,bx*dpr,by*dpr,dw,dh);
-  const ra=1-2.5*f; if(ra<=0) return;  // the burnt rim fades away as the mask fuses
+  const ra=1-3*f; if(ra<=0) return;  // the burnt rim fades away as the mask fuses
   const ex=torch.mx*dpr, ey=torch.my*dpr, r=R*dpr;
   const e=ctx.createRadialGradient(ex,ey,r*.84,ex,ey,r*1.1);
   e.addColorStop(0,'rgba(255,160,70,0)'); e.addColorStop(.45,'rgba(255,140,50,.6)'); e.addColorStop(.72,'rgba(90,30,6,.4)'); e.addColorStop(1,'rgba(0,0,0,0)');
@@ -699,7 +741,7 @@ function setTrace(on){ on=!!on; if(on&&torch.on) setTorch(false);
   trace.on=on; traceBtn.setAttribute('aria-pressed',String(on)); traceOpts.hidden=!on; if(!on) setLift(false);
   syncStage(); syncTraceBtns(); invalidate(false); }
 function setLift(on){ trace.lifted=!!on&&trace.on; liftBtn.setAttribute('aria-pressed',String(trace.lifted)); invalidate(false); }
-function syncTraceBtns(){ undoBtn.disabled=!trace.strokes.length&&!trace.cleared; clearBtn.disabled=!trace.strokes.length; }
+function syncTraceBtns(){ undoBtn.disabled=!trace.strokes.length&&!trace.cleared; clearBtn.disabled=pngBtn.disabled=!trace.strokes.length; }
 const TKEY='rigas-trace-v1';
 function addHole(P,h,r){ P.moveTo(h[0]+r,h[1]); P.arc(h[0],h[1],r,0,Math.PI*2); }
 function rebuildHoles(){ holes=new Path2D(); for(const st of trace.strokes) for(const h of st.h) addHole(holes,h,st.r); }
@@ -719,10 +761,74 @@ function strokeEnd(keep){ const c=trace.cur; trace.cur=null; curHoles=null;
 function undoTrace(){ if(trace.strokes.length) trace.strokes.pop(); else if(trace.cleared){ trace.strokes=trace.cleared; trace.cleared=null; }
   rebuildHoles(); saveTrace(); syncTraceBtns(); invalidate(false); }
 function clearTrace(){ if(!trace.strokes.length) return; trace.cleared=trace.strokes; trace.strokes=[]; rebuildHoles(); saveTrace(); syncTraceBtns(); invalidate(false); }
+// visitors stay anonymous: each browser gets one number of its own the first time it exports
+function userNo(){ let n=0; try{ n=parseInt(localStorage.getItem('rigas-user'),10)||0; }catch(e){}
+  if(!n){ n=1+Math.floor(Math.random()*999); try{ localStorage.setItem('rigas-user',String(n)); }catch(e){} } return n; }
+// the holes alone on a transparent PNG, cropped to the trace, signed at the bottom
+async function exportTrace(){
+  if(!trace.strokes.length) return;
+  let x0=Infinity, y0=Infinity, x1=-Infinity, y1=-Infinity;
+  for(const st of trace.strokes) for(const [hx,hy] of st.h){ x0=Math.min(x0,hx-st.r); y0=Math.min(y0,hy-st.r); x1=Math.max(x1,hx+st.r); y1=Math.max(y1,hy+st.r); }
+  const pad=40; x0-=pad; y0-=pad; x1+=pad; y1+=pad;
+  const bw=x1-x0, bh=y1-y0, k=Math.min(3,4096/Math.max(bw,bh));
+  const fs=Math.round(Math.max(13,Math.min(36,Math.max(bw,bh)*k*.016))), capH=Math.round(fs*2.6);
+  const c=document.createElement('canvas'); c.width=Math.ceil(bw*k); c.height=Math.ceil(bh*k)+capH;
+  const g=c.getContext('2d'), n=userNo(), sign=`user ${n} · trace · Rigas Modes 1975/3`;
+  g.setTransform(k,0,0,k,-x0*k,-y0*k); g.fillStyle='#1A1815'; g.fill(holes); g.setTransform(1,0,0,1,0,0);
+  try{ await document.fonts.load(`500 ${fs}px "IBM Plex Mono"`); }catch(e){}
+  g.font=`500 ${fs}px "IBM Plex Mono", ui-monospace, Menlo, monospace`; g.fillStyle='#1A1815'; g.textBaseline='alphabetic';
+  g.fillText(sign,Math.round(pad*k*.5),c.height-Math.round(fs*.9));
+  c.toBlob(b=>{ if(!b) return; const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=`rigas-modes-1975-3-trace-user-${n}.png`;
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),5000); },'image/png');
+}
+
+/* ---------- close-up viewer for pictures on the text pages ---------- */
+const zm={el:$('zoomer'), img:$('zImg'), cap:$('zCap'), val:$('zzVal'), prev:$('zzPrev'), next:$('zzNext'), close:$('zzClose'),
+  list:[], i:0, s:1, x:0, y:0, fit:1, iw:1, ih:1, open:false, ret:null, pts:new Map(), pinch:null, token:0};
+const zArea=()=>[window.innerWidth, window.innerHeight-zm.el.querySelector('.zbar').offsetHeight];
+function zApply(){ zm.img.style.transform=`translate(${zm.x}px,${zm.y}px) scale(${zm.s})`; const z=zm.s/zm.fit; zm.val.textContent='×'+(z<10?z.toFixed(1):Math.round(z)); }
+function zClamp(){ const [AW,AH]=zArea(), w=zm.iw*zm.s, h=zm.ih*zm.s;
+  zm.x=w<=AW?(AW-w)/2:Math.min(0,Math.max(AW-w,zm.x)); zm.y=h<=AH?(AH-h)/2:Math.min(0,Math.max(AH-h,zm.y)); }
+function zFitNow(){ const [AW,AH]=zArea(); zm.fit=Math.min(AW/zm.iw,AH/zm.ih)*.94; zm.s=zm.fit; zClamp(); zApply(); }
+function zTo(ns,cx,cy){ ns=Math.max(zm.fit,Math.min(Math.max(zm.fit*2,2),ns)); zm.x=cx-(cx-zm.x)*ns/zm.s; zm.y=cy-(cy-zm.y)*ns/zm.s; zm.s=ns; zClamp(); zApply(); }
+function zShow(i){
+  const it=zm.list[i], tok=++zm.token; zm.i=i; zm.cap.textContent=it.cap; zm.el.classList.add('loading');
+  zm.prev.hidden=zm.next.hidden=zm.list.length<2;
+  const im=new Image(); im.decoding='async';
+  im.onload=()=>{ if(tok!==zm.token) return; zm.img.src=im.src; zm.img.alt=it.alt; zm.iw=im.naturalWidth; zm.ih=im.naturalHeight;
+    zm.img.style.width=zm.iw+'px'; zm.img.style.height=zm.ih+'px'; zm.el.classList.remove('loading'); zFitNow(); };
+  im.onerror=()=>{ if(tok===zm.token&&it.hi&&im.src.indexOf(it.hi)>=0) im.src=it.src; };
+  im.src=it.hi||it.src;
+}
+function zOpen(img){
+  const group=img.closest('.band,.imgs,.plate')||img, imgs=[...group.querySelectorAll('figure img')];
+  zm.list=imgs.map(el=>{ const fc=el.closest('figure').querySelector('figcaption'); return {src:el.currentSrc||el.src, hi:el.dataset.hi||'', alt:el.alt, cap:fc?fc.textContent:el.alt}; });
+  zm.ret=img; zm.open=true; zm.el.hidden=false; zShow(Math.max(0,imgs.indexOf(img))); zm.close.focus({preventScroll:true});
+}
+function zClose(){ if(!zm.open) return; zm.open=false; zm.token++; zm.el.hidden=true; zm.img.removeAttribute('src'); zm.pts.clear(); zm.pinch=null;
+  if(zm.ret&&document.contains(zm.ret)) zm.ret.focus({preventScroll:true}); }
+function zStep(d){ if(zm.list.length>1) zShow((zm.i+d+zm.list.length)%zm.list.length); }
+document.addEventListener('click',e=>{ const img=e.target.closest&&e.target.closest('.page figure img'); if(img){ e.preventDefault(); zOpen(img); } });
+zm.close.addEventListener('click',zClose);
+zm.prev.addEventListener('click',()=>zStep(-1)); zm.next.addEventListener('click',()=>zStep(1));
+$('zzIn').addEventListener('click',()=>{ const [AW,AH]=zArea(); zTo(zm.s*1.6,AW/2,AH/2); });
+$('zzOut').addEventListener('click',()=>{ const [AW,AH]=zArea(); zTo(zm.s/1.6,AW/2,AH/2); });
+$('zzFit').addEventListener('click',zFitNow);
+zm.el.addEventListener('wheel',e=>{ if(e.target.closest('.zbar')) return; e.preventDefault(); zTo(zm.s*Math.exp(-e.deltaY*(e.ctrlKey?.01:.0018)),e.clientX,e.clientY); },{passive:false});
+zm.el.addEventListener('pointerdown',e=>{ if(e.target.closest('.zbar')) return; zm.el.setPointerCapture(e.pointerId); zm.pts.set(e.pointerId,{x:e.clientX,y:e.clientY}); zm.pinch=null; zm.el.classList.add('grabbing'); });
+zm.el.addEventListener('pointermove',e=>{ if(!zm.pts.has(e.pointerId)) return; const prev=zm.pts.get(e.pointerId), cur={x:e.clientX,y:e.clientY}; zm.pts.set(e.pointerId,cur);
+  if(zm.pts.size===1){ zm.x+=cur.x-prev.x; zm.y+=cur.y-prev.y; zClamp(); zApply(); }
+  else if(zm.pts.size===2){ const [a,b]=[...zm.pts.values()], d=Math.hypot(a.x-b.x,a.y-b.y), m={x:(a.x+b.x)/2,y:(a.y+b.y)/2};
+    if(zm.pinch){ zm.x+=m.x-zm.pinch.m.x; zm.y+=m.y-zm.pinch.m.y; zTo(zm.s*d/zm.pinch.d,m.x,m.y); } zm.pinch={d,m}; } });
+const zUp=e=>{ zm.pts.delete(e.pointerId); zm.pinch=null; if(!zm.pts.size) zm.el.classList.remove('grabbing'); };
+zm.el.addEventListener('pointerup',zUp); zm.el.addEventListener('pointercancel',zUp);
+zm.el.addEventListener('dblclick',e=>{ if(e.target.closest('.zbar')) return; if(zm.s>zm.fit*1.05) zFitNow(); else zTo(zm.fit*3,e.clientX,e.clientY); });
+window.addEventListener('resize',()=>{ if(zm.open) zFitNow(); });
+if(window.matchMedia('(pointer:coarse)').matches) $('bhint').textContent='Tap a lightbox to look closer';
 
 /* ---------- views: Sheet, History, Tracing ---------- */
 function setView(nv){
-  const changed=nv!==view; view=nv; root.dataset.view=nv;
+  const changed=nv!==view; view=nv; root.dataset.view=nv; zClose(); if(nv!=='sheet') hideMotto();
   for(const k in pages) pages[k].hidden=k!==nv;
   menuLinks.forEach(a=>{ if(a.dataset.view===nv) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current'); });
   document.title=nv==='sheet'?'Rigas Modes 1975/3':NAMES[nv]+' · Rigas Modes 1975/3';
@@ -761,6 +867,7 @@ traceBtn.addEventListener('click',()=>setTrace(!trace.on));
 liftBtn.addEventListener('click',()=>setLift(!trace.lifted));
 undoBtn.addEventListener('click',undoTrace);
 clearBtn.addEventListener('click',clearTrace);
+pngBtn.addEventListener('click',exportTrace);
 
 /* ---------- pointer: drag pans; with a tool on, a press uses the tool and Shift + drag pans ---------- */
 stage.addEventListener('wheel',e=>{ e.preventDefault(); const r=stage.getBoundingClientRect();
@@ -801,12 +908,18 @@ function navMove(e){ const r=nav.getBoundingClientRect(); const ix=(e.clientX-r.
 nav.addEventListener('pointerdown',e=>{ e.stopPropagation(); nav.setPointerCapture(e.pointerId); navMove(e); });
 nav.addEventListener('pointermove',e=>{ e.stopPropagation(); if(nav.hasPointerCapture(e.pointerId)) navMove(e); });
 nav.addEventListener('dblclick',e=>e.stopPropagation());
-const ro=new ResizeObserver(resize); ro.observe(stage); ro.observe(barEl); ro.observe(dockEl);
+const ro=new ResizeObserver(resize); ro.observe(stage); ro.observe(siteEl); ro.observe(barEl); ro.observe(dockEl);
 window.addEventListener('resize',measureCl); if(document.fonts) document.fonts.ready.then(()=>{ measureCl(); invalidate(false); });
 dockEl.addEventListener('scroll',()=>{ measureCl(); halos(); },{passive:true});
 
 /* ---------- keys (sheet only; text pages scroll as usual) ---------- */
 document.addEventListener('keydown',e=>{
+  if(zm.open){
+    const k=e.key;
+    if(k==='Escape') zClose(); else if(k==='ArrowLeft') zStep(-1); else if(k==='ArrowRight') zStep(1);
+    else if(k==='+'||k==='='){ const [AW,AH]=zArea(); zTo(zm.s*1.6,AW/2,AH/2); } else if(k==='-'){ const [AW,AH]=zArea(); zTo(zm.s/1.6,AW/2,AH/2); }
+    else if(k==='0') zFitNow(); else return;
+    e.preventDefault(); return; }
   if(introStep<3){ if(e.key==='Escape') introSkip(); else if([' ','Enter','ArrowRight','ArrowDown'].includes(e.key)){ e.preventDefault(); introNext(); } return; }
   if(view!=='sheet') return;
   if(e.target.closest&&e.target.closest('input,select,textarea')&&!['Escape','ArrowLeft','ArrowRight'].includes(e.key)) return;
@@ -835,7 +948,7 @@ document.addEventListener('keydown',e=>{
 if(window.matchMedia('(max-width:720px)').matches) setMap(false);
 readAccent(); loadTrace(); route(); resize(); ui();
 loadLayer(0).then(()=>{
-  ready=true; stage.classList.add('ready'); resize(); if(introStep<1) armCue();
+  ready=true; stage.classList.add('ready'); resize(); introAsk();
   for(let i=1;i<N;i++) loadLayer(i).catch(()=>{});
 }).catch(()=>{ loadingEl.textContent='The sheet could not be loaded. Reload the page to try again.'; });
 })();
