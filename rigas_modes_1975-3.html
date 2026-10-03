@@ -43,10 +43,11 @@ a{color:inherit}
 .stage.ready #view{opacity:1}
 .loading{position:absolute;inset:0;display:grid;place-items:center;color:var(--muted);font-size:12px;letter-spacing:.04em}
 .stage.ready .loading{display:none}
-.thint{position:absolute;left:0;top:0;z-index:2;pointer-events:none;white-space:nowrap;padding:3px 7px 4px;border-radius:3px;
+.thint{position:absolute;left:0;top:0;z-index:2;pointer-events:none;white-space:nowrap;padding:3px 7px 4px;border-radius:3px;display:grid;gap:1px;
   font-size:11.5px;line-height:1.2;color:var(--fg);background:color-mix(in srgb,var(--bg) 58%,transparent);
   -webkit-backdrop-filter:blur(1px);backdrop-filter:blur(1px);opacity:0;transition:opacity .2s;will-change:transform}
 .thint.on{opacity:1}
+.thint .t2{font-size:10.5px;color:var(--muted)}
 #nav{position:absolute;right:12px;cursor:crosshair;opacity:0;transition:opacity .3s;outline:1px solid var(--rule);background:var(--bg)}
 .stage.ready #nav{opacity:1}
 
@@ -103,6 +104,7 @@ a{color:inherit}
 
 /* tool options float under the tool buttons, so the bar never changes height */
 .tools{position:relative}
+.opts .kk{font:500 10px var(--mono);color:var(--faint)}
 .opts{position:absolute;left:-4px;top:calc(100% + 11px);display:flex;align-items:center;gap:6px;padding:4px;border-radius:3px;white-space:nowrap;
   background:color-mix(in srgb,var(--bg) 90%,transparent);box-shadow:0 0 0 1px color-mix(in srgb,var(--fg) 28%,transparent)}
 
@@ -135,18 +137,38 @@ body.intro .site,body.intro .bar,body.intro .dock,body.intro .guide,body.intro #
 .intro-layer .cue.on{opacity:.85}
 .intro-layer.out .q,.intro-layer.out .cue{opacity:0;transition-duration:.5s}
 
-/* on-screen guide, hidden until H */
-.guide{position:fixed;left:12px;z-index:4;max-width:min(350px,calc(100vw - 24px));padding:9px 11px 10px;font-size:11.5px;line-height:1.45;
-  color:color-mix(in srgb,var(--fg) 78%,transparent);background:color-mix(in srgb,var(--bg) 58%,transparent);border-radius:3px;
-  pointer-events:none;transition:opacity .5s,visibility .5s}
+/* the guide: a keyboard with the keys this page uses, and what each one does (H) */
+.guide{position:fixed;left:50%;top:calc(var(--insT) + 14px);z-index:7;transform:translateX(-50%);width:min(940px,calc(100vw - 24px));
+  max-height:calc(100vh - var(--insT) - var(--insB) - 28px);overflow:auto;padding:12px 16px 14px;border-radius:4px;color:var(--fg);
+  background:color-mix(in srgb,var(--bg) 90%,transparent);box-shadow:0 0 0 1px color-mix(in srgb,var(--fg) 22%,transparent);
+  -webkit-backdrop-filter:blur(1px);backdrop-filter:blur(1px);transition:opacity .35s,visibility .35s}
 .guide.off{opacity:0;visibility:hidden}
-.guide .h{font-weight:600;color:var(--fg);margin-bottom:5px;pointer-events:auto;cursor:pointer;width:max-content}
-.guide .h kbd{font:600 11px var(--mono)}
-.guide dl{margin:0;display:grid;grid-template-columns:max-content 1fr;gap:1px 10px}
-.guide dt{grid-column:1/-1;margin-top:6px;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-.guide dd{margin:0}
-.guide dd:nth-of-type(odd){font-weight:500;color:var(--fg);white-space:nowrap}
-.guide kbd{font:500 10.5px var(--mono)}
+.guide .h{display:inline-block;font-weight:600;font-size:12.5px;cursor:pointer;margin-bottom:10px}
+.guide .h kbd{font:600 12px var(--mono)}
+.kb{container:kb/inline-size;display:grid;grid-template-columns:repeat(60,minmax(0,1fr));gap:5px;margin-bottom:14px}
+.key{grid-column:span var(--w,4);height:clamp(32px,6.6cqw,54px);display:flex;flex-direction:column;justify-content:space-between;
+  padding:4px 4px 3px;border:1px solid color-mix(in srgb,var(--fg) 14%,transparent);border-radius:4px;color:color-mix(in srgb,var(--fg) 30%,transparent);
+  font:500 12px/1 var(--mono);overflow:hidden;white-space:nowrap;transition:background-color .12s,color .12s,border-color .12s,transform .08s}
+.key i{font:400 clamp(7.5px,1.02cqw,9.5px)/1.08 var(--sans);font-style:normal;white-space:normal;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.key.on{border-color:var(--fg);color:var(--fg);background:var(--bg);box-shadow:0 1.5px 0 color-mix(in srgb,var(--fg) 55%,transparent);cursor:default}
+.key.on i{color:var(--muted)}
+.key.hl,.key.press{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);box-shadow:0 1.5px 0 color-mix(in srgb,var(--accent) 60%,#000)}
+.key.hl i,.key.press i{color:inherit}
+.key.press{transform:translateY(1.5px);box-shadow:none}
+@container kb (max-width:600px){ .key i{display:none} }
+.lg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px 28px;font-size:12.5px;line-height:1.35}
+.lr{display:grid;grid-template-columns:92px 1fr;gap:10px;align-items:baseline;padding:3px 6px;border-radius:3px}
+.lr.hl{background:var(--hover)}
+.lr .ks{display:flex;gap:3px;flex-wrap:wrap}
+.lr kbd{font:500 10.5px/1 var(--mono);padding:2px 4px 3px;border:1px solid var(--fg);border-radius:3px;white-space:nowrap}
+.lr.hl kbd{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+@media (max-width:640px){ .kb{display:none} .lg{grid-template-columns:1fr} .lr{grid-template-columns:78px 1fr} }
+
+/* what a control does, on hover or keyboard focus */
+.tip{position:fixed;left:0;top:0;z-index:30;max-width:280px;padding:5px 8px 6px;border-radius:3px;pointer-events:none;
+  font-size:11.5px;line-height:1.35;color:var(--fg);background:color-mix(in srgb,var(--bg) 94%,transparent);
+  box-shadow:0 0 0 1px color-mix(in srgb,var(--fg) 26%,transparent);opacity:0;transition:opacity .12s}
+.tip.on{opacity:1}
 
 /* Diffusion dock */
 .cap{display:flex;align-items:center;gap:10px 16px;flex-wrap:wrap;padding:7px 0 3px}
@@ -250,13 +272,14 @@ body.intro .site,body.intro .bar,body.intro .dock,body.intro .guide,body.intro #
   .band figure{width:min(100vw,72svh)}
   .plate{margin-bottom:56px}
 }
-@media (max-width:720px){ #zOut,#zIn,#zVal,.btn kbd,.sep{display:none} .bar{gap:6px 8px} .cap .what{flex-basis:100%} .cap .grp{flex-wrap:wrap} }
+@media (max-width:720px){ #zOut,#zIn,#zVal,.btn kbd,.opts .kk,.sep{display:none} .opts{flex-wrap:wrap;white-space:normal;width:max-content;max-width:calc(100vw - 24px)} .bar{gap:6px 8px} .cap .what{flex-basis:100%} .cap .grp{flex-wrap:wrap} }
 @media (max-width:560px){ .site{grid-template-columns:auto 1fr} .menu{justify-self:end} .menu a{padding:2px 10px 0} .zcap{display:none} }
 @media (max-width:400px){ .brand .num{display:none} }
 @media (prefers-reduced-motion:reduce){ #view,#nav,body{transition:none} }
 </style>
 </head>
 <body class="intro">
+<div class="tip" id="tip" role="tooltip" hidden></div>
 <div class="motto" id="motto" hidden><p>This web page was designed to learn and play.</p></div>
 <div class="intro-layer" id="intro" role="button" aria-label="Start">
   <p class="q">Can you find a dress?</p>
@@ -272,87 +295,84 @@ body.intro .site,body.intro .bar,body.intro .dock,body.intro .guide,body.intro #
 </header>
 <header class="bar" aria-label="Sheet controls">
   <div class="modes cl sheet-only" role="tablist" aria-label="Mode">
-    <button class="btn m-light" role="tab" aria-selected="true" data-mode="morph" title="One layer at a time, morphing between neighbours (D)">Diffusion <kbd>D</kbd></button>
-    <button class="btn m-dark" role="tab" aria-selected="false" data-mode="mix" title="Stack several layers at chosen strengths (O)">Overlay <kbd>O</kbd></button>
+    <button class="btn m-light" role="tab" aria-selected="true" data-mode="morph" title="Diffusion (D): one layer at a time; the scale 1–13 at the bottom morphs between them">Diffusion <kbd>D</kbd></button>
+    <button class="btn m-dark" role="tab" aria-selected="false" data-mode="mix" title="Overlay (A): stack layers, a fader for each and a blend mode">Overlay <kbd>A</kbd></button>
   </div>
   <div class="sep sheet-only"></div>
   <div class="grp tools cl sheet-only">
-    <button id="torchBtn" class="btn" aria-pressed="false" title="Flashlight: another layer under the cursor (F). Press and hold to fuse the mask; Shift + drag moves the sheet">Flashlight <kbd>F</kbd></button>
-    <button id="traceBtn" class="btn" aria-pressed="false" title="Trace: tracing paper over the sheet; press and drag to roll a tracing wheel (T). Shift + drag moves the sheet">Trace <kbd>T</kbd></button>
+    <button id="torchBtn" class="btn" aria-pressed="false" title="Flashlight (F): another layer under the cursor. Press and hold on the sheet to fuse the mask; Shift + drag moves the sheet">Flashlight <kbd>F</kbd></button>
+    <button id="traceBtn" class="btn" aria-pressed="false" title="Trace (T): tracing paper over the sheet. Press and drag to roll a tracing wheel along a line; Shift + drag moves the sheet. Tip: trace on layer 4 or 5, one ink at a time">Trace <kbd>T</kbd></button>
     <div class="opts" id="torchOpts" hidden>
-      <select id="torchSel" aria-label="Layer under the flashlight"><option value="0">1 Sheet</option><option value="1">2 Paper</option><option value="2">3 Raking light</option><option value="3">4 Green plate</option><option value="4">5 Pink plate</option><option value="5" selected>6 X-ray</option><option value="6">7 Density</option><option value="7">8 Directions</option><option value="8">9 Skeleton</option><option value="9">10 Crossings</option><option value="10">11 Line 14–16a</option><option value="11">12 Fragments</option><option value="12">13 Guesses</option></select>
-      <input type="range" id="torchR" min="40" max="420" value="40" aria-label="Flashlight size" title="Flashlight size (Alt + scroll, or [ and ])">
+      <select id="torchSel" aria-label="Layer under the flashlight" title="Layer to light through"><option value="0">1 Sheet</option><option value="1">2 Paper</option><option value="2">3 Raking light</option><option value="3">4 Green plate</option><option value="4">5 Pink plate</option><option value="5" selected>6 X-ray</option><option value="6">7 Density</option><option value="7">8 Directions</option><option value="8">9 Skeleton</option><option value="9">10 Crossings</option><option value="10">11 Line 14–16a</option><option value="11">12 Fragments</option><option value="12">13 Guesses</option></select>
+      <input type="range" id="torchR" min="40" max="420" value="40" aria-label="Flashlight size" title="Flashlight size: Z smaller, X bigger, or Alt + scroll">
     </div>
     <div class="opts" id="traceOpts" hidden>
-      <button id="liftBtn" class="btn" aria-pressed="false" title="Lift the paper off the sheet: only the holes stay (L)">Lift <kbd>L</kbd></button>
-      <button id="undoBtn" class="btn" title="Undo the last line (Ctrl/⌘ Z)">Undo</button>
-      <button id="clearBtn" class="btn" title="Clear the paper">Clear</button>
-      <button id="pngBtn" class="btn" title="Save the trace as a PNG on a transparent background">Export PNG</button>
+      <div class="seg" role="group" aria-label="View of tracing" title="View of tracing (V): on the sheet or on white"><button class="btn" data-tview="sheet" aria-pressed="true">On sheet</button><button class="btn" data-tview="white" aria-pressed="false">On white</button></div><span class="kk" aria-hidden="true">(V)</span>
+      <button id="undoBtn" class="btn" title="Undo the last traced line (Ctrl/⌘ Z)">Undo</button>
+      <button id="clearBtn" class="btn" title="Clear the tracing paper">Clear</button>
+      <button id="pngBtn" class="btn" title="Your trace on a transparent background, signed “user N · trace · Rigas Modes 1975/3”">Export PNG</button>
     </div>
   </div>
   <div class="grp right cl sheet-only" role="group" aria-label="View">
-    <button id="zOut" class="btn" aria-label="Zoom out" title="Zoom out (−)">−</button>
-    <input type="range" id="zRange" class="zoomr" min="0" max="1000" value="0" aria-label="Zoom" style="width:90px">
-    <button id="zIn" class="btn" aria-label="Zoom in" title="Zoom in (+)">+</button>
+    <button id="zOut" class="btn" aria-label="Zoom out" title="Zoom out (−), or scroll / pinch on the sheet">−</button>
+    <input type="range" id="zRange" class="zoomr" min="0" max="1000" value="0" aria-label="Zoom" title="Zoom, or scroll / pinch on the sheet; drag the sheet to move" style="width:90px">
+    <button id="zIn" class="btn" aria-label="Zoom in" title="Zoom in (+), or scroll / pinch on the sheet">+</button>
     <output id="zVal" class="num" aria-live="off">×1.0</output>
-    <button id="zFit" class="btn" title="Fit the whole sheet (Esc, double-click)">Fit</button>
-    <button id="mapBtn" class="btn" aria-pressed="true" title="Overview map (M)">Map <kbd>M</kbd></button>
-    <button id="guideBtn" class="btn" aria-pressed="false" title="Show or hide the guide (H)">Guide <kbd>H</kbd></button>
+    <button id="zFit" class="btn" title="Whole sheet (Esc), or double-click the sheet">Fit</button>
+    <button id="mapBtn" class="btn" aria-pressed="true" title="Map (M): overview at bottom right; click it to jump">Map <kbd>M</kbd></button>
+    <button id="guideBtn" class="btn" aria-pressed="false" title="Keys of this page (H)">Guide <kbd>H</kbd></button>
   </div>
 </header>
-<aside class="guide off" id="guide" aria-label="How to use">
-  <div class="h"><kbd>(H)</kbd> hide this guide</div>
-  <dl>
-    <dt>Two modes</dt>
-    <dd>Diffusion (D)</dd><dd>light. One layer at a time; the scale 1–13 at the bottom morphs between them</dd>
-    <dd>Overlay (O)</dd><dd>dark. Stack layers: a strength fader for each, blend mode above</dd>
-    <dt>Tools</dt>
-    <dd>Flashlight (F)</dd><dd>another layer under the cursor; the menu picks it, <kbd>[ ]</kbd> or Alt + scroll resizes</dd>
-    <dd>&nbsp;&nbsp;press, hold</dd><dd>fuses the mask: it slowly spreads up to 10× and its edge dissolves into the sheet</dd>
-    <dd>Trace (T)</dd><dd>tracing paper over the sheet: press and drag to roll a tracing wheel along a line. Tip: trace on layer 4 or 5, one ink at a time</dd>
-    <dd>&nbsp;&nbsp;Lift (L)</dd><dd>see only the holes; Undo (Ctrl/⌘ Z) and Clear beside it</dd>
-    <dd>&nbsp;&nbsp;Export PNG</dd><dd>your trace on a transparent background, signed “user N · trace · Rigas Modes 1975/3”</dd>
-    <dd>Shift + drag</dd><dd>moves the sheet while a tool is on</dd>
-    <dt>View</dt>
-    <dd>Scroll, pinch</dd><dd>zoom; drag to move</dd>
-    <dd>Fit (Esc)</dd><dd>whole sheet; double-click does the same</dd>
-    <dd>Map (M)</dd><dd>overview at bottom right; click to jump</dd>
-    <dt>Diffusion bar · bottom</dt>
-    <dd>1–13</dd><dd>click a layer, or drag the red marker between them</dd>
-    <dd>Drift (Space)</dd><dd>play through layers; motion and speed beside it</dd>
-    <dd>← → &nbsp;1–9</dd><dd>step / jump to a layer</dd>
-  </dl>
+<aside class="guide off" id="guide" aria-label="Keys">
+  <div class="h" role="button" tabindex="0"><kbd>(H)</kbd> hide this guide</div>
+  <div class="kb" id="kb" aria-hidden="true"></div>
+  <div class="lg" id="lg">
+    <div class="lr" data-g="h"><span class="ks"><kbd>H</kbd></span><span>Guide. Show / hide</span></div>
+    <div class="lr" data-g="d"><span class="ks"><kbd>D</kbd></span><span>Diffusion. The scale 1–13 at the bottom morphs between the layers</span></div>
+    <div class="lr" data-g="a"><span class="ks"><kbd>A</kbd></span><span>Overlay. Each layer has a fader. Blend mode.</span></div>
+    <div class="lr" data-g="f"><span class="ks"><kbd>F</kbd></span><span>Flashlight. Pick layer to light through and the size.</span></div>
+    <div class="lr" data-g="zx"><span class="ks"><kbd>Z</kbd><kbd>X</kbd></span><span>Size flashlight. (also Alt + scroll)</span></div>
+    <div class="lr" data-g="t"><span class="ks"><kbd>T</kbd></span><span>Trace. Tracing paper over the sheet; press and drag to roll a tracing wheel along a line</span></div>
+    <div class="lr" data-g="v"><span class="ks"><kbd>V</kbd></span><span>View of Tracing. (on white / on sheet)</span></div>
+    <div class="lr" data-g="undo"><span class="ks"><kbd>Ctrl/⌘</kbd><kbd>Z</kbd></span><span>Undo the last traced line</span></div>
+    <div class="lr" data-g="m"><span class="ks"><kbd>M</kbd></span><span>Map — overview at bottom right; click it to jump</span></div>
+    <div class="lr" data-g="space"><span class="ks"><kbd>Space</kbd></span><span>Drift — play through the layers</span></div>
+    <div class="lr" data-g="step"><span class="ks"><kbd>←</kbd><kbd>→</kbd></span><span>Step to the previous / next layer</span></div>
+    <div class="lr" data-g="num"><span class="ks"><kbd>1–9</kbd></span><span>Jump to a layer</span></div>
+    <div class="lr" data-g="zoom"><span class="ks"><kbd>+</kbd><kbd>−</kbd></span><span>Zoom in / out</span></div>
+    <div class="lr" data-g="esc"><span class="ks"><kbd>Esc</kbd></span><span>Whole sheet</span></div>
+  </div>
 </aside>
-<main class="stage" id="stage" aria-label="Rigas Modes 1975/3 pattern sheet" title="Scroll or pinch to zoom, drag to move, double-click to fit">
+<main class="stage" id="stage" aria-label="Rigas Modes 1975/3 pattern sheet">
   <div class="loading">Loading the sheet…</div>
   <canvas id="view" aria-hidden="true"></canvas>
-  <canvas id="nav" title="Overview: click or drag to move"></canvas>
-  <div class="thint" id="thint" aria-hidden="true"></div>
+  <canvas id="nav" title="Click or drag to move around the sheet"></canvas>
+  <div class="thint" id="thint" aria-hidden="true"><span class="t1"></span><span class="t2">Shift + drag moves the sheet</span></div>
 </main>
 <footer class="dock">
   <section id="morphUI" aria-label="Diffusion between layers">
     <div class="cap">
       <div class="what cl" aria-live="polite"><span id="capN"></span><span id="capT"></span><span id="capD"></span></div>
       <div class="grp cl">
-        <button id="drift" class="btn" aria-pressed="false" title="Play through the layers (Space)"><i aria-hidden="true"></i>Drift</button>
-        <div class="seg sm" role="group" aria-label="Drift motion"><button class="btn" data-motion="smooth" aria-pressed="true">Smooth</button><button class="btn" data-motion="swing" aria-pressed="false">Swing</button><button class="btn" data-motion="triplet" aria-pressed="false">Triplets</button></div>
-        <div class="seg sm" role="group" aria-label="Drift speed"><button class="btn num" data-speed="2" aria-pressed="true">2×</button><button class="btn num" data-speed="4" aria-pressed="false">4×</button><button class="btn num" data-speed="8" aria-pressed="false">8×</button><button class="btn num" data-speed="20" aria-pressed="false">20×</button></div>
+        <button id="drift" class="btn" aria-pressed="false" title="Drift (Space): play through the layers"><i aria-hidden="true"></i>Drift</button>
+        <div class="seg sm" role="group" aria-label="Drift motion"><button class="btn" data-motion="smooth" aria-pressed="true" title="Drift glides from layer to layer">Smooth</button><button class="btn" data-motion="swing" aria-pressed="false" title="Drift steps in a long–short swing">Swing</button><button class="btn" data-motion="triplet" aria-pressed="false" title="Drift steps in threes">Triplets</button></div>
+        <div class="seg sm" role="group" aria-label="Drift speed"><button class="btn num" data-speed="2" aria-pressed="true" title="Drift speed">2×</button><button class="btn num" data-speed="4" aria-pressed="false" title="Drift speed">4×</button><button class="btn num" data-speed="8" aria-pressed="false" title="Drift speed">8×</button><button class="btn num" data-speed="20" aria-pressed="false" title="Drift speed">20×</button></div>
         <span class="hint">← → step · 1–9 jump</span>
       </div>
     </div>
     <div class="strip cl">
-      <input type="range" id="tape" min="0" max="12" step="0.001" value="0" aria-label="Position between layers">
+      <input type="range" id="tape" min="0" max="12" step="0.001" value="0" aria-label="Position between layers" title="Drag between the layers">
       <div class="chips" id="chips"><button class="chip wait" data-k="0" title="As it is: four scans stitched into one and turned to landscape."><b>1</b><span>Sheet</span></button><button class="chip wait" data-k="1" title="Every printed line closed away: only the paper is left, with its folds, stains and holes."><b>2</b><span>Paper</span></button><button class="chip wait" data-k="2" title="The bare paper lit from the side: creases from folding and wear stand out as relief."><b>3</b><span>Raking light</span></button><button class="chip wait" data-k="3" title="Only the green ink, as if the sheet had been printed with a single plate."><b>4</b><span>Green plate</span></button><button class="chip wait" data-k="4" title="Only the pink ink, the second printing plate."><b>5</b><span>Pink plate</span></button><button class="chip wait" data-k="5" title="Both inks pulled apart: green glows turquoise, pink glows magenta."><b>6</b><span>X-ray</span></button><button class="chip wait" data-k="6" title="How tangled each spot is. Dark is open paper, bright is where the most lines pile up."><b>7</b><span>Density</span></button><button class="chip wait" data-k="7" title="Every line coloured by its angle: one hue per direction."><b>8</b><span>Directions</span></button><button class="chip wait" data-k="8" title="All lines thinned to one pixel, the way a program stores a drawing. Zoom in to see it."><b>9</b><span>Skeleton</span></button><button class="chip wait" data-k="9" title="About 4,635 points where lines meet or cross, as found by the program."><b>10</b><span>Crossings</span></button><button class="chip wait" data-k="10" title="The line of model 14–16a. The LLM recognised it by its thicker pen stroke."><b>11</b><span>Line 14–16a</span></button><button class="chip wait" data-k="11" title="Pieces of this line the LLM managed to join. White threads are its guesses at how the line continues."><b>12</b><span>Fragments</span></button><button class="chip wait" data-k="12" title="Where the LLM looks for pieces 14, 15, 15a, 16 and 16a. The bright outline is its best version, the thin ones are alternatives."><b>13</b><span>Guesses</span></button></div>
     </div>
   </section>
   <section class="mix" id="mixUI" aria-label="Layer overlay" hidden>
-    <div class="head2 cl"><span class="lbl">Blend</span>
+    <div class="head2 cl"><span class="lbl" title="How the layers mix">Blend</span>
       <div class="seg sm" role="group" aria-label="Blend mode">
-        <button class="btn" data-blend="screen" aria-pressed="false">Screen</button>
-        <button class="btn" data-blend="lighten" aria-pressed="false">Lighten</button>
-        <button class="btn" data-blend="difference" aria-pressed="true">Difference</button>
-        <button class="btn" data-blend="multiply" aria-pressed="false">Multiply</button>
-        <button class="btn" data-blend="normal" aria-pressed="false">Normal</button>
+        <button class="btn" data-blend="screen" aria-pressed="false" title="Screen: layers lighten each other">Screen</button>
+        <button class="btn" data-blend="lighten" aria-pressed="false" title="Lighten: the lighter layer wins at each point">Lighten</button>
+        <button class="btn" data-blend="difference" aria-pressed="true" title="Difference: shows where layers differ">Difference</button>
+        <button class="btn" data-blend="multiply" aria-pressed="false" title="Multiply: layers darken each other, like inks">Multiply</button>
+        <button class="btn" data-blend="normal" aria-pressed="false" title="Normal: each layer covers the ones below">Normal</button>
       </div>
       <span class="hint">Layer strength, 0–100 %</span>
     </div>
@@ -474,7 +494,7 @@ const mixInputs=[...mixUI.querySelectorAll('input[type=range]')], blendBtns=[...
 const speedBtns=[...document.querySelectorAll('[data-speed]')], motionBtns=[...document.querySelectorAll('[data-motion]')];
 const zOut=$('zOut'), zIn=$('zIn'), zRange=$('zRange'), zVal=$('zVal'), zFit=$('zFit'), mapBtn=$('mapBtn');
 const torchBtn=$('torchBtn'), torchOpts=$('torchOpts'), torchSel=$('torchSel'), torchR=$('torchR');
-const traceBtn=$('traceBtn'), traceOpts=$('traceOpts'), liftBtn=$('liftBtn'), undoBtn=$('undoBtn'), clearBtn=$('clearBtn');
+const traceBtn=$('traceBtn'), traceOpts=$('traceOpts'), tviewBtns=[...document.querySelectorAll('[data-tview]')], undoBtn=$('undoBtn'), clearBtn=$('clearBtn');
 const guideEl=$('guide'), guideBtn=$('guideBtn'), thint=$('thint'), loadingEl=stage.querySelector('.loading');
 const siteEl=$('site'), barEl=document.querySelector('.bar'), dockEl=document.querySelector('.dock'), mottoEl=$('motto'), pngBtn=$('pngBtn');
 const menuLinks=[...document.querySelectorAll('.menu a')], pages={history:$('history'),tracing:$('tracing')};
@@ -537,6 +557,49 @@ guideEl.querySelector('.h').addEventListener('click',()=>setGuide(false));
 guideBtn.addEventListener('click',()=>setGuide(guideEl.classList.contains('off')));
 mapBtn.addEventListener('click',()=>setMap(nav.hidden));
 
+/* ---------- the guide's keyboard: [label, width in quarter keys, group, code, caption] ---------- */
+const KB=[
+  [['Esc',4,'esc','Escape','whole sheet'],['1',4,'num','Digit1'],['2',4,'num','Digit2'],['3',4,'num','Digit3'],['4',4,'num','Digit4'],['5',4,'num','Digit5'],['6',4,'num','Digit6'],
+   ['7',4,'num','Digit7'],['8',4,'num','Digit8'],['9',4,'num','Digit9'],['0',4],['−',4,'zoom','Minus','zoom out'],['+',4,'zoom','Equal','zoom in'],['⌫',8]],
+  [['Tab',6],['Q',4],['W',4],['E',4],['R',4],['T',4,'t','KeyT','Trace'],['Y',4],['U',4],['I',4],['O',4],['P',4],['[',4],[']',4],['\\',6]],
+  [['Caps',7],['A',4,'a','KeyA','Overlay'],['S',4],['D',4,'d','KeyD','Diffusion'],['F',4,'f','KeyF','Flashlight'],['G',4],['H',4,'h','KeyH','Guide'],['J',4],['K',4],['L',4],[';',4],["'",4],['Enter',9]],
+  [['Shift',9],['Z',4,'zx','KeyZ','size −'],['X',4,'zx','KeyX','size +'],['C',4],['V',4,'v','KeyV','View'],['B',4],['N',4],['M',4,'m','KeyM','Map'],[',',4],['.',4],['/',4],['Shift',11]],
+  [['Ctrl',5,'undo','ControlLeft','+ Z undo'],['⌥',5],['⌘',5,'undo','MetaLeft','+ Z undo'],['Space',23,'space','Space','Drift'],['⌘',5],['⌥',5],['←',4,'step','ArrowLeft','step'],['↑↓',4],['→',4,'step','ArrowRight','step']]];
+const kbEl=$('kb'), keyEls=[];
+for(const row of KB) for(const [lab,w,g,code,cap] of row){
+  const k=document.createElement('div'); k.className='key'+(g?' on':''); k.style.setProperty('--w',w);
+  k.textContent=lab; if(cap){ const c=document.createElement('i'); c.textContent=cap; k.appendChild(c); }
+  if(g){ k.dataset.g=g; k.dataset.code=code; } kbEl.appendChild(k); keyEls.push(k); }
+const lgRows=[...document.querySelectorAll('#lg .lr')];
+function guideHL(g){ for(const el of keyEls) el.classList.toggle('hl',!!g&&el.dataset.g===g); for(const el of lgRows) el.classList.toggle('hl',!!g&&el.dataset.g===g); }
+guideEl.addEventListener('pointerover',e=>{ const el=e.target.closest('[data-g]'); guideHL(el?el.dataset.g:null); });
+guideEl.addEventListener('pointerleave',()=>guideHL(null));
+guideEl.querySelector('.h').addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); setGuide(false); } });
+// with the guide open, a pressed key flashes on the drawing
+function flashKey(e){ if(guideEl.classList.contains('off')) return; let code=e.code;
+  if(code==='ControlRight') code='ControlLeft'; if(code==='MetaRight') code='MetaLeft'; if(code==='NumpadAdd') code='Equal'; if(code==='NumpadSubtract') code='Minus';
+  if(/^Numpad[1-9]$/.test(code)) code='Digit'+code.slice(6);
+  for(const el of keyEls) if(el.dataset.code===code){ el.classList.add('press'); clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove('press'),180); } }
+
+/* ---------- hover tips: what a control does, on hover or keyboard focus ---------- */
+const tipEl=$('tip'); let tipFor=null, tipT=0, tipWarm=0;
+for(const el of document.querySelectorAll('[title]')) if(el.closest('.bar,.dock,.zbar,#stage')){ el.dataset.tip=el.title; el.removeAttribute('title'); }
+function tipShow(el){
+  if(!el.isConnected||el.offsetParent===null&&el.tagName!=='CANVAS') return;
+  tipFor=el; tipEl.textContent=el.dataset.tip; tipEl.hidden=false;
+  const r=el.getBoundingClientRect(), tw=tipEl.offsetWidth, th=tipEl.offsetHeight;
+  const tx=Math.min(window.innerWidth-tw-8,Math.max(8,r.left+r.width/2-tw/2));
+  let ty=r.bottom+8; if(el.closest('.dock,.zbar,#stage')||ty+th>window.innerHeight-8) ty=r.top-th-8;
+  tipEl.style.transform=`translate(${Math.round(tx)}px,${Math.round(Math.max(8,ty))}px)`; tipEl.classList.add('on'); el.setAttribute('aria-describedby','tip'); }
+function tipHide(){ clearTimeout(tipT); if(tipFor){ tipFor.removeAttribute('aria-describedby'); tipFor=null; tipWarm=performance.now(); } tipEl.classList.remove('on'); }
+document.addEventListener('pointerover',e=>{ if(e.pointerType!=='mouse') return; const el=e.target.closest&&e.target.closest('[data-tip]');
+  if(el===tipFor) return; tipHide(); if(!el) return; tipT=setTimeout(()=>tipShow(el),performance.now()-tipWarm<500?40:420); });
+document.addEventListener('pointerout',e=>{ if(!e.relatedTarget) tipHide(); });
+document.addEventListener('pointerdown',tipHide,true);
+document.addEventListener('focusin',e=>{ const el=e.target.closest&&e.target.closest('[data-tip]'); if(el&&el.matches(':focus-visible')){ tipHide(); tipShow(el); } });
+document.addEventListener('focusout',tipHide);
+window.addEventListener('scroll',tipHide,true);
+
 /* ---------- intro: crop -> question -> pull back ---------- */
 // the first frame: most of the line field with its edge numbers, the title column left out
 const INTRO={x:492,y:213,w:2800,h:2100}, introEl=$('intro'), introCue=introEl.querySelector('.cue');
@@ -577,7 +640,7 @@ function resize(){
   nav.width=NAVW*dpr; nav.height=NAVH*dpr; nav.style.width=NAVW+'px'; nav.style.height=NAVH+'px';
   const siteH=siteEl.offsetHeight; insT=siteH+barEl.offsetHeight; insB=dockEl.offsetHeight;
   root.style.setProperty('--siteH',siteH+'px'); root.style.setProperty('--insT',insT+'px'); root.style.setProperty('--insB',insB+'px');
-  guideEl.style.top=(insT+12)+'px'; nav.style.bottom=(insB+12)+'px'; measureCl();
+  nav.style.bottom=(insB+12)+'px'; measureCl();
   fit=Math.min(W/IW,Math.max(40,H-insT-insB)/IH);
   if(introStep<2) introCam(); else{ if(!ready||atFit||s<fit) s=fit; clamp(); }
   invalidate();
@@ -650,7 +713,7 @@ function syncHint(){
   if(view==='sheet'&&ready&&torch.on&&torch.inside&&torch.hover&&!fz.held&&fz.L<.03) txt='Press to fuse mask';
   else if(view==='sheet'&&ready&&trace.on&&trace.inside&&trace.hover&&!trace.cur&&!trace.strokes.length) txt='Press and drag to trace';
   const on=!!txt;
-  if(on&&thint.textContent!==txt){ thint.textContent=txt; thint._on=null; }
+  if(on&&thint.firstChild.textContent!==txt){ thint.firstChild.textContent=txt; thint._on=null; }
   if(on!==thint._on){ thint._on=on; thint.classList.toggle('on',on); if(on){ thW=thint.offsetWidth; thH=thint.offsetHeight; } }
   if(!on) return;
   if(torch.on){ const o=torch.r*.7071+6; hx=torch.mx+o; hy=torch.my+o; if(hx+thW>W-8) hx=torch.mx-o-thW; if(hy+thH>H-insB-8) hy=torch.my-o-thH; }
@@ -730,8 +793,7 @@ function zoomTo(ns,cx,cy,anim){
 }
 
 /* ---------- tools: flashlight and trace (one at a time) ---------- */
-const stageTitle=stage.title;
-function syncStage(){ stage.classList.toggle('torch',torch.on); stage.classList.toggle('trace',trace.on); stage.title=(torch.on||trace.on)?'':stageTitle; }
+function syncStage(){ stage.classList.toggle('torch',torch.on); stage.classList.toggle('trace',trace.on); }
 function setTorch(on){ on=!!on; if(on&&trace.on) setTrace(false);
   torch.on=on; torchBtn.setAttribute('aria-pressed',String(on)); torchOpts.hidden=!on; if(!on){ fz.held=false; fz.L=0; }
   syncStage(); invalidate(false); }
@@ -740,7 +802,7 @@ function setTrace(on){ on=!!on; if(on&&torch.on) setTorch(false);
   if(!on&&trace.cur) strokeEnd();
   trace.on=on; traceBtn.setAttribute('aria-pressed',String(on)); traceOpts.hidden=!on; if(!on) setLift(false);
   syncStage(); syncTraceBtns(); invalidate(false); }
-function setLift(on){ trace.lifted=!!on&&trace.on; liftBtn.setAttribute('aria-pressed',String(trace.lifted)); invalidate(false); }
+function setLift(on){ trace.lifted=!!on&&trace.on; tviewBtns.forEach(b=>b.setAttribute('aria-pressed',String((b.dataset.tview==='white')===trace.lifted))); invalidate(false); }
 function syncTraceBtns(){ undoBtn.disabled=!trace.strokes.length&&!trace.cleared; clearBtn.disabled=pngBtn.disabled=!trace.strokes.length; }
 const TKEY='rigas-trace-v1';
 function addHole(P,h,r){ P.moveTo(h[0]+r,h[1]); P.arc(h[0],h[1],r,0,Math.PI*2); }
@@ -864,7 +926,7 @@ torchBtn.addEventListener('click',()=>setTorch(!torch.on));
 torchSel.addEventListener('change',()=>{ torch.layer=+torchSel.value; invalidate(false); });
 torchR.addEventListener('input',()=>{ torch.r=+torchR.value; invalidate(false); });
 traceBtn.addEventListener('click',()=>setTrace(!trace.on));
-liftBtn.addEventListener('click',()=>setLift(!trace.lifted));
+tviewBtns.forEach(b=>b.addEventListener('click',()=>setLift(b.dataset.tview==='white')));
 undoBtn.addEventListener('click',undoTrace);
 clearBtn.addEventListener('click',clearTrace);
 pngBtn.addEventListener('click',exportTrace);
@@ -914,6 +976,7 @@ dockEl.addEventListener('scroll',()=>{ measureCl(); halos(); },{passive:true});
 
 /* ---------- keys (sheet only; text pages scroll as usual) ---------- */
 document.addEventListener('keydown',e=>{
+  tipHide(); if(view==='sheet'&&introStep>=3) flashKey(e);
   if(zm.open){
     const k=e.key;
     if(k==='Escape') zClose(); else if(k==='ArrowLeft') zStep(-1); else if(k==='ArrowRight') zStep(1);
@@ -933,13 +996,13 @@ document.addEventListener('keydown',e=>{
   else if(k==='h') setGuide(guideEl.classList.contains('off'));
   else if(k==='m') setMap(nav.hidden);
   else if(k==='d') setMode('morph');
-  else if(k==='o') setMode('mix');
+  else if(k==='a') setMode('mix');
   else if(k==='f') setTorch(!torch.on);
   else if(k==='t') setTrace(!trace.on);
-  else if(k==='l'){ if(trace.on) setLift(!trace.lifted); }
-  else if(k==='['){ torch.r=Math.max(40,torch.r/1.15); torchR.value=torch.r; invalidate(false); }
-  else if(k===']'){ torch.r=Math.min(420,torch.r*1.15); torchR.value=torch.r; invalidate(false); }
-  else if(k==='Escape') zoomTo(fit,W/2,CY(),true);
+  else if(k==='v'){ if(trace.on) setLift(!trace.lifted); }
+  else if(k==='z'){ torch.r=Math.max(40,torch.r/1.15); torchR.value=torch.r; invalidate(false); }
+  else if(k==='x'){ torch.r=Math.min(420,torch.r*1.15); torchR.value=torch.r; invalidate(false); }
+  else if(k==='Escape'){ if(!guideEl.classList.contains('off')) setGuide(false); else zoomTo(fit,W/2,CY(),true); }
   else if(k==='+'||k==='=') zoomTo(s*1.6,W/2,CY(),true);
   else if(k==='-') zoomTo(s/1.6,W/2,CY(),true);
 });
