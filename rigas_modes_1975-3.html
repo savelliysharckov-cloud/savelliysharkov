@@ -48,7 +48,11 @@ button,select,input,output{font:inherit;color:inherit}
 .stage.ready #nav{opacity:1}
 
 /* bars */
-.bar,.dock{position:fixed;left:0;right:0;z-index:5;background:var(--bg)}
+.bar,.dock{position:fixed;left:0;right:0;z-index:5;background:color-mix(in srgb,var(--bg) 22%,transparent);
+  -webkit-backdrop-filter:blur(1px);backdrop-filter:blur(1px)}
+/* a control cluster gets its own backing + hairline outline only while the sheet is under it (--o set by script) */
+.cl{--b:color-mix(in srgb,var(--bg) calc(var(--o,0) * 90%),transparent);border-radius:3px;background-color:var(--b);
+  box-shadow:0 0 0 4px var(--b),0 0 0 5px color-mix(in srgb,var(--fg) calc(var(--o,0) * 45%),transparent);transition:background-color .12s,box-shadow .12s}
 .bar{top:0;display:flex;align-items:center;flex-wrap:wrap;gap:6px 14px;min-height:40px;
   padding:calc(6px + env(safe-area-inset-top,0px)) 12px 6px;border-bottom:1px solid var(--rule)}
 .dock{bottom:0;padding:0 12px calc(8px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--rule);max-height:52vh;overflow-y:auto}
@@ -91,7 +95,7 @@ input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;bac
 
 /* Diffusion dock */
 .cap{display:flex;align-items:center;gap:10px 16px;flex-wrap:wrap;padding:7px 0 3px}
-.cap .what{display:flex;align-items:baseline;gap:8px;min-width:0;flex:1 1 360px}
+.cap .what{display:flex;align-items:baseline;gap:8px;min-width:0;flex:0 1 auto;margin-right:auto}
 #capN{font:500 12px var(--mono);color:var(--accent)}
 #capT{font-weight:600;font-size:14px;white-space:nowrap}
 #capD{color:var(--muted);min-width:0}
@@ -119,8 +123,8 @@ input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;bac
 
 /* Overlay dock */
 .mix{padding:7px 0 2px}
-.mix .head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px}
-.sliders{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:2px 18px}
+.mix .head{width:max-content;max-width:100%;display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px}
+.sliders{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px 18px;padding:4px 0}
 .sliders label{display:grid;grid-template-columns:auto 1fr auto;align-items:baseline;gap:0 6px;font-size:12px;color:var(--muted)}
 .sliders label b{font:500 10px var(--mono);color:var(--faint)}
 .sliders label span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -137,13 +141,13 @@ input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;bac
 </head>
 <body>
 <header class="bar">
-  <div class="mark"><b>Rigas Modes</b><span class="num">1975/3</span><i>— the sheet as an LLM sees it</i></div>
-  <div class="seg" role="tablist" aria-label="Mode">
+  <div class="mark cl"><b>Rigas Modes</b><span class="num">1975/3</span><i>— the sheet as an LLM sees it</i></div>
+  <div class="seg cl" role="tablist" aria-label="Mode">
     <button class="btn" role="tab" aria-selected="true" data-mode="morph" title="One layer at a time, morphing between neighbours (M)">Diffusion</button>
     <button class="btn" role="tab" aria-selected="false" data-mode="mix" title="Stack several layers at chosen strengths (M)">Overlay</button>
   </div>
   <div class="sep"></div>
-  <div class="grp">
+  <div class="grp cl">
     <button id="torchBtn" class="btn" aria-pressed="false" title="Flashlight: shows another layer under the cursor (F). Alt + scroll or [ ] to resize">Flashlight <kbd>F</kbd></button>
     <span class="grp" id="torchOpts" hidden>
       <select id="torchSel" aria-label="Layer under the flashlight"><option value="0">1 Sheet</option><option value="1">2 Paper</option><option value="2">3 Raking light</option><option value="3">4 Green plate</option><option value="4">5 Pink plate</option><option value="5" selected>6 X-ray</option><option value="6">7 Density</option><option value="7">8 Directions</option><option value="8">9 Skeleton</option><option value="9">10 Crossings</option><option value="10">11 Line 14–16a</option><option value="11">12 Fragments</option><option value="12">13 Guesses</option></select>
@@ -160,7 +164,7 @@ input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;bac
       </select>
     </span>
   </div>
-  <div class="grp right" role="group" aria-label="Zoom">
+  <div class="grp right cl" role="group" aria-label="Zoom">
     <button id="zOut" class="btn" aria-label="Zoom out" title="Zoom out (−)">−</button>
     <input type="range" id="zRange" class="zoomr" min="0" max="1000" value="0" aria-label="Zoom" style="width:90px">
     <button id="zIn" class="btn" aria-label="Zoom in" title="Zoom in (+)">+</button>
@@ -192,21 +196,21 @@ input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;bac
 <footer class="dock">
   <section id="morphUI" aria-label="Diffusion between layers">
     <div class="cap">
-      <div class="what" aria-live="polite"><span id="capN"></span><span id="capT"></span><span id="capD"></span></div>
-      <div class="grp">
+      <div class="what cl" aria-live="polite"><span id="capN"></span><span id="capT"></span><span id="capD"></span></div>
+      <div class="grp cl">
         <button id="drift" class="btn" aria-pressed="false" title="Play through the layers (Space)"><i aria-hidden="true"></i>Drift</button>
         <div class="seg sm" role="group" aria-label="Drift motion"><button class="btn" data-motion="smooth" aria-pressed="true">Smooth</button><button class="btn" data-motion="swing" aria-pressed="false">Swing</button><button class="btn" data-motion="triplet" aria-pressed="false">Triplets</button></div>
         <div class="seg sm" role="group" aria-label="Drift speed"><button class="btn num" data-speed="2" aria-pressed="true">2×</button><button class="btn num" data-speed="4" aria-pressed="false">4×</button><button class="btn num" data-speed="8" aria-pressed="false">8×</button><button class="btn num" data-speed="20" aria-pressed="false">20×</button></div>
         <span class="hint">← → step · 1–9 jump</span>
       </div>
     </div>
-    <div class="strip">
+    <div class="strip cl">
       <input type="range" id="tape" min="0" max="12" step="0.001" value="0" aria-label="Position between layers">
       <div class="chips" id="chips"><button class="chip" data-k="0" title="As it is: four scans stitched into one and turned to landscape."><b>1</b><span>Sheet</span></button><button class="chip" data-k="1" title="Every printed line closed away: only the paper is left, with its folds, stains and holes."><b>2</b><span>Paper</span></button><button class="chip" data-k="2" title="The bare paper lit from the side: creases from folding and wear stand out as relief."><b>3</b><span>Raking light</span></button><button class="chip" data-k="3" title="Only the green ink, as if the sheet had been printed with a single plate."><b>4</b><span>Green plate</span></button><button class="chip" data-k="4" title="Only the pink ink, the second printing plate."><b>5</b><span>Pink plate</span></button><button class="chip" data-k="5" title="Both inks pulled apart: green glows turquoise, pink glows magenta."><b>6</b><span>X-ray</span></button><button class="chip" data-k="6" title="How tangled each spot is. Dark is open paper, bright is where the most lines pile up."><b>7</b><span>Density</span></button><button class="chip" data-k="7" title="Every line coloured by its angle: one hue per direction."><b>8</b><span>Directions</span></button><button class="chip" data-k="8" title="All lines thinned to one pixel, the way a program stores a drawing. Zoom in to see it."><b>9</b><span>Skeleton</span></button><button class="chip" data-k="9" title="About 4,635 points where lines meet or cross, as found by the program."><b>10</b><span>Crossings</span></button><button class="chip" data-k="10" title="The line of model 14–16a. The LLM recognised it by its thicker pen stroke."><b>11</b><span>Line 14–16a</span></button><button class="chip" data-k="11" title="Pieces of this line the LLM managed to join. White threads are its guesses at how the line continues."><b>12</b><span>Fragments</span></button><button class="chip" data-k="12" title="Where the LLM looks for pieces 14, 15, 15a, 16 and 16a. The bright outline is its best version, the thin ones are alternatives."><b>13</b><span>Guesses</span></button></div>
     </div>
   </section>
   <section class="mix" id="mixUI" aria-label="Layer overlay" hidden>
-    <div class="head"><span class="lbl">Blend</span>
+    <div class="head cl"><span class="lbl">Blend</span>
       <div class="seg sm" role="group" aria-label="Blend mode">
         <button class="btn" data-blend="screen" aria-pressed="false">Screen</button>
         <button class="btn" data-blend="lighten" aria-pressed="false">Lighten</button>
@@ -216,7 +220,7 @@ input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;bac
       </div>
       <span class="hint">Layer strength, 0–100 %</span>
     </div>
-    <div class="sliders"><label title="As it is: four scans stitched into one and turned to landscape."><b>1</b><span>Sheet</span><output class="num">100</output><input type="range" min="0" max="100" value="100" data-k="0" aria-label="Sheet"></label><label title="Every printed line closed away: only the paper is left, with its folds, stains and holes."><b>2</b><span>Paper</span><output class="num">0</output><input type="range" min="0" max="100" value="0" data-k="1" aria-label="Paper"></label><label title="The bare paper lit from the side: creases from folding and wear stand out as relief."><b>3</b><span>Raking light</span><output class="num">0</output><input type="range" min="0" max="100" value="0" data-k="2" aria-label="Raking light"></label><label title="Only the green ink, as if the sheet had been printed with a single plate."><b>4</b><span>Green plate</span><output class="num">0</output><input type="range" min="0" max="100" value="0" data-k="3" aria-label="Green plate"></label><label title="Only the pink ink, the second printing plate."><b>5</b><span>Pink plate</span><output class="num">0</output><input type="range" min="0" max="100" value="0" data-k="4" aria-label="Pink plate"></label><label title="Both inks pulled apart: green glows turquoise, pink glows magenta."><b>6</b><span>X-ray</span><output class="num">0</output><input type="range" min="0" max="100" value="0" data-k="5" aria-label="X-ray"></label><label title="How tangled each spot is. Dark is open paper, bright is where the most lines pile up."><b>7</b><span>Density</span><output class="num">0</output><input type="range" min="0" max="100" value="0" data-k="6" aria-label="Density"></label><label title="Every line coloured by its angle: one hue per direction."><b>8</b><span>Directions</span><output class="num">0</output><input type="range" min="0" max="100" value="0" data-k="7" aria-label="Directions"></label><label title="All lines thinned to one pixel, the way a program stores a drawing. Zoom in to see it."><b>9</b><span>Skeleton</span><output class="num">0</output><input type="range" min="0" max="100" value="0" data-k="8" aria-label="Skeleton"></label><label title="About 4,635 points where lines meet or cross, as found by the program."><b>10</b><span>Crossings</span><output class="num">0</output><input type="range" min="0" max="100" value="0" data-k="9" aria-label="Crossings"></label><label title="The line of model 14–16a. The LLM recognised it by its thicker pen stroke."><b>11</b><span>Line 14–16a</span><output class="num">75</output><input type="range" min="0" max="100" value="75" data-k="10" aria-label="Line 14–16a"></label><label title="Pieces of this line the LLM managed to join. White threads are its guesses at how the line continues."><b>12</b><span>Fragments</span><output class="num">0</output><input type="range" min="0" max="100" value="0" data-k="11" aria-label="Fragments"></label><label title="Where the LLM looks for pieces 14, 15, 15a, 16 and 16a. The bright outline is its best version, the thin ones are alternatives."><b>13</b><span>Guesses</span><output class="num">60</output><input type="range" min="0" max="100" value="60" data-k="12" aria-label="Guesses"></label></div>
+    <div class="sliders"><label class="cl" title="As it is: four scans stitched into one and turned to landscape."><b>1</b><span>Sheet</span><output class="num">100</output><input type="range" min="0" max="100" value="100" data-k="0" aria-label="Sheet"></label><label class="cl" title="Every printed line closed away: only the paper is left, with its folds, stains and holes."><b>2</b><span>Paper</span><output class="num">0</output><input type="range" min="0" max="100" value="0" data-k="1" aria-label="Paper"></label><label class="cl" title="The bare paper lit from the side: creases from folding and wear stand out as relief."><b>3</b><span>Raking light</span><output class="num">0</output><input type="range" min="0" max="100" value="0" data-k="2" aria-label="Raking light"></label><label class="cl" title="Only the green ink, as if the sheet had been printed with a single plate."><b>4</b><span>Green plate</span><output class="num">0</output><input type="range" min="0" max="100" value="0" data-k="3" aria-label="Green plate"></label><label class="cl" title="Only the pink ink, the second printing plate."><b>5</b><span>Pink plate</span><output class="num">0</output><input type="range" min="0" max="100" value="0" data-k="4" aria-label="Pink plate"></label><label class="cl" title="Both inks pulled apart: green glows turquoise, pink glows magenta."><b>6</b><span>X-ray</span><output class="num">0</output><input type="range" min="0" max="100" value="0" data-k="5" aria-label="X-ray"></label><label class="cl" title="How tangled each spot is. Dark is open paper, bright is where the most lines pile up."><b>7</b><span>Density</span><output class="num">0</output><input type="range" min="0" max="100" value="0" data-k="6" aria-label="Density"></label><label class="cl" title="Every line coloured by its angle: one hue per direction."><b>8</b><span>Directions</span><output class="num">0</output><input type="range" min="0" max="100" value="0" data-k="7" aria-label="Directions"></label><label class="cl" title="All lines thinned to one pixel, the way a program stores a drawing. Zoom in to see it."><b>9</b><span>Skeleton</span><output class="num">0</output><input type="range" min="0" max="100" value="0" data-k="8" aria-label="Skeleton"></label><label class="cl" title="About 4,635 points where lines meet or cross, as found by the program."><b>10</b><span>Crossings</span><output class="num">0</output><input type="range" min="0" max="100" value="0" data-k="9" aria-label="Crossings"></label><label class="cl" title="The line of model 14–16a. The LLM recognised it by its thicker pen stroke."><b>11</b><span>Line 14–16a</span><output class="num">75</output><input type="range" min="0" max="100" value="75" data-k="10" aria-label="Line 14–16a"></label><label class="cl" title="Pieces of this line the LLM managed to join. White threads are its guesses at how the line continues."><b>12</b><span>Fragments</span><output class="num">0</output><input type="range" min="0" max="100" value="0" data-k="11" aria-label="Fragments"></label><label class="cl" title="Where the LLM looks for pieces 14, 15, 15a, 16 and 16a. The bright outline is its best version, the thin ones are alternatives."><b>13</b><span>Guesses</span><output class="num">60</output><input type="range" min="0" max="100" value="60" data-k="12" aria-label="Guesses"></label></div>
   </section>
 </footer>
 <script>
@@ -293,7 +297,7 @@ const clusters=[...document.querySelectorAll('.cl')], capN=$('capN'), capT=$('ca
 function measureCl(){ clR=clusters.map(el=>{ const r=el.getBoundingClientRect(); return [r.left,r.top,r.right,r.bottom,el.offsetParent!==null]; }); }
 function halos(){ const L=x, T=y, R=x+IW*s, B=y+IH*s;
   clusters.forEach((el,i)=>{ const q=clR[i]; if(!q) return; let o=0; const a=(q[2]-q[0])*(q[3]-q[1]);
-    if(q[4]&&a>0&&ready){ const iw=Math.max(0,Math.min(q[2],R)-Math.max(q[0],L)), ih=Math.max(0,Math.min(q[3],B)-Math.max(q[1],T)); o=Math.min(1,1.6*iw*ih/a); }
+    if(q[4]&&a>0&&ready){ const iw=Math.max(0,Math.min(q[2],R)-Math.max(q[0],L)), ih=Math.max(0,Math.min(q[3],B)-Math.max(q[1],T)); o=Math.min(1,6*iw*ih/a); }
     const val=o.toFixed(2); if(el._o!==val){ el._o=val; el.style.setProperty('--o',val); } }); }
 const thumbs=[]; const NAVW=200, NAVH=Math.round(200*IH/IW);
 
@@ -407,7 +411,7 @@ function setMode(m){
   mode=m; accent=getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()||'#E25A8D'; morphUI.hidden=m!=='morph'; mixUI.hidden=m!=='mix';
   modeBtns.forEach(b=>b.setAttribute('aria-selected',String(b.dataset.mode===m)));
   if(m==='mix'){ drift=false; tween=null; driftBtn.setAttribute('aria-pressed','false'); }
-  lastNear=-1; ui(); invalidate();
+  lastNear=-1; ui(); measureCl(); invalidate();
 }
 function zoomTo(ns,cx,cy,anim){
   ns=Math.max(fit,Math.min(maxS(),ns));
@@ -415,10 +419,10 @@ function zoomTo(ns,cx,cy,anim){
   if(anim&&!reduce){ vt={s0:s,x0:x,y0:y,s1:ns,x1:nx,y1:ny,t0:performance.now(),d:300}; kick(); }
   else{ vt=null; s=ns; x=nx; y=ny; invalidate(); }
 }
-function setTorch(on){ torch.on=!!on; torchBtn.setAttribute('aria-pressed',String(torch.on)); torchOpts.hidden=!torch.on; stage.classList.toggle('torch',torch.on); invalidate(false); }
+function setTorch(on){ torch.on=!!on; torchBtn.setAttribute('aria-pressed',String(torch.on)); torchOpts.hidden=!torch.on; stage.classList.toggle('torch',torch.on); measureCl(); invalidate(false); }
 const drawOpts=$('drawOpts'), drawSel=$('drawSel');
 function startDraw(){ draw_.src=drawSel.value; buildDraw(); draw_.p=0; draw_.playing=true; lastT=0; kick(); invalidate(false); }
-function setTrace(on){ draw_.on=!!on; traceBtn.setAttribute('aria-pressed',String(draw_.on)); drawOpts.hidden=!draw_.on; if(draw_.on) startDraw(); else invalidate(false); }
+function setTrace(on){ draw_.on=!!on; traceBtn.setAttribute('aria-pressed',String(draw_.on)); drawOpts.hidden=!draw_.on; measureCl(); if(draw_.on) startDraw(); else invalidate(false); }
 
 tape.addEventListener('input',()=>{ setDrift(false); tween=null; v=parseFloat(tape.value); ui(); invalidate(); });
 chips.forEach(b=>b.addEventListener('click',()=>goTo(+b.dataset.k)));
@@ -466,6 +470,7 @@ nav.addEventListener('pointerdown',e=>{ e.stopPropagation(); nav.setPointerCaptu
 nav.addEventListener('pointermove',e=>{ e.stopPropagation(); if(nav.hasPointerCapture(e.pointerId)) navMove(e); });
 nav.addEventListener('dblclick',e=>e.stopPropagation());
 const ro=new ResizeObserver(resize); ro.observe(stage); ro.observe(barEl); ro.observe(dockEl);
+window.addEventListener('resize',measureCl); if(document.fonts) document.fonts.ready.then(()=>{ measureCl(); invalidate(false); });
 dockEl.addEventListener('scroll',()=>{ measureCl(); halos(); },{passive:true});
 document.addEventListener('keydown',e=>{
   if(e.target.closest&&e.target.closest('input,select,textarea')&&!['Escape','ArrowLeft','ArrowRight'].includes(e.key)) return;
