@@ -128,16 +128,16 @@ body.intro .site,body.intro .bar,body.intro .dock,body.intro .guide,body.intro #
 .tour.on .show{opacity:1}
 .tarrow{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;pointer-events:none;filter:drop-shadow(0 1px 1.5px rgba(0,0,0,.5)) drop-shadow(0 2px 10px rgba(0,0,0,.3))}
 .tcap{position:absolute;left:0;top:0;isolation:isolate;width:max-content;max-width:min(440px,calc(100vw - 28px));text-align:center;pointer-events:none}
-.tcap::before{content:"";position:absolute;inset:-34px -56px;z-index:-1;background:radial-gradient(closest-side,rgba(0,0,0,.42),rgba(0,0,0,.18) 60%,rgba(0,0,0,0))}
-.tcap .tt{font:500 clamp(19px,1.9vw,27px)/1.18 var(--sans);letter-spacing:-.01em;color:#FFFFFF;text-shadow:0 1px 1.5px rgba(0,0,0,.45),0 2px 16px rgba(0,0,0,.4)}
+.tcap::before{content:"";position:absolute;inset:-40px -66px;z-index:-1;background:radial-gradient(closest-side,rgba(0,0,0,.56),rgba(0,0,0,.3) 55%,rgba(0,0,0,0))}
+.tcap .tt{font:500 clamp(19px,1.9vw,27px)/1.18 var(--sans);letter-spacing:-.01em;text-wrap:balance;color:#FFFFFF;text-shadow:0 1px 1.5px rgba(0,0,0,.45),0 2px 16px rgba(0,0,0,.4)}
 .tcap .tn,.tcue{margin-top:9px;font:400 12px/1.2 var(--sans);letter-spacing:.03em;color:rgba(255,255,255,.88);text-shadow:0 1px 2px rgba(0,0,0,.55),0 0 10px rgba(0,0,0,.35)}
 .tcue{position:absolute;left:0;right:0;top:0;text-align:center;pointer-events:none}
 /* the ring's huge shadow dims everything but the control it frames */
-.tring{position:absolute;border-radius:6px;pointer-events:none;box-shadow:0 0 0 1.5px rgba(255,255,255,.95),0 0 0 200vmax rgba(0,0,0,.56);
+.tring{position:absolute;border-radius:6px;pointer-events:none;box-shadow:0 0 0 1.5px rgba(255,255,255,.95),0 0 0 200vmax rgba(0,0,0,.03);
   transition:opacity .35s,left .35s ease,top .35s ease,width .35s ease,height .35s ease}
 .tour::before,.intro-layer::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .6s;
   background:radial-gradient(ellipse 50% 36% at 50% 50%,rgba(0,0,0,.26),rgba(0,0,0,.1) 55%,rgba(0,0,0,0) 80%)}
-.tour::before{transition:opacity .35s;background:radial-gradient(ellipse 60% 48% at 50% 50%,rgba(0,0,0,.66),rgba(0,0,0,.56) 70%)}
+.tour::before{transition:opacity .35s;background:radial-gradient(ellipse 46% 34% at 50% 50%,rgba(0,0,0,.52),rgba(0,0,0,.26) 55%,rgba(0,0,0,.03) 100%)}
 .tour.on.saystep::before,.intro-layer.ask::before{opacity:1}
 /* giant words: white with a black outline, broken into the lines that make them fill the screen (laid out by script) */
 .say{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;pointer-events:none}
@@ -158,6 +158,7 @@ body.intro .site,body.intro .bar,body.intro .dock,body.intro .guide,body.intro #
   background:color-mix(in srgb,var(--bg) 90%,transparent);box-shadow:0 0 0 1px color-mix(in srgb,var(--fg) 22%,transparent);
   -webkit-backdrop-filter:blur(1px);backdrop-filter:blur(1px);transition:opacity .35s,visibility .35s}
 .guide.off{opacity:0;visibility:hidden}
+.guide.above{z-index:45}
 .guide .h{display:inline-block;font-weight:600;font-size:12.5px;cursor:pointer;margin-bottom:10px}
 .guide .h kbd{font:600 12px var(--mono)}
 .kb{container:kb/inline-size;display:grid;grid-template-columns:repeat(60,minmax(0,1fr));gap:5px;margin-bottom:14px}
@@ -325,7 +326,7 @@ body.intro .site,body.intro .bar,body.intro .dock,body.intro .guide,body.intro #
     <button id="torchBtn" class="btn" aria-pressed="false" title="Flashlight (F): another layer under the cursor. Press and hold on the sheet to fuse the mask; Shift + drag moves the sheet">Flashlight <kbd>F</kbd></button>
     <button id="traceBtn" class="btn" aria-pressed="false" title="Trace (T): tracing paper over the sheet. Press and drag to roll a tracing wheel along a line; Shift + drag moves the sheet. Tip: trace on layer 4 or 5, one ink at a time">Trace <kbd>T</kbd></button>
     <div class="opts" id="torchOpts" hidden>
-      <select id="torchSel" aria-label="Layer under the flashlight" title="Layer to light through"><option value="0">1 Sheet</option><option value="1">2 Paper</option><option value="2">3 Raking light</option><option value="3">4 Green plate</option><option value="4">5 Pink plate</option><option value="5" selected>6 X-ray</option><option value="6">7 Density</option><option value="7">8 Directions</option><option value="8">9 Skeleton</option><option value="9">10 Crossings</option><option value="10">11 Line 14–16a</option><option value="11">12 Fragments</option><option value="12">13 Guesses</option></select>
+      <select id="torchSel" aria-label="Layer under the flashlight" title="Layer to light through"><option value="0" selected>1 Sheet</option><option value="1">2 Paper</option><option value="2">3 Raking light</option><option value="3">4 Green plate</option><option value="4">5 Pink plate</option><option value="5">6 X-ray</option><option value="6">7 Density</option><option value="7">8 Directions</option><option value="8">9 Skeleton</option><option value="9">10 Crossings</option><option value="10">11 Line 14–16a</option><option value="11">12 Fragments</option><option value="12">13 Guesses</option></select>
       <input type="range" id="torchR" min="40" max="420" value="40" aria-label="Flashlight size" title="Flashlight size: Z smaller, X bigger, or Alt + scroll">
     </div>
     <div class="opts" id="traceOpts" hidden>
@@ -342,14 +343,14 @@ body.intro .site,body.intro .bar,body.intro .dock,body.intro .guide,body.intro #
     <output id="zVal" class="num" aria-live="off">×1.0</output>
     <button id="zFit" class="btn" title="Whole sheet (Esc), or double-click the sheet">Fit</button>
     <button id="mapBtn" class="btn" aria-pressed="true" title="Map (M): overview at bottom right; click it to jump">Map <kbd>M</kbd></button>
-    <button id="guideBtn" class="btn" aria-pressed="false" title="Keys of this page (H)">Guide <kbd>H</kbd></button>
+    <button id="guideBtn" class="btn" aria-pressed="false" title="Keyboard controls (H)">Keyboard controls <kbd>H</kbd></button>
   </div>
 </header>
-<aside class="guide off" id="guide" aria-label="Keys">
-  <div class="h" role="button" tabindex="0"><kbd>(H)</kbd> hide this guide</div>
+<aside class="guide off" id="guide" aria-label="Keyboard controls">
+  <div class="h" role="button" tabindex="0"><kbd>(H)</kbd> hide keyboard controls</div>
   <div class="kb" id="kb" aria-hidden="true"></div>
   <div class="lg" id="lg">
-    <div class="lr" data-g="h"><span class="ks"><kbd>H</kbd></span><span>Guide. Show / hide</span></div>
+    <div class="lr" data-g="h"><span class="ks"><kbd>H</kbd></span><span>Keyboard controls. Show / hide</span></div>
     <div class="lr" data-g="d"><span class="ks"><kbd>D</kbd></span><span>Diffusion. The scale 1–13 at the bottom morphs between the layers</span></div>
     <div class="lr" data-g="a"><span class="ks"><kbd>A</kbd></span><span>Overlay. Each layer has a fader. Blend mode.</span></div>
     <div class="lr" data-g="f"><span class="ks"><kbd>F</kbd></span><span>Flashlight. Pick layer to light through and the size.</span></div>
@@ -584,7 +585,7 @@ const KB=[
   [['Esc',4,'esc','Escape','whole sheet'],['1',4,'num','Digit1'],['2',4,'num','Digit2'],['3',4,'num','Digit3'],['4',4,'num','Digit4'],['5',4,'num','Digit5'],['6',4,'num','Digit6'],
    ['7',4,'num','Digit7'],['8',4,'num','Digit8'],['9',4,'num','Digit9'],['0',4],['−',4,'zoom','Minus','zoom out'],['+',4,'zoom','Equal','zoom in'],['⌫',8]],
   [['Tab',6],['Q',4],['W',4],['E',4],['R',4],['T',4,'t','KeyT','Trace'],['Y',4],['U',4],['I',4],['O',4],['P',4],['[',4],[']',4],['\\',6]],
-  [['Caps',7],['A',4,'a','KeyA','Overlay'],['S',4],['D',4,'d','KeyD','Diffusion'],['F',4,'f','KeyF','Flashlight'],['G',4],['H',4,'h','KeyH','Guide'],['J',4],['K',4],['L',4],[';',4],["'",4],['Enter',9]],
+  [['Caps',7],['A',4,'a','KeyA','Overlay'],['S',4],['D',4,'d','KeyD','Diffusion'],['F',4,'f','KeyF','Flashlight'],['G',4],['H',4,'h','KeyH','Keyboard controls'],['J',4],['K',4],['L',4],[';',4],["'",4],['Enter',9]],
   [['Shift',9],['Z',4,'zx','KeyZ','size −'],['X',4,'zx','KeyX','size +'],['C',4],['V',4,'v','KeyV','View'],['B',4],['N',4],['M',4,'m','KeyM','Map'],[',',4],['.',4],['/',4],['Shift',11]],
   [['Ctrl',5,'undo','ControlLeft','+ Z undo'],['⌥',5],['⌘',5,'undo','MetaLeft','+ Z undo'],['Space',23,'space','Space','Drift'],['⌘',5],['⌥',5],['←',4,'step','ArrowLeft','step'],['↑↓',4],['→',4,'step','ArrowRight','step']]];
 const kbEl=$('kb'), keyEls=[];
@@ -680,6 +681,7 @@ const TOUR=[
   {text:'You can zoom in and hide the map here', at:()=>[zFit.closest('.grp')], side:'below', dx:-260},
   {text:'Change Diffusion to Overlay to interact with several layers at once', at:()=>[document.querySelector('.modes')], side:'below', dx:170},
   {text:'Learn about history and tracing process here', at:()=>[...document.querySelectorAll('.menu a[data-view="history"],.menu a[data-view="tracing"]')], side:'below', dx:0},
+  {text:window.matchMedia('(pointer:coarse)').matches?'Keyboard controls are here':'Keyboard controls are here, or press H', at:()=>[guideBtn], side:'below', dx:-170, keys:true},
   {say:true}];
 const tourEl=$('tour'), tourSay=$('tourSay'), tourArrow=$('tourArrow'), tourRing=$('tourRing'), tourCap=$('tourCap'), tourCue=$('tourCue'), tourText=$('tourText');
 const tapWord=window.matchMedia('(pointer:coarse)').matches?'tap':'click';
@@ -687,17 +689,24 @@ let tourI=-1, tourT=0;
 const tourOn=()=>tourI>=0;
 function startTour(){ if(view!=='sheet') return; clearTimeout(tourT); tourI=0; tourEl.hidden=false; showTourStep();
   requestAnimationFrame(()=>requestAnimationFrame(()=>tourEl.classList.add('on'))); }
-let tourTok=0;
+let tourTok=0, tourGo=null, peekT=0, peeking=false;
+// the keyboard controls panel, lifted above the tour for a moment
+function peekKeys(on){ clearTimeout(peekT);
+  if(on){ peeking=true; guideEl.classList.add('above'); setGuide(true); return; }
+  if(!peeking) return; peeking=false; setGuide(false); setTimeout(()=>{ if(!peeking) guideEl.classList.remove('above'); },400); }
 function showTourStep(){
   const st=TOUR[tourI], n=TOUR.length, tok=++tourTok, count=`${tourI+1} / ${n} · ${tapWord} to ${tourI===n-1?'start':'continue'}`;
+  peekKeys(false);
   const moving=tourCap.classList.contains('show');
   tourSay.classList.toggle('show',!!st.say); tourCue.classList.toggle('show',!!st.say); tourEl.classList.toggle('saystep',!!st.say);
   tourRing.classList.toggle('show',!st.say); tourCap.classList.remove('show'); tourArrow.classList.remove('show');
   tourText.textContent=st.say?tourSay.dataset.say:st.text;
   if(st.say){ renderSay(tourSay); tourCue.textContent=count; tourCue.style.top=Math.round(tourSay._bottom+14)+'px'; return; }
-  const go=()=>{ if(tok!==tourTok||!tourOn()) return;
+  const go=tourGo=()=>{ if(tok!==tourTok||!tourOn()) return; tourGo=null;
     tourCap.querySelector('.tt').textContent=st.text; tourCap.querySelector('.tn').textContent=count;
     placeTour(st); tourCap.classList.add('show'); tourArrow.classList.add('show'); };
+  // keyboard controls: the panel opens for two seconds while the ring sits on its button, then the pointer shows where it lives
+  if(st.keys){ placeTour(st); peekKeys(true); peekT=setTimeout(()=>{ if(tok!==tourTok) return; peekKeys(false); go(); },2000); return; }
   if(moving) setTimeout(go,180); else go();
 }
 function relayoutTour(){ const st=TOUR[tourI]; if(st.say){ renderSay(tourSay); tourCue.style.top=Math.round(tourSay._bottom+14)+'px'; } else placeTour(st); }
@@ -722,9 +731,11 @@ function placeTour(st){
   tourArrow.replaceChildren(...[['rgba(0,0,0,.3)',4.5],['#FFFFFF',2]].map(([c,w])=>{ const pth=document.createElementNS('http://www.w3.org/2000/svg','path');
     pth.setAttribute('d',d); pth.setAttribute('fill','none'); pth.setAttribute('stroke',c); pth.setAttribute('stroke-width',w); pth.setAttribute('stroke-linecap','round'); pth.setAttribute('stroke-linejoin','round'); return pth; }));
 }
-function nextTour(){ if(!tourOn()) return; if(tourI>=TOUR.length-1) endTour(); else{ tourI++; showTourStep(); } }
+function nextTour(){ if(!tourOn()) return;
+  if(peeking&&tourGo){ peekKeys(false); tourGo(); return; }  // a click while the panel is open just closes it
+  if(tourI>=TOUR.length-1) endTour(); else{ tourI++; showTourStep(); } }
 // the layer keeps catching clicks while it fades, so the click that ends it does not land on a button under it
-function endTour(){ if(!tourOn()) return; tourI=-1; tourEl.classList.remove('on'); clearTimeout(tourT); tourT=setTimeout(()=>{ tourEl.hidden=true; },500);
+function endTour(){ if(!tourOn()) return; tourI=-1; peekKeys(false); tourEl.classList.remove('on'); clearTimeout(tourT); tourT=setTimeout(()=>{ tourEl.hidden=true; },500);
   // the welcome ends with the sheet already moving: Drift on, at 8×
   if(view==='sheet'){ setSpeed(8); setDrift(true); } }
 tourEl.addEventListener('click',nextTour);
@@ -903,10 +914,13 @@ function setTorch(on){ on=!!on; if(on&&trace.on) setTrace(false);
   torch.on=on; torchBtn.setAttribute('aria-pressed',String(on)); torchOpts.hidden=!on; if(!on){ fz.held=false; fz.L=0; }
   syncStage(); invalidate(false); }
 function fuseHold(on){ on=!!on&&torch.on; if(fz.held===on) return; fz.held=on; if(on) fz.t=0; invalidate(false); }
+// Trace starts close up: x4, around the pointer if it is over the sheet, else around the middle of the view
+const hov={x:0,y:0,in:false}; let traceZoomLater=false;
+function traceZoom(){ if(!ready){ traceZoomLater=true; return; } zoomTo(4*fit,hov.in?hov.x:W/2,hov.in?hov.y:CY(),true); }
 function setTrace(on){ on=!!on; if(on&&torch.on) setTorch(false);
   if(!on&&trace.cur) strokeEnd();
   trace.on=on; traceBtn.setAttribute('aria-pressed',String(on)); traceOpts.hidden=!on; if(!on) setLift(false);
-  syncStage(); syncTraceBtns(); invalidate(false); }
+  syncStage(); syncTraceBtns(); invalidate(false); if(on) traceZoom(); }
 function setLift(on){ trace.lifted=!!on&&trace.on; tviewBtns.forEach(b=>b.setAttribute('aria-pressed',String((b.dataset.tview==='white')===trace.lifted))); invalidate(false); }
 function syncTraceBtns(){ undoBtn.disabled=!trace.strokes.length&&!trace.cleared; clearBtn.disabled=pngBtn.disabled=!trace.strokes.length; }
 const TKEY='rigas-trace-v1';
@@ -1058,6 +1072,7 @@ stage.addEventListener('pointerdown',e=>{
 });
 stage.addEventListener('pointermove',e=>{
   const r=stage.getBoundingClientRect(), mx=e.clientX-r.left, my=e.clientY-r.top, touch=e.pointerType==='touch';
+  hov.x=mx; hov.y=my; hov.in=!touch;
   if(torch.on){ torch.mx=mx; torch.my=my; torch.inside=true; torch.hover=!touch; invalidate(false); }
   if(trace.on){ const d=Math.hypot(mx-trace.mx,my-trace.my); trace.mx=mx; trace.my=my; trace.inside=true; trace.hover=!touch;
     if(trace.cur&&e.pointerId===toolPid){ trace.roll+=d/7; strokeMove(mx,my); } else invalidate(false); }
@@ -1067,7 +1082,7 @@ stage.addEventListener('pointermove',e=>{
     if(pinch){ x+=m.x-pinch.m.x; y+=m.y-pinch.m.y; zoomTo(s*d/pinch.d,m.x-r.left,m.y-r.top,false); }
     pinch={d,m}; }
 });
-stage.addEventListener('pointerleave',()=>{ if(torch.on) torch.inside=false; if(trace.on&&!trace.cur) trace.inside=false; invalidate(false); });
+stage.addEventListener('pointerleave',()=>{ hov.in=false; if(torch.on) torch.inside=false; if(trace.on&&!trace.cur) trace.inside=false; invalidate(false); });
 const up=e=>{ pts.delete(e.pointerId); pinch=null; if(!pts.size) stage.classList.remove('grabbing'); if(e.pointerId===toolPid){ toolPid=null; toolUp(); } };
 stage.addEventListener('pointerup',up); stage.addEventListener('pointercancel',up);
 window.addEventListener('blur',()=>{ toolPid=null; toolUp(); });
@@ -1135,6 +1150,7 @@ if(window.matchMedia('(max-width:720px)').matches) setMap(false);
 readAccent(); loadTrace(); route(); resize(); ui();
 loadLayer(0).then(()=>{
   ready=true; stage.classList.add('ready'); resize(); introAsk();
+  if(traceZoomLater){ traceZoomLater=false; zoomTo(4*fit,W/2,CY(),false); }
   for(let i=1;i<N;i++) loadLayer(i).catch(()=>{});
 }).catch(()=>{ loadingEl.textContent='The sheet could not be loaded. Reload the page to try again.'; });
 })();
