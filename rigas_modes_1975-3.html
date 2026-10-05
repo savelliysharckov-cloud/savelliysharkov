@@ -133,8 +133,10 @@ body.intro .site,body.intro .bar,body.intro .dock,body.intro .guide,body.intro #
 .tcap .tn,.tcue{margin-top:9px;font:400 12px/1.2 var(--sans);letter-spacing:.03em;color:rgba(255,255,255,.88);text-shadow:0 1px 2px rgba(0,0,0,.55),0 0 10px rgba(0,0,0,.35)}
 .tcue{position:absolute;left:0;right:0;top:0;text-align:center;pointer-events:none}
 /* the ring's huge shadow dims everything but the control it frames */
-.tring{position:absolute;border-radius:6px;pointer-events:none;box-shadow:0 0 0 1.5px rgba(255,255,255,.95),0 0 0 200vmax rgba(0,0,0,.03);
-  transition:opacity .35s,left .35s ease,top .35s ease,width .35s ease,height .35s ease}
+.tring{position:absolute;pointer-events:none;box-shadow:0 0 0 200vmax rgba(0,0,0,.03)}
+.tour .tring{transition:none}
+.tring svg{position:absolute;left:-10px;top:-10px;overflow:visible;filter:drop-shadow(0 1px 1px rgba(0,0,0,.35))}
+.tring path{fill:none;stroke:var(--accent);stroke-width:2.2;stroke-linecap:butt;stroke-linejoin:miter}
 .tour::before,.intro-layer::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .6s;
   background:radial-gradient(ellipse 50% 36% at 50% 50%,rgba(0,0,0,.26),rgba(0,0,0,.1) 55%,rgba(0,0,0,0) 80%)}
 .tour::before{transition:opacity .35s;background:radial-gradient(ellipse 46% 34% at 50% 50%,rgba(0,0,0,.52),rgba(0,0,0,.26) 55%,rgba(0,0,0,.03) 100%)}
@@ -151,6 +153,14 @@ body.intro .site,body.intro .bar,body.intro .dock,body.intro .guide,body.intro #
   font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:color-mix(in srgb,var(--bg) 58%,transparent);opacity:0;transition:opacity .8s}
 .intro-layer .cue.on{opacity:.85}
 .intro-layer.out .q,.intro-layer.out .cue{opacity:0;transition-duration:.5s}
+/* the answer: 'Some could!' and what the site is, after the question */
+.intro-layer .a,.intro-layer .about{opacity:0;transform:translateY(8px);transition:opacity .7s,transform .7s}
+.intro-layer.ans .q{opacity:0;transform:none;transition-duration:.35s}
+.intro-layer.ans .a,.intro-layer.ans .about{opacity:1;transform:none}
+.intro-layer .about{position:absolute;left:50%;top:0;margin:0;width:min(640px,calc(100vw - 40px));translate:-50% 0;text-align:center;isolation:isolate;pointer-events:none;
+  font:500 clamp(17px,1.6vw,23px)/1.3 var(--sans);letter-spacing:-.005em;text-wrap:balance;color:#FFFFFF;text-shadow:0 1px 1.5px rgba(0,0,0,.45),0 2px 16px rgba(0,0,0,.4)}
+.intro-layer .about::before{content:"";position:absolute;inset:-34px -60px;z-index:-1;background:radial-gradient(closest-side,rgba(0,0,0,.5),rgba(0,0,0,.26) 55%,rgba(0,0,0,0))}
+.intro-layer.out .a,.intro-layer.out .about{opacity:0;transition-duration:.5s}
 
 /* the guide: a keyboard with the keys this page uses, and what each one does (H) */
 .guide{position:fixed;left:50%;top:calc(var(--insT) + 14px);z-index:7;transform:translateX(-50%);width:min(940px,calc(100vw - 24px));
@@ -306,6 +316,8 @@ body.intro .site,body.intro .bar,body.intro .dock,body.intro .guide,body.intro #
 </div>
 <div class="intro-layer" id="intro" role="button" aria-label="Start">
   <svg class="say q" data-say="Can you find a dress?" aria-hidden="true"></svg><span class="vh">Can you find a dress?</span>
+  <svg class="say a" data-say="Some could!" aria-hidden="true"></svg>
+  <p class="about" id="introAbout">Rigas Modes 1975/3 is a single sheet with the patterns for dozens of garments printed on top of one another. This site takes the sheet apart in layers, shows how an AI tried to do the same and where it got lost, and lets you try it yourself.</p>
   <span class="cue">click</span>
 </div>
 <header class="site" id="site">
@@ -535,7 +547,7 @@ let s=1, x=0, y=0, fit=1, dpr=1, W=1, H=1, vt=null, zDrag=false, insT=0, insB=0,
 let accent='#C47570';
 const torch={on:false, layer:+torchSel.value, r:+torchR.value, mx:0, my:0, inside:false, hover:true};
 // fuse: while the button is held the flashlight mask feathers out, up to 10x the diameter; L is log of that scale
-const LMAX=Math.log(10), fz={held:false, t:0, L:0};
+const LMAX=Math.log(10), fz={held:false, t:0, L:0, j:0};
 // trace: tracing paper over the sheet; a tracing wheel leaves evenly spaced holes, kept in sheet coordinates
 const trace={on:false, lifted:false, strokes:[], cleared:null, cur:null, mx:0, my:0, inside:false, hover:true, roll:0};
 let holes=new Path2D(), curHoles=null;
@@ -629,7 +641,9 @@ window.addEventListener('scroll',tipHide,true);
 /* ---------- intro: crop -> question -> pull back ---------- */
 // the first frame: most of the line field with its edge numbers, the title column left out
 const INTRO={x:492,y:213,w:2800,h:2100}, introEl=$('intro'), introCue=introEl.querySelector('.cue');
-let introStep=location.hash.length>1?3:0, cueT=0;
+let introStep=location.hash.length>1?3:0, cueT=0, introA=false;
+const introAbout=$('introAbout'), introAns=introEl.querySelector('svg.say.a');
+function placeAbout(){ if(introAns&&introAns._bottom) introAbout.style.top=Math.round(introAns._bottom+22)+'px'; }
 if(introStep===3){ introEl.hidden=true; document.body.classList.remove('intro'); }
 introCue.textContent=window.matchMedia('(pointer:coarse)').matches?'tap':'click';
 function introCam(){ s=Math.max(W/INTRO.w,H/INTRO.h); x=-INTRO.x*s; y=H/2-(INTRO.y+INTRO.h/2)*s; }
@@ -637,6 +651,7 @@ function armCue(){ clearTimeout(cueT); introCue.classList.remove('on'); cueT=set
 function introAsk(){ if(introStep!==0) return; introStep=1; introEl.classList.add('ask'); armCue(); }
 function introNext(){
   if(!ready||introStep!==1) return;
+  if(!introA){ introA=true; introEl.classList.add('ans'); placeAbout(); armCue(); return; }  // first click: the answer
   introStep=2; clearTimeout(cueT); introEl.classList.remove('ask'); introEl.classList.add('out');
   const [x1,y1]=clampTo(fit,0,0), px=(W/2-x)/s, py=(H/2-y)/s;
   vt={io:true,s0:s,x0:x,y0:y,s1:fit,x1,y1,px,py,ax0:W/2,ay0:H/2,ax1:x1+px*fit,ay1:y1+py*fit,t0:performance.now(),d:reduce?1:2600};
@@ -673,7 +688,7 @@ function renderSay(svg){
     t.setAttribute('x',(W/2).toFixed(1)); t.setAttribute('y',(top+(i+.5)*lh+.35*fs).toFixed(1)); t.setAttribute('text-anchor','middle');
     t.setAttribute('font-size',fs.toFixed(1)); t.textContent=ln; return t; }));
 }
-const says=[...document.querySelectorAll('svg.say')], renderSays=()=>says.forEach(renderSay);
+const says=[...document.querySelectorAll('svg.say')], renderSays=()=>{ says.forEach(renderSay); placeAbout(); };
 renderSays(); window.addEventListener('resize',renderSays);
 if(document.fonts){ document.fonts.load(sayFont(100)).then(renderSays,()=>{}); document.fonts.ready.then(renderSays); }
 
@@ -682,7 +697,7 @@ const TOUR=[
   {text:'You can drift in different rhythms and speeds', at:()=>[driftBtn.closest('.grp')], side:'above', dx:0},
   {text:'You can use flashlight or trace to interact with the pattern', at:()=>[torchBtn.closest('.tools')], side:'below', dx:180},
   {text:'You can zoom in and hide the map here', at:()=>[zFit.closest('.grp')], side:'below', dx:-260},
-  {text:'Change Diffusion to Overlay to interact with several layers at once', at:()=>[document.querySelector('.modes')], side:'below', dx:170},
+  {text:'Overlay allows you to mix all the layers at once', at:()=>[document.querySelector('.modes')], side:'below', dx:170},
   {text:'Learn about history and tracing process here', at:()=>[...document.querySelectorAll('.menu a[data-view="history"],.menu a[data-view="tracing"]')], side:'below', dx:0},
   {text:window.matchMedia('(pointer:coarse)').matches?'Keyboard controls are here':'Keyboard controls are here, or press H', at:()=>[guideBtn], side:'below', dx:-170, keys:true},
   {say:true}];
@@ -702,20 +717,31 @@ function showTourStep(){
   peekKeys(false);
   const moving=tourCap.classList.contains('show');
   tourSay.classList.toggle('show',!!st.say); tourCue.classList.toggle('show',!!st.say); tourEl.classList.toggle('saystep',!!st.say);
-  tourRing.classList.toggle('show',!st.say); tourCap.classList.remove('show'); tourArrow.classList.remove('show');
+  tourRing.classList.remove('show'); tourCap.classList.remove('show'); tourArrow.classList.remove('show');
   tourText.textContent=st.say?tourSay.dataset.say:st.text;
   if(st.say){ renderSay(tourSay); tourCue.textContent=count; tourCue.style.top=Math.round(tourSay._bottom+14)+'px'; return; }
   const go=tourGo=()=>{ if(tok!==tourTok||!tourOn()) return; tourGo=null;
     tourCap.querySelector('.tt').textContent=st.text; tourCap.querySelector('.tn').textContent=count;
-    placeTour(st); tourCap.classList.add('show'); tourArrow.classList.add('show'); };
+    placeTour(st); tourRing.classList.add('show'); tourCap.classList.add('show'); tourArrow.classList.add('show'); };
   // keyboard controls: the panel opens for two seconds while the ring sits on its button, then the pointer shows where it lives
-  if(st.keys){ placeTour(st); peekKeys(true); peekT=setTimeout(()=>{ if(tok!==tourTok) return; peekKeys(false); go(); },2000); return; }
+  if(st.keys){ placeTour(st); tourRing.classList.add('show'); peekKeys(true); peekT=setTimeout(()=>{ if(tok!==tourTok) return; peekKeys(false); go(); },2000); return; }
   if(moving) setTimeout(go,180); else go();
 }
 function relayoutTour(){ const st=TOUR[tourI]; if(st.say){ renderSay(tourSay); tourCue.style.top=Math.round(tourSay._bottom+14)+'px'; } else placeTour(st); }
 function unionRect(els){ let l=Infinity,t=Infinity,r=-Infinity,b=-Infinity;
   for(const el of els){ if(!el) continue; const q=el.getBoundingClientRect(); if(!q.width||!q.height) continue; l=Math.min(l,q.left); t=Math.min(t,q.top); r=Math.max(r,q.right); b=Math.max(b,q.bottom); }
   return isFinite(l)?{l,t,r,b,w:r-l,h:b-t,cx:(l+r)/2,cy:(t+b)/2}:null; }
+// a frame drawn by hand: four slightly bowed strokes that run past the corners; the same step always gets the same strokes
+function roughRect(w,h,seed){
+  let a=seed*2654435761>>>0; const rnd=()=>{ a=(a+0x6D2B79F5)>>>0; let t=a; t=Math.imul(t^t>>>15,t|1); t^=t+Math.imul(t^t>>>7,t|61); return ((t^t>>>14)>>>0)/4294967296; };
+  const j=v=>(rnd()*2-1)*v, o=10, f=v=>v.toFixed(1);
+  const side=(x1,y1,x2,y2)=>{ const L=Math.hypot(x2-x1,y2-y1)||1, ux=(x2-x1)/L, uy=(y2-y1)/L, e1=3+rnd()*6, e2=3+rnd()*6;
+    const ax=x1-ux*e1+j(1.2), ay=y1-uy*e1+j(1.2), bx=x2+ux*e2+j(1.2), by=y2+uy*e2+j(1.2), bow=j(Math.min(3.2,L*.012));
+    return `M${f(ax+o)} ${f(ay+o)}Q${f((ax+bx)/2-uy*bow+o)} ${f((ay+by)/2+ux*bow+o)} ${f(bx+o)} ${f(by+o)}`; };
+  const svg=document.createElementNS('http://www.w3.org/2000/svg','svg'); svg.setAttribute('width',w+2*o); svg.setAttribute('height',h+2*o);
+  const p=document.createElementNS('http://www.w3.org/2000/svg','path');
+  p.setAttribute('d',[side(0,0,w,0),side(w,0,w,h),side(w,h,0,h),side(0,h,0,0)].join('')); svg.append(p); return svg;
+}
 function placeTour(st){
   const W=window.innerWidth, H=window.innerHeight, R=unionRect(st.at()), cw=tourCap.offsetWidth, ch=tourCap.offsetHeight, m=14;
   if(!R){ tourCap.style.transform=`translate(${Math.round((W-cw)/2)}px,${Math.round((H-ch)/2)}px)`; tourArrow.replaceChildren(); tourRing.style.width='0'; return; }
@@ -724,6 +750,7 @@ function placeTour(st){
   cx=Math.max(m+cw/2,Math.min(W-m-cw/2,cx)); cy=Math.max(m+ch/2,Math.min(H-m-ch/2,cy));
   tourCap.style.transform=`translate(${Math.round(cx-cw/2)}px,${Math.round(cy-ch/2)}px)`;
   const pad=6; Object.assign(tourRing.style,{left:(R.l-pad)+'px',top:(R.t-pad)+'px',width:(R.w+2*pad)+'px',height:(R.h+2*pad)+'px'});
+  tourRing.replaceChildren(roughRect(R.w+2*pad,R.h+2*pad,tourI+1));
   // the arrow runs from the caption's edge to the ring's edge, on the line between their centres
   const dx=R.cx-cx, dy=R.cy-cy, len=Math.hypot(dx,dy)||1, ux=dx/len, uy=dy/len;
   const edge=(x0,y0,hw,hh,vx,vy)=>{ const k=Math.min(hw/Math.max(1e-6,Math.abs(vx)),hh/Math.max(1e-6,Math.abs(vy))); return [x0+vx*k,y0+vy*k]; };
@@ -783,6 +810,12 @@ function renderBase(){
   else layers.forEach((img,k)=>blit(bctx,img,mix[k],k===0?'source-over':OP[blend],0,0,W,H));
   bctx.globalAlpha=1; bctx.globalCompositeOperation='source-over';
 }
+function wobble(cx,cy,r,t,a){ const P=new Path2D(), n=200;
+  for(let i=0;i<=n;i++){ const th=i/n*Math.PI*2;
+    const k=.55*Math.sin(3*th+1.3*t)+.35*Math.sin(7*th-2.1*t+1.7)+.22*Math.sin(13*th+3.7*t+.4)+.14*Math.sin(29*th-6.1*t)+.1*Math.sin(53*th+9.3*t+2.2)
+      +.12*Math.sin(80*th+25*t)+.08*Math.sin(140*th-32*t)+.12*(Math.random()-.5);
+    const rr=r*(1+a*k), px=cx+Math.cos(th)*rr, py=cy+Math.sin(th)*rr; if(i) P.lineTo(px,py); else P.moveTo(px,py); }
+  P.closePath(); return P; }
 function drawLens(){
   if(!isOk(torch.layer)) return;
   // f: how far the fuse has gone. The whole figure grows to R, and its solid core gives way to a soft feather
@@ -797,7 +830,10 @@ function drawLens(){
   const cx=(torch.mx-bx)*dpr, cy=(torch.my-by)*dpr, c=core/R;
   const g=lctx.createRadialGradient(cx,cy,0,cx,cy,R*dpr); g.addColorStop(0,'#000');
   for(let i=0;i<=12;i++) g.addColorStop(Math.min(1,c+(1-c)*i/12),`rgba(0,0,0,${(.5+.5*Math.cos(Math.PI*i/12)).toFixed(3)})`);
-  lctx.fillStyle=g; lctx.fillRect(0,0,dw,dh); lctx.globalCompositeOperation='source-over';
+  lctx.fillStyle=g; lctx.fillRect(0,0,dw,dh);
+  // trembling edge: the soft rim is cut by a contour that ripples in several scales and shivers fast (after the portfolio shader)
+  if(fz.j>0&&!reduce){ lctx.fillStyle='#000'; lctx.fill(wobble(cx,cy,(core+(R-core)*.6)*dpr,performance.now()/1000,.075*fz.j)); }
+  lctx.globalCompositeOperation='source-over';
   ctx.drawImage(lens,0,0,dw,dh,bx*dpr,by*dpr,dw,dh);
   const ra=1-3*f; if(ra<=0) return;  // the burnt rim fades away as the mask fuses
   const ex=torch.mx*dpr, ey=torch.my*dpr, r=R*dpr;
@@ -879,12 +915,14 @@ function loop(t){
   if(tween){ const p=Math.min(1,(t-tween.t0)/tween.d); const e=tween.snap?1-Math.pow(1-p,3):(p<.5?4*p*p*p:1-Math.pow(-2*p+2,3)/2);
     v=tween.a+(tween.b-tween.a)*e; if(p>=1) tween=null; baseDirty=true; dirty=true; ui(); }
   else if(drift&&motion==='smooth'){ v+=dir*RATE*speed*dt; if(v>=N-1){v=N-1;dir=-1;} if(v<=0){v=0;dir=1;} baseDirty=true; dirty=true; ui(); }
-  if(fz.held||fz.L>0){
-    if(fz.held){ fz.t+=dt; fz.L=Math.min(LMAX,fz.L+Math.min(.4,.05+.06*fz.t)*dt); }
+  if(fz.held||fz.L>0||fz.j>0){
+    if(fz.held){ fz.t+=dt; fz.L=Math.min(LMAX,fz.L+Math.min(1.8,.7+1.2*fz.t)*dt); }
     else{ fz.L*=Math.exp(-dt/.55); if(fz.L<.004) fz.L=0; }
+    // the edge trembles while the light spreads, and settles once it stops
+    fz.j+=((fz.held&&fz.L<LMAX?1:0)-fz.j)*Math.min(1,dt*9); if(fz.j<.01) fz.j=0;
     if(torch.on&&torch.inside) dirty=true; }
   if(dirty&&view==='sheet') draw();
-  if(tween||drift||vt||(fz.held&&fz.L<LMAX)||(!fz.held&&fz.L>0)) raf=requestAnimationFrame(loop); else lastT=0;
+  if(tween||drift||vt||(fz.held&&fz.L<LMAX)||(!fz.held&&fz.L>0)||fz.j>0) raf=requestAnimationFrame(loop); else lastT=0;
 }
 function kick(){ if(!raf) raf=requestAnimationFrame(loop); }
 function invalidate(b){ if(b!==false) baseDirty=true; dirty=true; kick(); }
@@ -914,7 +952,7 @@ function zoomTo(ns,cx,cy,anim){
 /* ---------- tools: flashlight and trace (one at a time) ---------- */
 function syncStage(){ stage.classList.toggle('torch',torch.on); stage.classList.toggle('trace',trace.on); }
 function setTorch(on){ on=!!on; if(on&&trace.on) setTrace(false);
-  torch.on=on; torchBtn.setAttribute('aria-pressed',String(on)); torchOpts.hidden=!on; if(!on){ fz.held=false; fz.L=0; }
+  torch.on=on; torchBtn.setAttribute('aria-pressed',String(on)); torchOpts.hidden=!on; if(!on){ fz.held=false; fz.L=0; fz.j=0; }
   syncStage(); invalidate(false); }
 function fuseHold(on){ on=!!on&&torch.on; if(fz.held===on) return; fz.held=on; if(on) fz.t=0; invalidate(false); }
 // Trace starts close up: x4, around the pointer if it is over the sheet, else around the middle of the view
