@@ -658,9 +658,11 @@ function placeAbout(){ if(!introAns||!introAns._bottom) return;
   const gap=22, sh=introAns._bottom-introAns._top, ph=introAbout.offsetHeight, top=(window.innerHeight-(sh+gap+ph))/2, d=Math.round(top-introAns._top);
   introAns.style.translate=`0 ${d}px`; introAbout.style.top=Math.round(introAns._bottom+d+gap)+'px'; }
 if(introStep===3){ introEl.hidden=true; document.body.classList.remove('intro'); setTimeout(()=>inviteArm(),0);
-  if(introSeen&&location.hash.length<=1){ const b=document.createElement('button'); b.className='replay'; b.type='button'; b.textContent='Replay intro';
-    b.addEventListener('click',()=>{ try{ sessionStorage.setItem('rigas-intro-again','1'); }catch(e){} location.hash=''; location.reload(); });
-    $('site').append(b); requestAnimationFrame(()=>b.classList.add('on')); setTimeout(()=>{ b.classList.remove('on'); setTimeout(()=>b.remove(),700); },3000); } }
+ }
+// 'Replay intro' stays in the top bar for good
+{ const b=document.createElement('button'); b.className='replay on'; b.type='button'; b.textContent='Replay intro';
+  b.addEventListener('click',()=>{ try{ sessionStorage.setItem('rigas-intro-again','1'); }catch(e){} location.hash=''; location.reload(); });
+  $('site').append(b); }
 introCue.textContent=window.matchMedia('(pointer:coarse)').matches?'tap':'click';
 function introCam(){ s=Math.max(W/INTRO.w,H/INTRO.h); x=-INTRO.x*s; y=H/2-(INTRO.y+INTRO.h/2)*s; }
 function armCue(){ clearTimeout(cueT); introCue.classList.remove('on'); cueT=setTimeout(()=>{ if(introStep<2) introCue.classList.add('on'); },4500); }
