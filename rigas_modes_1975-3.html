@@ -714,7 +714,7 @@ if(document.fonts){ document.fonts.load(sayFont(100)).then(renderSays,()=>{}); d
 const TOUR=[
   {text:'You can drift in different rhythms and speeds', at:()=>[driftBtn.closest('.grp')], side:'above', dx:0},
   {text:'You can use flashlight or trace to interact with the pattern', at:()=>[torchBtn.closest('.tools')], side:'below', dx:180},
-  {text:'You can zoom in and hide the map here', at:()=>[zFit.closest('.grp')], side:'below', dx:-260},
+  {text:'You can zoom in and hide the map here', at:()=>[...zFit.closest('.grp').children].filter(el=>el.id!=='guideBtn'&&el.offsetParent!==null), side:'below', dx:-260},
   {text:'Overlay allows you to mix all the layers at once', at:()=>[document.querySelector('.modes')], side:'below', dx:170},
   {text:'Learn about history and tracing process here', at:()=>[...document.querySelectorAll('.menu a[data-view="history"],.menu a[data-view="tracing"]')], side:'below', dx:0},
   {text:window.matchMedia('(pointer:coarse)').matches?'Keyboard controls are here':'Keyboard controls are here, or press H', at:()=>[guideBtn], side:'below', dx:-170, keys:true},
@@ -743,7 +743,7 @@ function showTourStep(){
     placeTour(st); tourRing.classList.add('show'); tourCap.classList.add('show'); tourArrow.classList.add('show'); };
   // keyboard controls: the panel opens for two seconds while the ring sits on its button, then the pointer shows where it lives
   if(st.keys){ peekT=setTimeout(()=>{ if(tok!==tourTok) return; peekKeys(true);
-    peekT=setTimeout(()=>{ if(tok!==tourTok) return; peekKeys(false); go(); },3000); },500); return; }
+    peekT=setTimeout(()=>{ if(tok!==tourTok) return; peekKeys(false); go(); },1000); },500); return; }
   if(moving) setTimeout(go,180); else go();
 }
 function relayoutTour(){ const st=TOUR[tourI]; if(st.say){ renderSay(tourSay); tourCue.style.top=Math.round(tourSay._bottom+14)+'px'; } else placeTour(st); }
