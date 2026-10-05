@@ -138,6 +138,9 @@ body.intro .site,body.intro .bar,body.intro .dock,body.intro .guide,body.intro #
 .tring svg{position:absolute;left:-10px;top:-10px;overflow:visible;filter:drop-shadow(0 1px 1px rgba(0,0,0,.35))}
 .tring path,.invite path{fill:none;stroke:var(--accent);stroke-width:2.2;stroke-linecap:butt;stroke-linejoin:miter}
 .invite{position:fixed;z-index:30;pointer-events:none}
+.replay{position:fixed;right:calc(16px + env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:30;padding:6px 10px 7px;border:0;border-radius:3px;cursor:pointer;
+  font:500 12px/1 var(--sans);letter-spacing:.02em;color:var(--fg);background:color-mix(in srgb,var(--bg) 82%,transparent);opacity:0;transition:opacity .5s}
+.replay.on{opacity:1}
 .invite svg{position:absolute;left:-10px;top:-10px;overflow:visible}
 .invite span{position:absolute;left:50%;top:calc(100% + 10px);translate:-50% 0;white-space:nowrap;font:500 12px/1 var(--sans);letter-spacing:.02em;color:var(--accent)}
 .tour::before,.intro-layer::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .6s;
@@ -550,7 +553,7 @@ let s=1, x=0, y=0, fit=1, dpr=1, W=1, H=1, vt=null, zDrag=false, insT=0, insB=0,
 let accent='#C47570';
 const torch={on:false, layer:+torchSel.value, r:+torchR.value, mx:0, my:0, inside:false, hover:true};
 // fuse: while the button is held the flashlight mask feathers out, up to 10x the diameter; L is log of that scale
-const LMAX=Math.log(10), fz={held:false, t:0, L:0, j:0};
+const LMAX=Math.log(5), fz={held:false, t:0, L:0, j:0};
 // trace: tracing paper over the sheet; a tracing wheel leaves evenly spaced holes, kept in sheet coordinates
 const trace={on:false, lifted:false, strokes:[], cleared:null, cur:null, mx:0, my:0, inside:false, hover:true, roll:0};
 let holes=new Path2D(), curHoles=null;
@@ -644,12 +647,17 @@ window.addEventListener('scroll',tipHide,true);
 /* ---------- intro: crop -> question -> pull back ---------- */
 // the first frame: most of the line field with its edge numbers, the title column left out
 const INTRO={x:492,y:213,w:2800,h:2100}, introEl=$('intro'), introCue=introEl.querySelector('.cue');
-let introStep=location.hash.length>1?3:0, cueT=0, introA=false;
+let introSeen=false, introAgain=false;
+try{ introSeen=localStorage.getItem('rigas-intro-seen')==='1'; introAgain=sessionStorage.getItem('rigas-intro-again')==='1'; sessionStorage.removeItem('rigas-intro-again'); }catch(e){}
+let introStep=location.hash.length>1||(introSeen&&!introAgain)?3:0, cueT=0, introA=false;
 const introAbout=$('introAbout'), introAns=introEl.querySelector('svg.say.a');
 function placeAbout(){ if(!introAns||!introAns._bottom) return;
   const gap=22, sh=introAns._bottom-introAns._top, ph=introAbout.offsetHeight, top=(window.innerHeight-(sh+gap+ph))/2, d=Math.round(top-introAns._top);
   introAns.style.translate=`0 ${d}px`; introAbout.style.top=Math.round(introAns._bottom+d+gap)+'px'; }
-if(introStep===3){ introEl.hidden=true; document.body.classList.remove('intro'); setTimeout(()=>inviteArm(),0); }
+if(introStep===3){ introEl.hidden=true; document.body.classList.remove('intro'); setTimeout(()=>inviteArm(),0);
+  if(introSeen&&location.hash.length<=1){ const b=document.createElement('button'); b.className='replay'; b.type='button'; b.textContent='Replay intro';
+    b.addEventListener('click',()=>{ try{ sessionStorage.setItem('rigas-intro-again','1'); }catch(e){} location.hash=''; location.reload(); });
+    document.body.append(b); requestAnimationFrame(()=>b.classList.add('on')); setTimeout(()=>{ b.classList.remove('on'); setTimeout(()=>b.remove(),700); },3000); } }
 introCue.textContent=window.matchMedia('(pointer:coarse)').matches?'tap':'click';
 function introCam(){ s=Math.max(W/INTRO.w,H/INTRO.h); x=-INTRO.x*s; y=H/2-(INTRO.y+INTRO.h/2)*s; }
 function armCue(){ clearTimeout(cueT); introCue.classList.remove('on'); cueT=setTimeout(()=>{ if(introStep<2) introCue.classList.add('on'); },4500); }
@@ -663,7 +671,7 @@ function introNext(){
   setTimeout(()=>document.body.classList.remove('intro'),reduce?0:1400);
   kick();
 }
-function introDone(){ const pulled=introStep===2; introStep=3; clearTimeout(cueT); document.body.classList.remove('intro'); introEl.hidden=true; setTimeout(resize,0);
+function introDone(){ try{ localStorage.setItem('rigas-intro-seen','1'); }catch(e){} const pulled=introStep===2; introStep=3; clearTimeout(cueT); document.body.classList.remove('intro'); introEl.hidden=true; setTimeout(resize,0);
   if(pulled&&view==='sheet') startTour(); else inviteArm(); }
 /* ---------- giant words: the lines and size that make the text as big as the screen allows ---------- */
 const SAY_LH=1.04, sayCtx=document.createElement('canvas').getContext('2d');
@@ -729,7 +737,8 @@ function showTourStep(){
     tourCap.querySelector('.tt').textContent=st.text; tourCap.querySelector('.tn').textContent=count;
     placeTour(st); tourRing.classList.add('show'); tourCap.classList.add('show'); tourArrow.classList.add('show'); };
   // keyboard controls: the panel opens for two seconds while the ring sits on its button, then the pointer shows where it lives
-  if(st.keys){ placeTour(st); tourRing.classList.add('show'); peekKeys(true); peekT=setTimeout(()=>{ if(tok!==tourTok) return; peekKeys(false); go(); },2000); return; }
+  if(st.keys){ peekT=setTimeout(()=>{ if(tok!==tourTok) return; peekKeys(true);
+    peekT=setTimeout(()=>{ if(tok!==tourTok) return; peekKeys(false); go(); },3000); },500); return; }
   if(moving) setTimeout(go,180); else go();
 }
 function relayoutTour(){ const st=TOUR[tourI]; if(st.say){ renderSay(tourSay); tourCue.style.top=Math.round(tourSay._bottom+14)+'px'; } else placeTour(st); }
@@ -837,7 +846,7 @@ function drawLens(){
   for(let i=0;i<=12;i++) g.addColorStop(Math.min(1,c+(1-c)*i/12),`rgba(0,0,0,${(.5+.5*Math.cos(Math.PI*i/12)).toFixed(3)})`);
   lctx.fillStyle=g; lctx.fillRect(0,0,dw,dh);
   // trembling edge: the soft rim is cut by a contour that ripples in several scales and shivers fast (after the portfolio shader)
-  if(fz.j>0&&!reduce){ lctx.fillStyle='#000'; lctx.fill(wobble(cx,cy,(core+(R-core)*.6)*dpr,performance.now()/1000,.075*fz.j)); }
+  if(fz.j>0&&!reduce){ lctx.fillStyle='#000'; lctx.fill(wobble(cx,cy,(core+(R-core)*.6)*dpr,performance.now()/1000*1.8,.075*fz.j)); }
   lctx.globalCompositeOperation='source-over';
   ctx.drawImage(lens,0,0,dw,dh,bx*dpr,by*dpr,dw,dh);
   const ra=1-3*f; if(ra<=0) return;  // the burnt rim fades away as the mask fuses
@@ -849,7 +858,7 @@ function drawLens(){
 function drawTrace(){
   // the paper lies over the sheet only; lifted, it hides the sheet and leaves the holes alone
   ctx.setTransform(1,0,0,1,0,0);
-  ctx.globalAlpha=trace.lifted?1:.6; ctx.fillStyle='#FBFAF5'; ctx.fillRect(x*dpr,y*dpr,IW*s*dpr,IH*s*dpr); ctx.globalAlpha=1;
+  ctx.globalAlpha=trace.lifted?1:(trace.cur?.3:.6); ctx.fillStyle='#FBFAF5'; ctx.fillRect(x*dpr,y*dpr,IW*s*dpr,IH*s*dpr); ctx.globalAlpha=1;
   ctx.setTransform(dpr*s,0,0,dpr*s,dpr*x,dpr*y); ctx.fillStyle='#24211D'; ctx.fill(holes); if(curHoles) ctx.fill(curHoles);
   ctx.setTransform(1,0,0,1,0,0);
   if(trace.inside&&(trace.hover||trace.cur)) drawWheel(trace.mx*dpr,trace.my*dpr);
@@ -921,10 +930,10 @@ function loop(t){
     v=tween.a+(tween.b-tween.a)*e; if(p>=1) tween=null; baseDirty=true; dirty=true; ui(); }
   else if(drift&&motion==='smooth'){ v+=dir*RATE*speed*dt; if(v>=N-1){v=N-1;dir=-1;} if(v<=0){v=0;dir=1;} baseDirty=true; dirty=true; ui(); }
   if(fz.held||fz.L>0||fz.j>0){
-    if(fz.held){ fz.t+=dt; fz.L=Math.min(LMAX,fz.L+Math.min(1.8,.7+1.2*fz.t)*dt); }
+    if(fz.held){ fz.t+=dt; fz.L=Math.min(LMAX,fz.L+Math.min(.9,.25+.35*fz.t)*dt); }
     else{ fz.L*=Math.exp(-dt/.55); if(fz.L<.004) fz.L=0; }
     // the edge trembles while the light spreads, and settles once it stops
-    fz.j+=((fz.held&&fz.L<LMAX?1:0)-fz.j)*Math.min(1,dt*9); if(fz.j<.01) fz.j=0;
+    fz.j+=((fz.held?1:0)-fz.j)*Math.min(1,dt*2.5); if(fz.j<.01) fz.j=0;
     if(torch.on&&torch.inside) dirty=true; }
   if(dirty&&view==='sheet') draw();
   if(tween||drift||vt||(fz.held&&fz.L<LMAX)||(!fz.held&&fz.L>0)||fz.j>0) raf=requestAnimationFrame(loop); else lastT=0;
@@ -962,7 +971,7 @@ function setTorch(on){ on=!!on; if(on&&trace.on) setTrace(false);
 function fuseHold(on){ on=!!on&&torch.on; if(fz.held===on) return; fz.held=on; if(on) fz.t=0; invalidate(false); }
 // Trace starts close up: x4, around the pointer if it is over the sheet, else around the middle of the view
 const hov={x:0,y:0,in:false}; let traceZoomLater=false;
-function traceZoom(){ if(!ready){ traceZoomLater=true; return; } zoomTo(4*fit,hov.in?hov.x:W/2,hov.in?hov.y:CY(),true); }
+function traceZoom(){ if(!ready){ traceZoomLater=true; return; } zoomTo(3*fit,hov.in?hov.x:W/2,hov.in?hov.y:CY(),true); }
 function setTrace(on){ on=!!on; if(on&&torch.on) setTorch(false);
   if(!on&&trace.cur) strokeEnd();
   trace.on=on; traceBtn.setAttribute('aria-pressed',String(on)); traceOpts.hidden=!on; if(!on) setLift(false);
@@ -1206,10 +1215,10 @@ document.addEventListener('keydown',e=>{
 
 /* ---------- start ---------- */
 if(window.matchMedia('(max-width:720px)').matches) setMap(false);
-readAccent(); loadTrace(); route(); resize(); ui();
+readAccent(); route(); resize(); ui();
 loadLayer(0).then(()=>{
   ready=true; stage.classList.add('ready'); resize(); introAsk();
-  if(traceZoomLater){ traceZoomLater=false; zoomTo(4*fit,W/2,CY(),false); }
+  if(traceZoomLater){ traceZoomLater=false; zoomTo(3*fit,W/2,CY(),false); }
   for(let i=1;i<N;i++) loadLayer(i).catch(()=>{});
 }).catch(()=>{ loadingEl.textContent='The sheet could not be loaded. Reload the page to try again.'; });
 })();
