@@ -136,7 +136,10 @@ body.intro .site,body.intro .bar,body.intro .dock,body.intro .guide,body.intro #
 .tring{position:absolute;pointer-events:none;box-shadow:0 0 0 200vmax rgba(0,0,0,.03)}
 .tour .tring{transition:none}
 .tring svg{position:absolute;left:-10px;top:-10px;overflow:visible;filter:drop-shadow(0 1px 1px rgba(0,0,0,.35))}
-.tring path{fill:none;stroke:var(--accent);stroke-width:2.2;stroke-linecap:butt;stroke-linejoin:miter}
+.tring path,.invite path{fill:none;stroke:var(--accent);stroke-width:2.2;stroke-linecap:butt;stroke-linejoin:miter}
+.invite{position:fixed;z-index:30;pointer-events:none}
+.invite svg{position:absolute;left:-10px;top:-10px;overflow:visible}
+.invite span{position:absolute;left:50%;top:calc(100% + 10px);translate:-50% 0;white-space:nowrap;font:500 12px/1 var(--sans);letter-spacing:.02em;color:var(--accent)}
 .tour::before,.intro-layer::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .6s;
   background:radial-gradient(ellipse 50% 36% at 50% 50%,rgba(0,0,0,.26),rgba(0,0,0,.1) 55%,rgba(0,0,0,0) 80%)}
 .tour::before{transition:opacity .35s;background:radial-gradient(ellipse 46% 34% at 50% 50%,rgba(0,0,0,.52),rgba(0,0,0,.26) 55%,rgba(0,0,0,.03) 100%)}
@@ -159,7 +162,7 @@ body.intro .site,body.intro .bar,body.intro .dock,body.intro .guide,body.intro #
 .intro-layer.ans .a,.intro-layer.ans .about{opacity:1;transform:none}
 .intro-layer .about{position:absolute;left:50%;top:0;margin:0;width:min(640px,calc(100vw - 40px));translate:-50% 0;text-align:center;isolation:isolate;pointer-events:none;
   font:500 clamp(17px,1.6vw,23px)/1.3 var(--sans);letter-spacing:-.005em;text-wrap:balance;color:#FFFFFF;text-shadow:0 1px 1.5px rgba(0,0,0,.45),0 2px 16px rgba(0,0,0,.4)}
-.intro-layer .about::before{content:"";position:absolute;inset:-34px -60px;z-index:-1;background:radial-gradient(closest-side,rgba(0,0,0,.5),rgba(0,0,0,.26) 55%,rgba(0,0,0,0))}
+.intro-layer .about::before{content:"";position:absolute;inset:-48px -150px;z-index:-1;background:radial-gradient(closest-side,rgba(0,0,0,.54),rgba(0,0,0,.44) 50%,rgba(0,0,0,.18) 78%,rgba(0,0,0,0))}
 .intro-layer.out .a,.intro-layer.out .about{opacity:0;transition-duration:.5s}
 
 /* the guide: a keyboard with the keys this page uses, and what each one does (H) */
@@ -315,9 +318,9 @@ body.intro .site,body.intro .bar,body.intro .dock,body.intro .guide,body.intro #
   <p class="vh" id="tourText" aria-live="polite"></p>
 </div>
 <div class="intro-layer" id="intro" role="button" aria-label="Start">
-  <svg class="say q" data-say="Can you find a dress?" aria-hidden="true"></svg><span class="vh">Can you find a dress?</span>
-  <svg class="say a" data-say="Some could!" aria-hidden="true"></svg>
-  <p class="about" id="introAbout">Rigas Modes 1975/3 is a single sheet with the patterns for dozens of garments printed on top of one another. This site takes the sheet apart in layers, shows how an AI tried to do the same and where it got lost, and lets you try it yourself.</p>
+  <svg class="say q" data-k=".9" data-say="Can you find a dress?" aria-hidden="true"></svg><span class="vh">Can you find a dress?</span>
+  <svg class="say a" data-k=".9" data-say="Some could!" aria-hidden="true"></svg>
+  <p class="about" id="introAbout">Rigas Modes 1975/3 is a single sheet with the patterns for dozens of garments printed on top of one another. This site takes the sheet apart in layers, shows how an AI tried to find a garment and where it got lost, and lets you try it yourself.</p>
   <span class="cue">click</span>
 </div>
 <header class="site" id="site">
@@ -643,8 +646,10 @@ window.addEventListener('scroll',tipHide,true);
 const INTRO={x:492,y:213,w:2800,h:2100}, introEl=$('intro'), introCue=introEl.querySelector('.cue');
 let introStep=location.hash.length>1?3:0, cueT=0, introA=false;
 const introAbout=$('introAbout'), introAns=introEl.querySelector('svg.say.a');
-function placeAbout(){ if(introAns&&introAns._bottom) introAbout.style.top=Math.round(introAns._bottom+22)+'px'; }
-if(introStep===3){ introEl.hidden=true; document.body.classList.remove('intro'); }
+function placeAbout(){ if(!introAns||!introAns._bottom) return;
+  const gap=22, sh=introAns._bottom-introAns._top, ph=introAbout.offsetHeight, top=(window.innerHeight-(sh+gap+ph))/2, d=Math.round(top-introAns._top);
+  introAns.style.translate=`0 ${d}px`; introAbout.style.top=Math.round(introAns._bottom+d+gap)+'px'; }
+if(introStep===3){ introEl.hidden=true; document.body.classList.remove('intro'); setTimeout(()=>inviteArm(),0); }
 introCue.textContent=window.matchMedia('(pointer:coarse)').matches?'tap':'click';
 function introCam(){ s=Math.max(W/INTRO.w,H/INTRO.h); x=-INTRO.x*s; y=H/2-(INTRO.y+INTRO.h/2)*s; }
 function armCue(){ clearTimeout(cueT); introCue.classList.remove('on'); cueT=setTimeout(()=>{ if(introStep<2) introCue.classList.add('on'); },4500); }
@@ -659,7 +664,7 @@ function introNext(){
   kick();
 }
 function introDone(){ const pulled=introStep===2; introStep=3; clearTimeout(cueT); document.body.classList.remove('intro'); introEl.hidden=true; setTimeout(resize,0);
-  if(pulled&&view==='sheet') startTour(); }
+  if(pulled&&view==='sheet') startTour(); else inviteArm(); }
 /* ---------- giant words: the lines and size that make the text as big as the screen allows ---------- */
 const SAY_LH=1.04, sayCtx=document.createElement('canvas').getContext('2d');
 const sayFont=px=>`500 ${px}px "Helvetica Neue", "HelveticaNeue", Helvetica, Arial, sans-serif`;
@@ -682,8 +687,8 @@ function sayLayout(text,W,H){
   return best;
 }
 function renderSay(svg){
-  const W=window.innerWidth, H=window.innerHeight, L=sayLayout(svg.dataset.say,W,H), lines=L.lines, fs=L.fs*SAY_SCALE, lh=fs*SAY_LH, top=(H-lines.length*lh)/2;
-  svg._bottom=top+lines.length*lh; svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  const W=window.innerWidth, H=window.innerHeight, L=sayLayout(svg.dataset.say,W,H), lines=L.lines, fs=L.fs*SAY_SCALE*(+svg.dataset.k||1), lh=fs*SAY_LH, top=(H-lines.length*lh)/2;
+  svg._top=top; svg._bottom=top+lines.length*lh; svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
   svg.replaceChildren(...lines.map((ln,i)=>{ const t=document.createElementNS('http://www.w3.org/2000/svg','text');
     t.setAttribute('x',(W/2).toFixed(1)); t.setAttribute('y',(top+(i+.5)*lh+.35*fs).toFixed(1)); t.setAttribute('text-anchor','middle');
     t.setAttribute('font-size',fs.toFixed(1)); t.textContent=ln; return t; }));
@@ -767,7 +772,7 @@ function nextTour(){ if(!tourOn()) return;
 // the layer keeps catching clicks while it fades, so the click that ends it does not land on a button under it
 function endTour(){ if(!tourOn()) return; tourI=-1; peekKeys(false); tourEl.classList.remove('on'); clearTimeout(tourT); tourT=setTimeout(()=>{ tourEl.hidden=true; },500);
   // the welcome ends with the sheet already moving: Drift on, at 8×
-  if(view==='sheet'){ setSpeed(8); setDrift(true); } }
+  if(view==='sheet'){ setSpeed(8); setDrift(true); } inviteArm(); }
 tourEl.addEventListener('click',nextTour);
 window.addEventListener('resize',()=>{ if(tourOn()) relayoutTour(); });
 function introSkip(){ vt=null; if(ready){ s=fit; clamp(); } introDone(); }
@@ -1048,7 +1053,20 @@ window.addEventListener('resize',()=>{ if(zm.open) zFitNow(); });
 if(window.matchMedia('(pointer:coarse)').matches) $('bhint').textContent='Tap a lightbox to look closer';
 
 /* ---------- views: Sheet, History, Tracing ---------- */
+/* ---------- 10 s after the welcome, History and Tracing are framed again and invite a look ---------- */
+let inviteT=0, inviteSeen=false, inviteEl=null, inviteBoil=0;
+function inviteArm(){ clearTimeout(inviteT); if(!inviteSeen) inviteT=setTimeout(inviteShow,10000); }
+function inviteOff(){ clearTimeout(inviteT); clearInterval(inviteBoil); if(inviteEl){ inviteEl.remove(); inviteEl=null; } }
+function inviteShow(){ if(inviteSeen||view!=='sheet'||tourOn()) return;
+  const els=[...document.querySelectorAll('.menu a[data-view="history"],.menu a[data-view="tracing"]')], R=unionRect(els); if(!R) return;
+  inviteSeen=true; const pad=6, w=R.w+2*pad, h=R.h+2*pad;
+  inviteEl=document.createElement('div'); inviteEl.className='invite'; Object.assign(inviteEl.style,{left:(R.l-pad)+'px',top:(R.t-pad)+'px',width:w+'px',height:h+'px'});
+  const cap=document.createElement('span'); cap.textContent='Have a look'; let n=1; inviteEl.append(roughRect(w,h,n),cap); document.body.append(inviteEl);
+  // the strokes are redrawn a few times a second, like a hand-drawn line that boils
+  inviteBoil=setInterval(()=>{ if(!inviteEl) return; n++; inviteEl.firstChild.replaceWith(roughRect(w,h,n)); },reduce?100000:240);
+  setTimeout(inviteOff,6500); }
 function setView(nv){
+  if(nv==='history'||nv==='tracing'){ inviteSeen=true; inviteOff(); }
   const changed=nv!==view; view=nv; root.dataset.view=nv; zClose(); if(nv!=='sheet') endTour();
   for(const k in pages) pages[k].hidden=k!==nv;
   menuLinks.forEach(a=>{ if(a.dataset.view===nv) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current'); });
