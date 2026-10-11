@@ -3,167 +3,150 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Saveliy Sharkov, video editor and DP</title>
-<meta name="description" content="Selected work by Saveliy Sharkov: commercials, fashion film and documentary. Video editor and director of photography based in Barcelona.">
+<title>Saveliy Sharkov, editor, cinematographer, director</title>
+<meta name="description" content="Selected work by Saveliy Sharkov: commercials, fashion film and documentary. Editor, cinematographer and director based in Barcelona.">
 <link rel="canonical" href="https://savelliysharkov.vercel.app/work">
 <meta property="og:type" content="website">
-<meta property="og:title" content="Saveliy Sharkov, video editor and DP">
+<meta property="og:title" content="Saveliy Sharkov, editor, cinematographer, director">
 <meta property="og:description" content="Selected work: commercials, fashion film and documentary.">
 <meta property="og:url" content="https://savelliysharkov.vercel.app/work">
 <meta property="og:image" content="https://savelliysharkov.vercel.app/work/og.jpg">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="theme-color" content="#000000">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23000'/%3E%3Crect x='5' y='9' width='22' height='14' fill='%23ffb36b'/%3E%3C/svg%3E">
-<link rel="preload" href="/work/fonts/fraunces.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="/work/fonts/archivo.woff2" as="font" type="font/woff2" crossorigin>
+<meta name="theme-color" content="#131211">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23131211'/%3E%3Crect x='5' y='9.5' width='22' height='13' fill='none' stroke='%2386c2ad' stroke-width='2'/%3E%3C/svg%3E">
+<link rel="preload" href="/work/fonts/courier-prime-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/work/fonts/courier-prime-400-italic.woff2" as="font" type="font/woff2" crossorigin>
 
 <!--
   HOW TO EDIT THIS PAGE
-  Everything is in this one file. Each work is one <li> block inside <ul class="grid">.
-  - Order on the page = order of the <li> blocks (the cutting preview at the top follows the same order).
+  Everything is in this one file. Each work is one <li> block inside <ul class="sheet">.
+  - Order on the page = order of the <li> blocks.
   - id            short name used in links, e.g. /work#adidas-dubai opens that film
   - data-host     "youtube" or "vimeo";  data-id = the video id;  data-start = optional start in seconds
-  - data-focus    which part of the still stays visible in the wide preview strip (x% y%)
-  - .t title, .r role, .n one-line note (delete the .n line if there is nothing to say)
-  - stills live in /work/posters/<id>.webp (1280x720) and <id>-640.webp (640x360)
+  - data-crafts   which of  edit  shot  directed  apply (drives the counts and the filter in the header)
+  - data-aspect   "4:3" for films shot 4:3: the frame is shown whole, with black bars, in the 16:9 cell
+  - data-note     one line shown in the viewer under the film (optional)
+  - .t title, .r role
+  - frames live in /work/frames/<id>-1.webp, -2, -3 (960x540, or 720x540 for 4:3)
+    and <id>-1-s.webp etc. at half size. The cell cuts between the three.
+  - speed of the cuts: BEAT in app.js (milliseconds per frame)
   Pushing to main publishes the page.
 -->
 
 <style>
-@font-face{font-family:"Fraunces";src:url("/work/fonts/fraunces.woff2") format("woff2");font-weight:100 900;font-style:normal;font-display:swap}
-@font-face{font-family:"Archivo";src:url("/work/fonts/archivo.woff2") format("woff2");font-weight:100 900;font-style:normal;font-display:swap}
+@font-face{font-family:"Courier Prime";src:url("/work/fonts/courier-prime-400.woff2") format("woff2");font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:"Courier Prime";src:url("/work/fonts/courier-prime-400-italic.woff2") format("woff2");font-weight:400;font-style:italic;font-display:swap}
 
 :root{
-  --black:#000;            /* screening-room black: the stills sit on it without a border */
-  --ink:#f3f0ea;
-  --dim:#a7a198;
-  --rule:#2a2826;
-  --idle:#3b3835;
-  --tungsten:#ffb36b;      /* 3200K lamp: roles and anything you can press */
-  --gutter:clamp(1rem,2.2vw,2rem);
-  --beat:2400ms;           /* length of one cut in the preview */
-  --display:"Fraunces","Iowan Old Style",Georgia,serif;
-  --text:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --ground:#131211;     /* tar: black, but not quite */
+  --paper:#dedbd2;      /* silver-print white */
+  --ash:#8b887f;
+  --line:#2c2a27;
+  --patina:#86c2ad;     /* oxidised copper: roles, marks, anything you can press */
+  --bar:#000;           /* bars beside a 4:3 frame */
+  --gutter:clamp(.75rem,1.7vw,1.5rem);
+  --gap:2px;
+  --type:"Courier Prime","Courier New",Courier,monospace;
   color-scheme:dark;
 }
 *,*::before,*::after{box-sizing:border-box}
-html{background:var(--black);-webkit-text-size-adjust:100%}
+html{background:var(--ground);-webkit-text-size-adjust:100%}
 html:has(dialog[open]){overflow:hidden}
-body{margin:0;background:var(--black);color:var(--ink);font:400 1rem/1.45 var(--text);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
-img{max-width:100%}
+body{margin:0;background:var(--ground);color:var(--paper);font:400 .875rem/1.4 var(--type);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 [hidden]{display:none!important}
 a{color:inherit}
-:focus-visible{outline:2px solid var(--tungsten);outline-offset:3px}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+:focus-visible{outline:1px solid var(--patina);outline-offset:3px}
 .vh{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
-.skip{position:absolute;left:var(--gutter);top:-4rem;z-index:5;padding:.5rem .8rem;background:var(--tungsten);color:#000;text-decoration:none}
-.skip:focus{top:.75rem}
+.skip{position:absolute;left:var(--gutter);top:-4rem;z-index:5;padding:.4rem .7rem;background:var(--patina);color:#000;text-decoration:none}
+.skip:focus{top:.6rem}
 
-/* ---------- first screen: name, then the cutting preview ---------- */
-.fold{display:flex;flex-direction:column}
-.mast{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,25rem);align-items:end;gap:.9rem 3rem;padding:clamp(.6rem,1.3vw,1.1rem) var(--gutter) clamp(.9rem,1.5vw,1.35rem)}
-.mast h1{margin:0 0 0 -.04em;font:380 clamp(2.85rem,8.3vw,8.6rem)/1.04 var(--display);letter-spacing:-.028em;white-space:nowrap}
-.side{padding-bottom:clamp(.35rem,1.1vw,1.05rem)}
-.lede{margin:0 0 .8rem;font-size:1.0625rem;line-height:1.4;text-wrap:pretty}
-.links{display:flex;flex-wrap:wrap;gap:.3rem 1.4rem;margin:0;padding:0;list-style:none}
-.links a{color:var(--tungsten);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:.22em}
-.links a:hover{text-decoration-thickness:2px}
-
-.reel{display:flex;flex-direction:column;flex:1 1 auto;min-height:0}
-.reel-frame{position:relative;display:block;overflow:hidden;background:#000;aspect-ratio:16/9}
-.reel-frame img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:var(--focus,50% 42%)}
-.reel-bar{position:relative;display:flex;gap:3px;padding:.9rem var(--gutter) .8rem}
-.seg{position:relative;flex:1 1 0;height:5px;background:var(--idle);overflow:hidden}
-.seg.is-on::after{content:"";position:absolute;inset:0;background:var(--tungsten);transform-origin:0 50%;animation:fill var(--beat) linear both}
-.reel.is-held .seg.is-on::after{animation:none}
-@keyframes fill{from{transform:scaleX(0)}to{transform:scaleX(1)}}
-.reel-bar input{position:absolute;top:0;bottom:0;left:var(--gutter);right:var(--gutter);width:calc(100% - 2*var(--gutter));height:100%;margin:0;opacity:0;cursor:pointer}
-.reel-bar:has(input:focus-visible){outline:2px solid var(--tungsten);outline-offset:-3px}
-.reel-meta{display:flex;align-items:center;justify-content:space-between;gap:.75rem 2rem;padding:0 var(--gutter) clamp(1rem,1.8vw,1.6rem)}
-.now{margin:0;min-width:0;font-size:1.0625rem;line-height:1.3}
-.now-title{font-weight:600}
-.now-role{color:var(--tungsten);margin-left:.7em;white-space:nowrap}
-.reel-actions{display:flex;align-items:center;gap:1.1rem;flex:none}
-.btn{font:600 .9375rem/1 var(--text);padding:.62rem 1.05rem .6rem;border:0;border-radius:2px;background:var(--tungsten);color:#000;cursor:pointer}
-.btn:hover{background:#ffc68f}
-.quiet{font:inherit;font-size:.9375rem;padding:.4rem 0;border:0;background:none;color:var(--dim);cursor:pointer;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:.22em}
-.quiet:hover{color:var(--ink)}
-
-/* landscape screens: name + preview + its controls fill exactly one screen; the still is cropped to a wide strip */
-@media (min-width:900px) and (min-aspect-ratio:5/4){
-  .fold{min-height:100vh;min-height:100svh}
-  .reel-frame{aspect-ratio:auto;flex:1 1 auto;min-height:15rem;max-height:56.25vw}
+/* film grain over everything; the tile is drawn once by app.js */
+.grain{position:fixed;inset:-160px;z-index:3;pointer-events:none;background-repeat:repeat;animation:grain .9s steps(1) infinite}
+@keyframes grain{
+  0%{transform:translate3d(0,0,0)} 11%{transform:translate3d(-41px,23px,0)} 22%{transform:translate3d(67px,-58px,0)}
+  33%{transform:translate3d(-93px,-12px,0)} 44%{transform:translate3d(29px,81px,0)} 55%{transform:translate3d(-17px,-77px,0)}
+  66%{transform:translate3d(88px,39px,0)} 77%{transform:translate3d(-64px,62px,0)} 88%{transform:translate3d(12px,-31px,0)}
 }
 
-/* ---------- the work ---------- */
-.work{padding:clamp(1.5rem,3.6vw,3.25rem) var(--gutter) 0}
-.grid{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(2rem,3.2vw,3.1rem) clamp(1rem,1.7vw,1.6rem)}
-.tile{display:block;text-decoration:none;scroll-margin-top:1.5rem}
-.frame{position:relative;display:block;aspect-ratio:16/9;overflow:hidden;background:#0c0c0c}
-.frame img{display:block;width:100%;height:100%;object-fit:cover;transition:transform .5s cubic-bezier(.2,.6,.2,1)}
-.frame::after{content:"Play";position:absolute;left:.7rem;bottom:.7rem;padding:.4rem .7rem .38rem;border-radius:2px;background:var(--tungsten);color:#000;font:600 .8125rem/1 var(--text);opacity:0;transition:opacity .15s}
-.tile:hover .frame img{transform:scale(1.025)}
-.tile:hover .frame::after,.tile:focus-visible .frame::after{opacity:1}
-.t{display:block;margin-top:.8rem;font-weight:600;font-size:1.0625rem;line-height:1.3;text-wrap:balance}
-.r{display:block;margin-top:.14rem;color:var(--tungsten);font-size:.9375rem}
-.n{display:block;margin-top:.38rem;max-width:46ch;color:var(--dim);font-size:.9375rem;line-height:1.42;text-wrap:pretty}
-.tile:hover .t,.tile:focus-visible .t{text-decoration:underline;text-decoration-color:var(--tungsten);text-decoration-thickness:1px;text-underline-offset:.2em}
-.tile:focus-visible{outline-offset:5px}
+/* ---------- header ---------- */
+.top{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:end;gap:.5rem 2rem;padding:1.15rem var(--gutter) 1.05rem}
+.who h1{margin:0;font:inherit;font-size:1rem;line-height:1.3}
+.who p{margin:.1rem 0 0;color:var(--ash);font-style:italic}
+.crafts{display:flex;flex-wrap:wrap;gap:.1rem 1.5rem;margin:0;padding:0;list-style:none}
+.crafts button{padding:.15rem 0;border-bottom:1px solid transparent}
+.crafts button i{font-style:normal;color:var(--ash);margin-left:.45em}
+.crafts button:hover,.crafts button[aria-pressed="true"]{color:var(--patina);border-bottom-color:var(--patina)}
+.crafts button:hover i,.crafts button[aria-pressed="true"] i{color:var(--patina)}
+.links{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:.1rem 1.4rem;margin:0;padding:0;list-style:none}
+.links a,.quiet{padding:.15rem 0;text-decoration:none;border-bottom:1px solid var(--line)}
+.links a:hover,.quiet:hover{color:var(--patina);border-bottom-color:var(--patina)}
+.quiet{color:var(--ash)}
 
-/* ---------- contact ---------- */
-.foot{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:2rem 4rem;align-items:start;margin-top:clamp(3rem,7vw,6.5rem);padding:clamp(1.75rem,3.6vw,3.25rem) var(--gutter) clamp(2rem,4vw,3.25rem);border-top:1px solid var(--rule)}
-.foot h2{margin:0 0 .5rem;font:400 .9375rem/1.4 var(--text);color:var(--dim)}
-.mail{display:inline-block;max-width:100%;font:380 clamp(1.55rem,4.3vw,3.9rem)/1.05 var(--display);letter-spacing:-.02em;color:var(--ink);text-decoration:underline;text-decoration-color:var(--tungsten);text-decoration-thickness:2px;text-underline-offset:.16em;overflow-wrap:anywhere}
-.mail:hover{color:var(--tungsten)}
-.foot .links{margin-top:1.4rem}
-.about p{margin:0 0 .9rem;max-width:44ch;color:var(--ink);text-wrap:pretty}
-.about p.tools{color:var(--dim)}
+/* ---------- the sheet ---------- */
+.sheet{list-style:none;margin:0;padding:0 var(--gutter);display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:1.35rem var(--gap)}
+.cell{display:block;text-decoration:none;scroll-margin-top:1rem;transition:opacity .25s}
+.pic{position:relative;display:block;aspect-ratio:16/9;overflow:hidden;background:var(--bar)}
+.pic img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;visibility:hidden}
+.pic img.on{visibility:visible}
+.cell[data-aspect="4:3"] .pic img{object-fit:contain}
+.cell:hover .pic,.cell:focus-visible .pic{outline:1px solid var(--patina);outline-offset:-1px}
+.cell:focus-visible{outline:0}
+.t,.r{display:block;margin-right:.8rem;font-size:.8125rem;line-height:1.32}
+.t{margin-top:.5rem;text-wrap:balance}
+.r{margin-top:.08rem;color:var(--patina);font-style:italic}
+.sheet.is-sorted .cell:not(.is-in){opacity:.14}
+
+/* ---------- footer ---------- */
+.foot{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:1rem var(--gap);margin-top:clamp(2.2rem,4.5vw,3.8rem);padding:1.1rem var(--gutter) 1.6rem;border-top:1px solid var(--line)}
+.foot p{margin:0 .8rem .5rem 0;text-wrap:pretty}
+.foot .about{grid-column:1/span 3;max-width:64ch}
+.foot .about p + p{color:var(--ash)}
+.foot .reach{grid-column:4/span 2}
+.foot .reach a{text-decoration:none;border-bottom:1px solid var(--line)}
+.foot .reach a:hover{color:var(--patina);border-bottom-color:var(--patina)}
 
 /* ---------- viewer ---------- */
-dialog.viewer{position:fixed;inset:0;width:100vw;max-width:none;height:100vh;height:100dvh;max-height:none;margin:0;padding:0;border:0;background:#000;color:var(--ink)}
-dialog.viewer::backdrop{background:#000}
+dialog.viewer{position:fixed;inset:0;width:100vw;max-width:none;height:100vh;height:100dvh;max-height:none;margin:0;padding:0;border:0;background:var(--ground);color:var(--paper)}
+dialog.viewer::backdrop{background:var(--ground)}
 .v-wrap{display:grid;grid-template-rows:auto minmax(0,1fr) auto;height:100%}
-.v-head{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem 2rem;padding:.95rem var(--gutter) .8rem}
-.v-title{margin:0;font:400 clamp(1.3rem,2.5vw,2rem)/1.12 var(--display);letter-spacing:-.012em;text-wrap:balance}
-.v-role{margin:.3rem 0 0;color:var(--tungsten);font-size:.9375rem}
+.v-head{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem 2rem;padding:1.05rem var(--gutter) .8rem}
+.v-title{margin:0;font:inherit;font-size:1rem;line-height:1.3;text-wrap:balance}
+.v-role{margin:.1rem 0 0;color:var(--patina);font-style:italic}
 .v-stage{display:grid;place-items:center;min-height:0;padding:0 var(--gutter)}
-.v-player{aspect-ratio:16/9;width:min(100%,calc((100vh - 13rem)*16/9));background:#000}
+.v-player{aspect-ratio:16/9;width:min(100%,calc((100vh - 12rem)*16/9));background:#000}
 @supports (width:1cqw){
   .v-stage{container-type:size}
   .v-player{width:min(100cqw,100cqh*16/9)}
 }
 .v-player iframe{display:block;width:100%;height:100%;border:0;color-scheme:light}   /* same scheme as the embedded player, so no white flash while it loads */
-.v-foot{display:flex;justify-content:space-between;align-items:flex-start;gap:.75rem 2rem;padding:.85rem var(--gutter) 1.05rem}
+.v-foot{display:flex;justify-content:space-between;align-items:flex-start;gap:.6rem 2rem;padding:.8rem var(--gutter) 1.1rem}
 .v-text{min-width:0}
-.v-note{margin:0 0 .45rem;max-width:62ch;color:var(--ink);font-size:.9375rem;text-wrap:pretty}
-.v-link{color:var(--dim);font-size:.9375rem;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:.22em}
-.v-link:hover{color:var(--ink)}
-.v-nav{display:flex;gap:1.3rem;flex:none}
-.v-head .quiet,.v-nav .quiet{color:var(--ink)}
+.v-note{margin:0 0 .35rem;max-width:66ch;text-wrap:pretty}
+.v-link{color:var(--ash);text-decoration:none;border-bottom:1px solid var(--line)}
+.v-link:hover{color:var(--patina);border-bottom-color:var(--patina)}
+.v-nav{display:flex;gap:1.4rem;flex:none}
+.v-head .quiet,.v-nav .quiet{color:var(--paper)}
 
 /* ---------- smaller screens ---------- */
 @media (max-width:1099px){
-  .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
-}
-@media (min-width:640px) and (max-width:1099px){
-  .grid li:last-child:nth-child(odd){grid-column:1/-1}   /* an odd one out closes the page full width */
+  .sheet,.foot{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .foot .about{grid-column:1/span 2}
+  .foot .reach{grid-column:3/span 1}
 }
 @media (max-width:899px){
-  .mast{grid-template-columns:minmax(0,1fr)}
-  .mast h1{font-size:clamp(2.6rem,12.4vw,6rem);white-space:normal}
-  .side{padding-bottom:0}
-  .foot{grid-template-columns:minmax(0,1fr)}
+  .top{grid-template-columns:minmax(0,1fr);align-items:start}
+  .links{justify-content:flex-start}
 }
-@media (max-width:639px){
-  .grid{grid-template-columns:minmax(0,1fr)}
-  .reel-meta{align-items:flex-start}
-  .now-role{display:block;margin-left:0}
+@media (max-width:699px){
+  .sheet,.foot{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .sheet li:last-child:nth-child(odd){grid-column:1/-1}   /* an odd one out closes the sheet full width */
+  .foot .about,.foot .reach{grid-column:1/-1}
   .v-foot{flex-direction:column}
-  .frame::after{display:none}
 }
 @media (prefers-reduced-motion:reduce){
-  .frame img{transition:none}
-  .tile:hover .frame img{transform:none}
-  .seg.is-on::after{animation:none}
+  .grain{animation:none}
+  .cell{transition:none}
 }
 </style>
 <!-- Vercel Web Analytics: page views, visitors, countries, devices, referrers (no personal data) -->
@@ -172,151 +155,132 @@ dialog.viewer::backdrop{background:#000}
 </head>
 <body>
 <a class="skip" href="#work">Skip to the work</a>
+<div class="grain" aria-hidden="true"></div>
 
-<div class="fold">
-  <header class="mast">
+<header class="top">
+  <div class="who">
     <h1>Saveliy Sharkov</h1>
-    <div class="side">
-      <p class="lede">Video editor and director of photography. Commercials, fashion film and documentary. Based in Barcelona.</p>
-      <ul class="links">
-        <!-- CV: when the PDF is in /work, add  <li><a href="/work/Saveliy-Sharkov-CV.pdf">CV</a></li>  here -->
-        <li><a href="#contact">Contact</a></li>
-      </ul>
-    </div>
-  </header>
+    <p>editor, cinematographer, director. Barcelona</p>
+  </div>
+  <ul class="crafts" aria-label="Show the work by craft">
+    <li><button type="button" data-craft="edit" aria-pressed="false">Edited<i>15</i></button></li>
+    <li><button type="button" data-craft="shot" aria-pressed="false">Shot<i>5</i></button></li>
+    <li><button type="button" data-craft="directed" aria-pressed="false">Directed<i>4</i></button></li>
+  </ul>
+  <ul class="links">
+    <!-- CV: when the PDF is in /work, add  <li><a href="/work/Saveliy-Sharkov-CV.pdf">CV</a></li>  here -->
+    <li><a href="mailto:savelsharkov@gmail.com">Email</a></li>
+    <li><a href="https://t.me/savell">Telegram</a></li>
+    <li><a href="https://www.instagram.com/savelliy/">Instagram</a></li>
+    <li><button class="quiet" type="button" data-act="hold" hidden>Pause</button></li>
+  </ul>
+</header>
 
-  <section class="reel" aria-label="Preview of the work">
-    <a class="reel-frame" href="#adidas-dubai" aria-label="Play Adidas Dubai">
-      <img src="/work/posters/adidas-dubai.webp" srcset="/work/posters/adidas-dubai-640.webp 640w, /work/posters/adidas-dubai.webp 1280w" sizes="100vw" width="1280" height="720" alt="" fetchpriority="high">
-    </a>
-    <div class="reel-bar" hidden></div>
-    <div class="reel-meta" hidden>
-      <p class="now"><span class="now-title"></span><span class="now-role"></span></p>
-      <div class="reel-actions">
-        <button class="quiet" type="button" data-act="hold">Pause</button>
-        <button class="btn" type="button" data-act="play">Play</button>
-      </div>
-    </div>
-  </section>
-</div>
-
-<main class="work" id="work">
+<main id="work">
   <h2 class="vh">Selected work</h2>
-  <ul class="grid">
+  <ul class="sheet">
 
-    <li><a class="tile" id="adidas-dubai" href="https://www.youtube.com/watch?v=-eEbeLiXg44" data-host="youtube" data-id="-eEbeLiXg44" data-focus="50% 42%">
-      <span class="frame"><img src="/work/posters/adidas-dubai-640.webp" srcset="/work/posters/adidas-dubai-640.webp 640w, /work/posters/adidas-dubai.webp 1280w" sizes="(min-width:1100px) 32vw, (min-width:640px) 48vw, 94vw" width="1280" height="720" alt="" loading="lazy" decoding="async"></span>
+    <li><a class="cell" id="adidas-dubai" href="https://www.youtube.com/watch?v=-eEbeLiXg44" data-host="youtube" data-id="-eEbeLiXg44" data-crafts="edit">
+      <span class="pic"><img class="on" src="/work/frames/adidas-dubai-1-s.webp" srcset="/work/frames/adidas-dubai-1-s.webp 480w, /work/frames/adidas-dubai-1.webp 960w" sizes="(min-width:1100px) 20vw, (min-width:700px) 33vw, 50vw" width="960" height="540" alt=""></span>
       <span class="t">Adidas Dubai</span>
-      <span class="r">Editor, consulting</span>
+      <span class="r">Edited, consulted</span>
     </a></li>
 
-    <li><a class="tile" id="pepsi-fencing" href="https://www.youtube.com/watch?v=IFGeESsxih4" data-host="youtube" data-id="IFGeESsxih4" data-focus="50% 35%">
-      <span class="frame"><img src="/work/posters/pepsi-fencing-640.webp" srcset="/work/posters/pepsi-fencing-640.webp 640w, /work/posters/pepsi-fencing.webp 1280w" sizes="(min-width:1100px) 32vw, (min-width:640px) 48vw, 94vw" width="1280" height="720" alt="" loading="lazy" decoding="async"></span>
+    <li><a class="cell" id="pepsi-fencing" href="https://www.youtube.com/watch?v=IFGeESsxih4" data-host="youtube" data-id="IFGeESsxih4" data-crafts="edit shot directed">
+      <span class="pic"><img class="on" src="/work/frames/pepsi-fencing-1-s.webp" srcset="/work/frames/pepsi-fencing-1-s.webp 480w, /work/frames/pepsi-fencing-1.webp 960w" sizes="(min-width:1100px) 20vw, (min-width:700px) 33vw, 50vw" width="960" height="540" alt=""></span>
       <span class="t">Pepsi × Fencing</span>
-      <span class="r">Director, DP, editor</span>
+      <span class="r">Directed, shot, edited</span>
     </a></li>
 
-    <li><a class="tile" id="natakhtari-cold-beer" href="https://www.youtube.com/watch?v=B7ifCO_MkAw" data-host="youtube" data-id="B7ifCO_MkAw" data-focus="50% 30%">
-      <span class="frame"><img src="/work/posters/natakhtari-cold-beer-640.webp" srcset="/work/posters/natakhtari-cold-beer-640.webp 640w, /work/posters/natakhtari-cold-beer.webp 1280w" sizes="(min-width:1100px) 32vw, (min-width:640px) 48vw, 94vw" width="1280" height="720" alt="" loading="lazy" decoding="async"></span>
+    <li><a class="cell" id="natakhtari-cold-beer" href="https://www.youtube.com/watch?v=B7ifCO_MkAw" data-host="youtube" data-id="B7ifCO_MkAw" data-crafts="edit" data-note="Commercial for Natakhtari beer, Efes Georgia.">
+      <span class="pic"><img class="on" src="/work/frames/natakhtari-cold-beer-1-s.webp" srcset="/work/frames/natakhtari-cold-beer-1-s.webp 480w, /work/frames/natakhtari-cold-beer-1.webp 960w" sizes="(min-width:1100px) 20vw, (min-width:700px) 33vw, 50vw" width="960" height="540" alt=""></span>
       <span class="t">Natakhtari, 100% cold beer</span>
-      <span class="r">Editor</span>
-      <span class="n">Commercial for Natakhtari beer, Efes Georgia.</span>
+      <span class="r">Edited</span>
     </a></li>
 
-    <li><a class="tile" id="mir" href="https://www.youtube.com/watch?v=rBkYWOMamCQ" data-host="youtube" data-id="rBkYWOMamCQ" data-focus="50% 45%">
-      <span class="frame"><img src="/work/posters/mir-640.webp" srcset="/work/posters/mir-640.webp 640w, /work/posters/mir.webp 1280w" sizes="(min-width:1100px) 32vw, (min-width:640px) 48vw, 94vw" width="1280" height="720" alt="" loading="lazy" decoding="async"></span>
+    <li><a class="cell" id="mir" href="https://www.youtube.com/watch?v=rBkYWOMamCQ" data-host="youtube" data-id="rBkYWOMamCQ" data-crafts="edit" data-note="“Why do fans from Italy dream of a Mir card?”, a campaign film.">
+      <span class="pic"><img class="on" src="/work/frames/mir-1-s.webp" srcset="/work/frames/mir-1-s.webp 480w, /work/frames/mir-1.webp 960w" sizes="(min-width:1100px) 20vw, (min-width:700px) 33vw, 50vw" width="960" height="540" alt=""></span>
       <span class="t">Mir payment system</span>
-      <span class="r">Editor</span>
-      <span class="n">“Why do fans from Italy dream of a Mir card?”, a campaign film.</span>
+      <span class="r">Edited</span>
     </a></li>
 
-    <li><a class="tile" id="natakhtari-rugby" href="https://www.youtube.com/watch?v=btXuUKnQUrE" data-host="youtube" data-id="btXuUKnQUrE" data-focus="50% 30%">
-      <span class="frame"><img src="/work/posters/natakhtari-rugby-640.webp" srcset="/work/posters/natakhtari-rugby-640.webp 640w, /work/posters/natakhtari-rugby.webp 1280w" sizes="(min-width:1100px) 32vw, (min-width:640px) 48vw, 94vw" width="1280" height="720" alt="" loading="lazy" decoding="async"></span>
+    <li><a class="cell" id="natakhtari-rugby" href="https://www.youtube.com/watch?v=btXuUKnQUrE" data-host="youtube" data-id="btXuUKnQUrE" data-crafts="edit" data-note="The maul, explained. From a rugby series for Natakhtari with Saatchi &amp; Saatchi Tbilisi.">
+      <span class="pic"><img class="on" src="/work/frames/natakhtari-rugby-1-s.webp" srcset="/work/frames/natakhtari-rugby-1-s.webp 480w, /work/frames/natakhtari-rugby-1.webp 960w" sizes="(min-width:1100px) 20vw, (min-width:700px) 33vw, 50vw" width="960" height="540" alt=""></span>
       <span class="t">Natakhtari Rugby, lesson 3</span>
-      <span class="r">Editor, DIT</span>
-      <span class="n">The maul, explained. From a rugby series for Natakhtari with Saatchi &amp; Saatchi Tbilisi.</span>
+      <span class="r">Edited, DIT on set</span>
     </a></li>
 
-    <li><a class="tile" id="ska-juice-bar" href="https://www.youtube.com/watch?v=udnO5cWODpU" data-host="youtube" data-id="udnO5cWODpU" data-focus="50% 40%">
-      <span class="frame"><img src="/work/posters/ska-juice-bar-640.webp" srcset="/work/posters/ska-juice-bar-640.webp 640w, /work/posters/ska-juice-bar.webp 1280w" sizes="(min-width:1100px) 32vw, (min-width:640px) 48vw, 94vw" width="1280" height="720" alt="" loading="lazy" decoding="async"></span>
+    <li><a class="cell" id="ska-juice-bar" href="https://www.youtube.com/watch?v=udnO5cWODpU" data-host="youtube" data-id="udnO5cWODpU" data-crafts="edit">
+      <span class="pic"><img class="on" src="/work/frames/ska-juice-bar-1-s.webp" srcset="/work/frames/ska-juice-bar-1-s.webp 480w, /work/frames/ska-juice-bar-1.webp 960w" sizes="(min-width:1100px) 20vw, (min-width:700px) 33vw, 50vw" width="960" height="540" alt=""></span>
       <span class="t">Ska juice bar</span>
-      <span class="r">Editor</span>
+      <span class="r">Edited</span>
     </a></li>
 
-    <li><a class="tile" id="lcr-3" href="https://www.youtube.com/watch?v=hZs6oK-qbWc" data-host="youtube" data-id="hZs6oK-qbWc" data-focus="50% 45%">
-      <span class="frame"><img src="/work/posters/lcr-3-640.webp" srcset="/work/posters/lcr-3-640.webp 640w, /work/posters/lcr-3.webp 1280w" sizes="(min-width:1100px) 32vw, (min-width:640px) 48vw, 94vw" width="1280" height="720" alt="" loading="lazy" decoding="async"></span>
+    <li><a class="cell" id="lcr-3" href="https://www.youtube.com/watch?v=hZs6oK-qbWc" data-host="youtube" data-id="hZs6oK-qbWc" data-crafts="edit shot directed" data-aspect="4:3">
+      <span class="pic"><img class="on" src="/work/frames/lcr-3-1-s.webp" srcset="/work/frames/lcr-3-1-s.webp 360w, /work/frames/lcr-3-1.webp 720w" sizes="(min-width:1100px) 15vw, (min-width:700px) 25vw, 38vw" width="720" height="540" alt=""></span>
       <span class="t">LCR 3</span>
-      <span class="r">Director, DP, editor</span>
+      <span class="r">Directed, shot, edited</span>
     </a></li>
 
-    <li><a class="tile" id="hotel-by-the-hour" href="https://www.youtube.com/watch?v=cJFHdPu-xTk" data-host="youtube" data-id="cJFHdPu-xTk" data-focus="50% 40%">
-      <span class="frame"><img src="/work/posters/hotel-by-the-hour-640.webp" srcset="/work/posters/hotel-by-the-hour-640.webp 640w, /work/posters/hotel-by-the-hour.webp 1280w" sizes="(min-width:1100px) 32vw, (min-width:640px) 48vw, 94vw" width="1280" height="720" alt="" loading="lazy" decoding="async"></span>
+    <li><a class="cell" id="hotel-by-the-hour" href="https://www.youtube.com/watch?v=cJFHdPu-xTk" data-host="youtube" data-id="cJFHdPu-xTk" data-crafts="edit" data-aspect="4:3" data-note="Fashion story for Buro 24/7 with artist Ekaterina Shcheglova and actor Ilya Romashko.">
+      <span class="pic"><img class="on" src="/work/frames/hotel-by-the-hour-1-s.webp" srcset="/work/frames/hotel-by-the-hour-1-s.webp 360w, /work/frames/hotel-by-the-hour-1.webp 720w" sizes="(min-width:1100px) 15vw, (min-width:700px) 25vw, 38vw" width="720" height="540" alt=""></span>
       <span class="t">Hotel by the Hour</span>
-      <span class="r">Editor</span>
-      <span class="n">Fashion story for Buro 24/7 with artist Ekaterina Shcheglova and actor Ilya Romashko.</span>
+      <span class="r">Edited</span>
     </a></li>
 
-    <li><a class="tile" id="cyrille-gassiline" href="https://vimeo.com/390278999" data-host="vimeo" data-id="390278999" data-focus="50% 45%">
-      <span class="frame"><img src="/work/posters/cyrille-gassiline-640.webp" srcset="/work/posters/cyrille-gassiline-640.webp 640w, /work/posters/cyrille-gassiline.webp 1280w" sizes="(min-width:1100px) 32vw, (min-width:640px) 48vw, 94vw" width="1280" height="720" alt="" loading="lazy" decoding="async"></span>
+    <li><a class="cell" id="cyrille-gassiline" href="https://vimeo.com/390278999" data-host="vimeo" data-id="390278999" data-crafts="edit shot">
+      <span class="pic"><img class="on" src="/work/frames/cyrille-gassiline-1-s.webp" srcset="/work/frames/cyrille-gassiline-1-s.webp 480w, /work/frames/cyrille-gassiline-1.webp 960w" sizes="(min-width:1100px) 20vw, (min-width:700px) 33vw, 50vw" width="960" height="540" alt=""></span>
       <span class="t">Cyrille Gassiline</span>
-      <span class="r">DP, editor</span>
+      <span class="r">Shot, edited</span>
     </a></li>
 
-    <li><a class="tile" id="complex-bits" href="https://vimeo.com/390277808" data-host="vimeo" data-id="390277808" data-focus="50% 50%">
-      <span class="frame"><img src="/work/posters/complex-bits-640.webp" srcset="/work/posters/complex-bits-640.webp 640w, /work/posters/complex-bits.webp 1280w" sizes="(min-width:1100px) 32vw, (min-width:640px) 48vw, 94vw" width="1280" height="720" alt="" loading="lazy" decoding="async"></span>
+    <li><a class="cell" id="complex-bits" href="https://vimeo.com/390277808" data-host="vimeo" data-id="390277808" data-crafts="edit shot directed">
+      <span class="pic"><img class="on" src="/work/frames/complex-bits-1-s.webp" srcset="/work/frames/complex-bits-1-s.webp 480w, /work/frames/complex-bits-1.webp 960w" sizes="(min-width:1100px) 20vw, (min-width:700px) 33vw, 50vw" width="960" height="540" alt=""></span>
       <span class="t">Complex bits</span>
-      <span class="r">Director, DP, editor</span>
+      <span class="r">Directed, shot, edited</span>
     </a></li>
 
-    <li><a class="tile" id="el-wakil" href="https://www.youtube.com/watch?v=eU8ST_-OUZQ" data-host="youtube" data-id="eU8ST_-OUZQ" data-focus="50% 35%">
-      <span class="frame"><img src="/work/posters/el-wakil-640.webp" srcset="/work/posters/el-wakil-640.webp 640w, /work/posters/el-wakil.webp 1280w" sizes="(min-width:1100px) 32vw, (min-width:640px) 48vw, 94vw" width="1280" height="720" alt="" loading="lazy" decoding="async"></span>
-      <span class="t">Abdel-Wahed El-Wakil: A Portrait of an Architect</span>
-      <span class="r">Editor, editing tutor</span>
-      <span class="n">Documentary by Olya Korsun and Furqat Palvan-Zade, commissioned by Caravane Earth Foundation.</span>
+    <li><a class="cell" id="el-wakil" href="https://www.youtube.com/watch?v=eU8ST_-OUZQ" data-host="youtube" data-id="eU8ST_-OUZQ" data-crafts="edit" data-note="Documentary by Olya Korsun and Furqat Palvan-Zade, commissioned by Caravane Earth Foundation.">
+      <span class="pic"><img class="on" src="/work/frames/el-wakil-1-s.webp" srcset="/work/frames/el-wakil-1-s.webp 480w, /work/frames/el-wakil-1.webp 960w" sizes="(min-width:1100px) 20vw, (min-width:700px) 33vw, 50vw" width="960" height="540" alt=""></span>
+      <span class="t">Abdel-Wahed El-Wakil: A&nbsp;Portrait of an Architect</span>
+      <span class="r">Edited, tutored the edit</span>
     </a></li>
 
-    <li><a class="tile" id="easteast" href="https://www.youtube.com/watch?v=_Nt0Mb39THs" data-host="youtube" data-id="_Nt0Mb39THs" data-focus="50% 62%">
-      <span class="frame"><img src="/work/posters/easteast-640.webp" srcset="/work/posters/easteast-640.webp 640w, /work/posters/easteast.webp 1280w" sizes="(min-width:1100px) 32vw, (min-width:640px) 48vw, 94vw" width="1280" height="720" alt="" loading="lazy" decoding="async"></span>
+    <li><a class="cell" id="easteast" href="https://www.youtube.com/watch?v=_Nt0Mb39THs" data-host="youtube" data-id="_Nt0Mb39THs" data-crafts="edit">
+      <span class="pic"><img class="on" src="/work/frames/easteast-1-s.webp" srcset="/work/frames/easteast-1-s.webp 480w, /work/frames/easteast-1.webp 960w" sizes="(min-width:1100px) 20vw, (min-width:700px) 33vw, 50vw" width="960" height="540" alt=""></span>
       <span class="t">EastEast</span>
-      <span class="r">Editor, consulting</span>
+      <span class="r">Edited, consulted</span>
     </a></li>
 
-    <li><a class="tile" id="no-ribbons" href="https://www.youtube.com/watch?v=S7F5RqxTJbQ&amp;t=320s" data-host="youtube" data-id="S7F5RqxTJbQ" data-start="320" data-focus="50% 68%">
-      <span class="frame"><img src="/work/posters/no-ribbons-640.webp" srcset="/work/posters/no-ribbons-640.webp 640w, /work/posters/no-ribbons.webp 1280w" sizes="(min-width:1100px) 32vw, (min-width:640px) 48vw, 94vw" width="1280" height="720" alt="" loading="lazy" decoding="async"></span>
+    <li><a class="cell" id="no-ribbons" href="https://www.youtube.com/watch?v=S7F5RqxTJbQ&amp;t=320s" data-host="youtube" data-id="S7F5RqxTJbQ" data-start="320" data-crafts="edit" data-note="Anthology film.">
+      <span class="pic"><img class="on" src="/work/frames/no-ribbons-1-s.webp" srcset="/work/frames/no-ribbons-1-s.webp 480w, /work/frames/no-ribbons-1.webp 960w" sizes="(min-width:1100px) 20vw, (min-width:700px) 33vw, 50vw" width="960" height="540" alt=""></span>
       <span class="t">No Ribbons, Trophies, Medals</span>
-      <span class="r">Editor</span>
-      <span class="n">Anthology film.</span>
+      <span class="r">Edited</span>
     </a></li>
 
-    <li><a class="tile" id="geodesign" href="https://vimeo.com/924939710" data-host="vimeo" data-id="924939710" data-focus="50% 58%">
-      <span class="frame"><img src="/work/posters/geodesign-640.webp" srcset="/work/posters/geodesign-640.webp 640w, /work/posters/geodesign.webp 1280w" sizes="(min-width:1100px) 32vw, (min-width:640px) 48vw, 94vw" width="1280" height="720" alt="" loading="lazy" decoding="async"></span>
+    <li><a class="cell" id="geodesign" href="https://vimeo.com/924939710" data-host="vimeo" data-id="924939710" data-crafts="edit shot directed" data-note="Made with Peter Kroshchinskiy: a steel soil sampler in a valley of the Caucasus.">
+      <span class="pic"><img class="on" src="/work/frames/geodesign-1-s.webp" srcset="/work/frames/geodesign-1-s.webp 480w, /work/frames/geodesign-1.webp 960w" sizes="(min-width:1100px) 20vw, (min-width:700px) 33vw, 50vw" width="960" height="540" alt=""></span>
       <span class="t">Geo-Design, Design Academy Eindhoven</span>
-      <span class="r">Director, DP, editor</span>
-      <span class="n">Made with Peter Kroshchinskiy: a steel soil sampler in a valley of the Caucasus.</span>
+      <span class="r">Directed, shot, edited</span>
     </a></li>
 
-    <li><a class="tile" id="polo-stick" href="https://vimeo.com/924933728" data-host="vimeo" data-id="924933728" data-focus="50% 55%">
-      <span class="frame"><img src="/work/posters/polo-stick-640.webp" srcset="/work/posters/polo-stick-640.webp 640w, /work/posters/polo-stick.webp 1280w" sizes="(min-width:1100px) 32vw, (min-width:640px) 48vw, 94vw" width="1280" height="720" alt="" loading="lazy" decoding="async"></span>
+    <li><a class="cell" id="polo-stick" href="https://vimeo.com/924933728" data-host="vimeo" data-id="924933728" data-crafts="edit" data-note="Film by Furqat Palvan-Zade, made at Sandberg Instituut Amsterdam.">
+      <span class="pic"><img class="on" src="/work/frames/polo-stick-1-s.webp" srcset="/work/frames/polo-stick-1-s.webp 480w, /work/frames/polo-stick-1.webp 960w" sizes="(min-width:1100px) 20vw, (min-width:700px) 33vw, 50vw" width="960" height="540" alt=""></span>
       <span class="t">The Ball and the Polo Stick, or the Book of Ecstasy</span>
-      <span class="r">Editor, consulting</span>
-      <span class="n">Film by Furqat Palvan-Zade, made at Sandberg Instituut Amsterdam.</span>
+      <span class="r">Edited, consulted</span>
     </a></li>
 
   </ul>
 </main>
 
 <footer class="foot" id="contact">
-  <div>
-    <h2>Contact</h2>
-    <a class="mail" href="mailto:savelsharkov@gmail.com">savelsharkov@gmail.com</a>
-    <ul class="links">
-      <li><a href="https://t.me/savell">Telegram</a></li>
-      <li><a href="https://www.instagram.com/savelliy/">Instagram</a></li>
-    </ul>
-  </div>
   <div class="about">
-    <p>Editor and director of photography working across commercials, fashion film and documentary. Currently on the Master in Applied AI for Arts and Design at Elisava, Barcelona.</p>
-    <p class="tools">Premiere Pro and DaVinci Resolve Studio. Generative video with Higgsfield, Kling and ComfyUI.</p>
+    <p>Editor, cinematographer and director working across commercials, fashion film and documentary. Currently on the Master in Applied AI for Arts and Design at Elisava, Barcelona.</p>
+    <p>Premiere Pro and DaVinci Resolve Studio. Generative video with Higgsfield, Kling and ComfyUI.</p>
+  </div>
+  <div class="reach">
+    <p><a href="mailto:savelsharkov@gmail.com">savelsharkov@gmail.com</a></p>
+    <p><a href="https://t.me/savell">Telegram</a> &nbsp; <a href="https://www.instagram.com/savelliy/">Instagram</a></p>
   </div>
 </footer>
 

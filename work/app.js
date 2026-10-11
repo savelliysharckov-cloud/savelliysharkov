@@ -1,32 +1,36 @@
 /*
-  Behaviour for /work. All content lives in index.html: this script reads the tiles
+  Behaviour for /work. All content lives in index.html: this script reads the cells
   from the page, so adding, removing or reordering a work never needs a change here.
 
-  1. Viewer   a tile opens the film in a full-screen player; /work#<id> links straight to it.
-  2. Preview  the strip at the top hard-cuts through the stills; the bar under it can be
-              skimmed with the mouse, dragged on a phone, or moved with the arrow keys.
+  1. Viewer  a cell opens the film in a full-screen player; /work#<id> links straight to it.
+  2. Sheet   every cell hard-cuts between its three frames; the one under the cursor holds.
+  3. Crafts  "Edited / Shot / Directed" in the header count the work and dim the rest.
+  4. Grain   one noise tile, drawn once, drifting over the page.
 */
 (function () {
   "use strict";
 
-  var tiles = [].slice.call(document.querySelectorAll(".grid .tile"));
-  if (!tiles.length) return;
+  var BEAT = 700;   // milliseconds each frame stays up; three frames make a 2.1 s loop
+
+  var links = [].slice.call(document.querySelectorAll(".sheet .cell"));
+  if (!links.length) return;
 
   function txt(root, sel) {
     var n = root.querySelector(sel);
     return n ? n.textContent.trim() : "";
   }
 
-  var works = tiles.map(function (a) {
+  var works = links.map(function (a) {
     return {
+      el: a,
       slug: a.id,
       title: txt(a, ".t"),
       role: txt(a, ".r"),
-      note: txt(a, ".n"),
+      note: a.dataset.note || "",
       host: a.dataset.host,
       id: a.dataset.id,
       start: a.dataset.start || "",
-      focus: a.dataset.focus || "50% 42%",
+      crafts: (a.dataset.crafts || "").split(/\s+/).filter(Boolean),
       href: a.href
     };
   });
@@ -57,7 +61,7 @@
   function embedUrl(w) {
     if (w.host === "vimeo") {
       return "https://player.vimeo.com/video/" + encodeURIComponent(w.id) +
-        "?autoplay=1&dnt=1&title=0&byline=0&portrait=0&color=ffb36b";
+        "?autoplay=1&dnt=1&title=0&byline=0&portrait=0&color=86c2ad";
     }
     return "https://www.youtube-nocookie.com/embed/" + encodeURIComponent(w.id) +
       "?autoplay=1&rel=0&playsinline=1" + (w.start ? "&start=" + encodeURIComponent(w.start) : "");
@@ -94,7 +98,6 @@
     } else if (how === "replace") {
       history.replaceState({ work: works[i].slug, pushed: pushed }, "", url);
     }
-    reelSync();
   }
 
   function step(d) {
@@ -117,7 +120,6 @@
       } else {
         history.replaceState(null, "", window.location.pathname + window.location.search);
       }
-      reelSync();
     });
 
     dlg.addEventListener("click", function (e) {
@@ -145,193 +147,153 @@
     });
   }
 
-  tiles.forEach(function (a, i) {
-    a.addEventListener("click", function (e) {
+  works.forEach(function (w, i) {
+    w.el.addEventListener("click", function (e) {
       if (!plainClick(e)) return;   // cmd-click and friends still open YouTube or Vimeo in a new tab
       e.preventDefault();
       openViewer(i, "push");
     });
   });
 
-  /* ----------------------------------------------------------------- preview */
+  /* ------------------------------------------------------------------- sheet */
 
-  var reel = document.querySelector(".reel");
-  var frame = reel.querySelector(".reel-frame");
-  var still = frame.querySelector("img");
-  var bar = reel.querySelector(".reel-bar");
-  var meta = reel.querySelector(".reel-meta");
-  var nowTitle = reel.querySelector(".now-title");
-  var nowRole = reel.querySelector(".now-role");
-  var holdBtn = reel.querySelector('[data-act="hold"]');
-  var playBtn = reel.querySelector('[data-act="play"]');
+  var motionOK = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var holdBtn = document.querySelector('[data-act="hold"]');
+  var held = false;   // the Pause button
 
-  var BEAT = 2400;   // keep in step with --beat in the stylesheet
-  var idx = 0;
-  var timer = 0;
-  var releaseTimer = 0;
-  var overBar = false;
-  var overFrame = false;
-  var touching = false;
-  var lastPointer = "mouse";
-  var paused = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  var big = window.innerWidth * (window.devicePixelRatio || 1) > 800;
-  var loads = [];
+  function setUpCell(w, i) {
+    var pic = w.el.querySelector(".pic");
+    var first = pic.querySelector("img");
+    var count = Math.max(1, parseInt(w.el.dataset.frames || "3", 10));
+    var narrow = w.el.dataset.aspect === "4:3";
+    var small = narrow ? 360 : 480;
 
-  function posterUrl(w) {
-    return "/work/posters/" + w.slug + (big ? "" : "-640") + ".webp";
-  }
+    w.imgs = [first];
+    w.cur = 0;
+    w.frozen = false;
+    w.seen = true;
+    w.offset = ((i * 0.618034) % 1) * BEAT;   // every cell cuts at its own moment
 
-  function preload(i) {
-    if (!loads[i]) {
-      loads[i] = new Promise(function (done) {
+    for (var k = 2; k <= count; k++) {
+      (function (k) {
+        var base = "/work/frames/" + w.slug + "-" + k;
         var im = new Image();
-        im.onload = im.onerror = function () { done(); };
-        im.src = posterUrl(works[i]);
+        im.alt = "";
+        im.decoding = "async";
+        im.width = first.width;
+        im.height = first.height;
+        im.sizes = first.sizes;
+        im.srcset = base + "-s.webp " + small + "w, " + base + ".webp " + (small * 2) + "w";
+        im.onload = function () { w.imgs[k - 1] = im; };   // a frame joins the loop once it has arrived
+        im.src = base + "-s.webp";
+        pic.appendChild(im);
+      })(k);
+    }
+
+    w.el.addEventListener("pointerenter", function (e) {
+      if (e.pointerType === "mouse") w.frozen = true;
+    });
+    w.el.addEventListener("pointerleave", function () { w.frozen = false; });
+    w.el.addEventListener("focus", function () {
+      try { w.frozen = w.el.matches(":focus-visible"); } catch (err) { w.frozen = false; }
+    });
+    w.el.addEventListener("blur", function () { w.frozen = false; });
+  }
+
+  function cut(now) {
+    if (!held && !(canModal && dlg.open)) {
+      for (var i = 0; i < works.length; i++) {
+        var w = works[i];
+        if (w.frozen || !w.seen) continue;
+        var beat = Math.floor((now + w.offset) / BEAT);
+        if (beat === w.beat) continue;
+        w.beat = beat;
+        var ready = w.imgs.filter(Boolean);
+        if (ready.length < 2) continue;
+        var next = ready[beat % ready.length];
+        if (next !== w.shown) {
+          if (w.shown) w.shown.classList.remove("on"); else w.imgs[0].classList.remove("on");
+          next.classList.add("on");
+          w.shown = next;
+        }
+      }
+    }
+    window.requestAnimationFrame(cut);
+  }
+
+  if (motionOK) {
+    works.forEach(setUpCell);
+
+    if ("IntersectionObserver" in window) {
+      var seen = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) { works[bySlug[en.target.id]].seen = en.isIntersecting; });
+      }, { rootMargin: "120px" });
+      works.forEach(function (w) { seen.observe(w.el); });
+    }
+
+    if (holdBtn) {
+      holdBtn.hidden = false;
+      holdBtn.addEventListener("click", function () {
+        held = !held;
+        holdBtn.textContent = held ? "Play" : "Pause";
       });
     }
-    return loads[i];
+    window.requestAnimationFrame(cut);
   }
 
-  var segs = works.map(function () {
-    var s = document.createElement("span");
-    s.className = "seg";
-    bar.appendChild(s);
-    return s;
+  /* ------------------------------------------------------------------ crafts */
+
+  var sheet = document.querySelector(".sheet");
+  var craftBtns = [].slice.call(document.querySelectorAll(".crafts button"));
+  var locked = "";
+
+  function sortBy(craft) {
+    var total = 0;
+    works.forEach(function (w) {
+      var isIn = !craft || w.crafts.indexOf(craft) >= 0;
+      w.el.classList.toggle("is-in", isIn);
+      if (isIn) total++;
+    });
+    sheet.classList.toggle("is-sorted", !!craft && total < works.length);
+  }
+
+  craftBtns.forEach(function (b) {
+    var craft = b.dataset.craft;
+    var n = works.filter(function (w) { return w.crafts.indexOf(craft) >= 0; }).length;
+    var badge = b.querySelector("i");
+    if (badge) badge.textContent = String(n);
+
+    b.addEventListener("pointerenter", function (e) { if (e.pointerType === "mouse") sortBy(craft); });
+    b.addEventListener("pointerleave", function () { sortBy(locked); });
+    b.addEventListener("click", function () {
+      locked = locked === craft ? "" : craft;
+      craftBtns.forEach(function (x) { x.setAttribute("aria-pressed", String(x.dataset.craft === locked)); });
+      sortBy(locked);
+    });
   });
 
-  var range = document.createElement("input");
-  range.type = "range";
-  range.min = "0";
-  range.max = String(works.length - 1);
-  range.step = "1";
-  range.value = "0";
-  range.setAttribute("aria-label", "Scrub through the work");
-  bar.appendChild(range);
+  /* ------------------------------------------------------------------- grain */
 
-  function show(i) {
-    idx = (i + works.length) % works.length;
-    var w = works[idx];
-    if (still.hasAttribute("srcset")) {
-      still.removeAttribute("srcset");
-      still.removeAttribute("sizes");
+  (function () {
+    var layer = document.querySelector(".grain");
+    if (!layer) return;
+    var n = 240;
+    var c = document.createElement("canvas");
+    c.width = c.height = n;
+    var ctx = c.getContext("2d");
+    if (!ctx) return;
+    var d = ctx.createImageData(n, n);
+    var p = d.data;
+    for (var i = 0; i < p.length; i += 4) {
+      var r = Math.random();
+      var light = Math.random() < 0.5;
+      p[i] = p[i + 1] = p[i + 2] = light ? 255 : 0;
+      p[i + 3] = (light ? 15 : 26) * r * r;   // mostly faint, a few stronger specks
     }
-    still.src = posterUrl(w);
-    frame.style.setProperty("--focus", w.focus);
-    frame.href = "#" + w.slug;
-    frame.setAttribute("aria-label", "Play " + w.title);
-    nowTitle.textContent = w.title;
-    nowRole.textContent = w.role;
-    segs.forEach(function (s, k) { s.classList.toggle("is-on", k === idx); });
-    range.value = String(idx);
-    range.setAttribute("aria-valuetext", w.title);
-    preload((idx + 1) % works.length);
-  }
-
-  function keyboardOnBar() {
-    try { return range.matches(":focus-visible"); } catch (err) { return false; }
-  }
-
-  function running() {
-    return !paused && !overBar && !overFrame && !touching && !keyboardOnBar() &&
-      !document.hidden && !(canModal && dlg.open);
-  }
-
-  function reelSync() {
-    clearTimeout(timer);
-    var go = running();
-    reel.classList.toggle("is-held", !go);
-    if (!go) return;
-    timer = setTimeout(function () {
-      var next = (idx + 1) % works.length;
-      preload(next).then(function () {
-        if (running()) show(next);
-        reelSync();
-      });
-    }, BEAT);
-  }
-
-  function indexAt(x) {
-    var a = segs[0].getBoundingClientRect();
-    var b = segs[segs.length - 1].getBoundingClientRect();
-    var t = (x - a.left) / (b.right - a.left);
-    return Math.max(0, Math.min(works.length - 1, Math.floor(t * works.length)));
-  }
-
-  // mouse: skim across the bar, the still follows; click plays the one under the cursor
-  bar.addEventListener("pointermove", function (e) {
-    if (e.pointerType !== "mouse") return;
-    var i = indexAt(e.clientX);
-    if (!overBar || i !== idx) {
-      overBar = true;
-      if (i !== idx) show(i);
-      reelSync();
-    }
-  });
-  bar.addEventListener("pointerleave", function () {
-    if (!overBar) return;
-    overBar = false;
-    reelSync();
-  });
-
-  // touch: drag along the bar; the cut resumes a moment after the finger lifts
-  bar.addEventListener("pointerdown", function (e) {
-    lastPointer = e.pointerType;
-    if (e.pointerType === "mouse") return;
-    touching = true;
-    clearTimeout(releaseTimer);
-    reelSync();
-  });
-  function release() {
-    if (!touching) return;
-    clearTimeout(releaseTimer);
-    releaseTimer = setTimeout(function () { touching = false; reelSync(); }, 1600);
-  }
-  window.addEventListener("pointerup", release);
-  window.addEventListener("pointercancel", release);
-
-  range.addEventListener("input", function () {
-    var i = Number(range.value);
-    if (i !== idx) show(i);
-    reelSync();
-  });
-  range.addEventListener("click", function () {
-    if (lastPointer === "mouse") openViewer(idx, "push");
-  });
-  range.addEventListener("keydown", function (e) {
-    if (e.key === "Enter") { e.preventDefault(); openViewer(idx, "push"); }
-  });
-  range.addEventListener("focus", reelSync);
-  range.addEventListener("blur", reelSync);
-
-  frame.addEventListener("pointerenter", function (e) {
-    if (e.pointerType !== "mouse") return;
-    overFrame = true;   // the still must not change under a cursor that is about to click
-    reelSync();
-  });
-  frame.addEventListener("pointerleave", function () {
-    if (!overFrame) return;
-    overFrame = false;
-    reelSync();
-  });
-  frame.addEventListener("click", function (e) {
-    if (!plainClick(e)) return;
-    e.preventDefault();
-    openViewer(idx, "push");
-  });
-
-  playBtn.addEventListener("click", function () { openViewer(idx, "push"); });
-  holdBtn.addEventListener("click", function () {
-    paused = !paused;
-    holdBtn.textContent = paused ? "Resume" : "Pause";
-    reelSync();
-  });
-  document.addEventListener("visibilitychange", reelSync);
-
-  bar.hidden = false;
-  meta.hidden = false;
-  if (paused) holdBtn.textContent = "Resume";
-  show(0);
-  reelSync();
+    ctx.putImageData(d, 0, 0);
+    layer.style.backgroundImage = "url(" + c.toDataURL("image/png") + ")";
+    layer.style.backgroundSize = n + "px " + n + "px";
+  })();
 
   /* --------------------------------------------- a link straight to one film */
 
