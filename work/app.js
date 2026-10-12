@@ -5,8 +5,8 @@
   1. Viewer  a cell opens the film in a full-screen player; /work#<id> links straight to it.
   2. Sheet   cells are still; the one under the cursor plays its fragment, or, where there
              is no fragment yet, cuts between its three frames.
-  3. Crafts  "Directed / Shot / Edited / Generated" in the header count the work and dim the
-             rest; the left and right arrow keys step through them.
+  3. Crafts  folded behind "Roles" in the header; open, "Directed / Shot / Edited / Generated"
+             count the work and dim the rest; the left and right arrow keys step through them.
   4. Grain   one noise tile, drawn once, shifting slowly over the page.
 */
 (function () {
@@ -325,6 +325,8 @@
   /* ------------------------------------------------------------------ crafts */
 
   var sheet = document.querySelector(".sheet");
+  var crafts = document.querySelector(".crafts");
+  var toggle = crafts && crafts.querySelector(".toggle");
   var craftBtns = [].slice.call(document.querySelectorAll(".crafts [data-craft]"));
   var craftOrder = craftBtns.map(function (b) { return b.dataset.craft; });
   var locked = "";
@@ -364,18 +366,26 @@
     b.addEventListener("click", function () { lock(locked === craft ? "" : craft); });
   });
 
-  [].slice.call(document.querySelectorAll(".crafts [data-step]")).forEach(function (b) {
-    b.addEventListener("click", function () { stepCraft(Number(b.dataset.step)); });
-  });
+  function fold(open) {
+    if (!crafts) return;
+    crafts.classList.toggle("is-open", open);
+    if (toggle) toggle.setAttribute("aria-expanded", String(open));
+    if (!open) lock("");
+  }
+
+  if (toggle) toggle.addEventListener("click", function () { fold(!crafts.classList.contains("is-open")); });
 
   document.addEventListener("keydown", function (e) {
     if (canModal && dlg.open) return;   // in the viewer the arrows change the film
     if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
     var t = e.target;
     if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
-    if (e.key === "ArrowRight") { e.preventDefault(); stepCraft(1); }
-    else if (e.key === "ArrowLeft") { e.preventDefault(); stepCraft(-1); }
-    else if (e.key === "Escape" && locked) lock("");
+    if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
+      e.preventDefault();
+      fold(true);
+      stepCraft(e.key === "ArrowRight" ? 1 : -1);
+    }
+    else if (e.key === "Escape" && crafts && crafts.classList.contains("is-open")) fold(false);
   });
 
   /* ------------------------------------------------------------------- grain */

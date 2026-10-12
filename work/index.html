@@ -14,8 +14,8 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#0a0a09">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230a0a09'/%3E%3Crect x='5' y='9.5' width='22' height='13' fill='none' stroke='%2386c2ad' stroke-width='2'/%3E%3C/svg%3E">
-<link rel="preload" href="/work/fonts/courier-prime-400.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="/work/fonts/courier-prime-400-italic.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/work/fonts/instrument-sans-wght.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/work/fonts/instrument-sans-wght-italic.woff2" as="font" type="font/woff2" crossorigin>
 
 <!--
   HOW TO EDIT THIS PAGE
@@ -44,8 +44,9 @@
 -->
 
 <style>
-@font-face{font-family:"Courier Prime";src:url("/work/fonts/courier-prime-400.woff2") format("woff2");font-weight:400;font-style:normal;font-display:swap}
-@font-face{font-family:"Courier Prime";src:url("/work/fonts/courier-prime-400-italic.woff2") format("woff2");font-weight:400;font-style:italic;font-display:swap}
+/* Instrument Sans (SIL Open Font License, see /work/fonts/LICENSE.txt), weights 400–700 in one file */
+@font-face{font-family:"Instrument Sans";src:url("/work/fonts/instrument-sans-wght.woff2") format("woff2");font-weight:400 700;font-style:normal;font-display:swap}
+@font-face{font-family:"Instrument Sans";src:url("/work/fonts/instrument-sans-wght-italic.woff2") format("woff2");font-weight:400 700;font-style:italic;font-display:swap}
 
 :root{
   --ground:#0a0a09;     /* tar: black, but not quite */
@@ -56,13 +57,13 @@
   --bar:#000;           /* bars beside a 4:3 frame */
   --gutter:clamp(.75rem,1.7vw,1.5rem);
   --gap:2px;
-  --type:"Courier Prime","Courier New",Courier,monospace;
+  --type:"Instrument Sans",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
   color-scheme:dark;
 }
 *,*::before,*::after{box-sizing:border-box}
 html{background:var(--ground);-webkit-text-size-adjust:100%}
 html:has(dialog[open]){overflow:hidden}
-body{margin:0;background:var(--ground);color:var(--paper);font:400 .875rem/1.4 var(--type);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+body{margin:0;background:var(--ground);color:var(--paper);font:400 .875rem/1.4 var(--type);letter-spacing:.005em;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 [hidden]{display:none!important}
 a{color:inherit}
 button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
@@ -80,19 +81,23 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 }
 
 /* ---------- header ---------- */
-.top{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:end;gap:.5rem 2rem;padding:1.15rem var(--gutter) 1.05rem}
-.who h1{margin:0;font:inherit;font-size:1rem;line-height:1.3}
+.top{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:.5rem 2rem;padding:1.15rem var(--gutter) 1.05rem}
+.who h1{margin:0;font:inherit;font-size:1rem;font-weight:500;line-height:1.3}
 .who p{margin:.1rem 0 0;color:var(--ash);font-style:italic}
-.crafts{display:flex;flex-wrap:wrap;align-items:center;gap:.1rem 1.4rem}
-.crafts button{padding:.15rem 0;border-bottom:1px solid transparent}
-.crafts button i{font-style:normal;color:var(--ash);margin-left:.45em}
-.crafts button:hover,.crafts button[aria-pressed="true"]{color:var(--patina);border-bottom-color:var(--patina)}
-.crafts button:hover i,.crafts button[aria-pressed="true"] i{color:var(--patina)}
-.crafts .arrow{display:grid;place-items:center;height:1.4em;padding:0 .15rem;border-bottom:0;color:var(--ash)}
-.crafts .arrow svg{display:block}
-.links{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:.1rem 1.4rem;margin:0;padding:0;list-style:none}
-.links a,.quiet{padding:.15rem 0;text-decoration:none;border-bottom:1px solid var(--line)}
-.links a:hover,.quiet:hover{color:var(--patina);border-bottom-color:var(--patina)}
+.crafts{display:flex;align-items:center;justify-content:flex-end;gap:.1rem 1.2rem}
+/* the crafts stay folded behind "Roles"; opening slides them out to the left of it */
+.crafts .list{display:flex;flex-wrap:nowrap;gap:.1rem 1.4rem;max-width:0;overflow:hidden;opacity:0;visibility:hidden;
+  transition:max-width .6s cubic-bezier(.2,.7,.2,1),opacity .35s ease,visibility 0s linear .6s}
+.crafts.is-open .list{max-width:36rem;opacity:1;visibility:visible;transition:max-width .6s cubic-bezier(.2,.7,.2,1),opacity .45s ease .1s,visibility 0s}
+.crafts .list button{padding:.15rem 0;border-bottom:1px solid transparent;white-space:nowrap}
+.crafts .list button i{font-style:normal;color:var(--ash);margin-left:.4em}
+.crafts .list button:hover,.crafts .list button[aria-pressed="true"]{border-bottom-color:var(--paper)}
+.crafts .toggle{display:inline-flex;align-items:center;gap:.5rem;padding:.15rem 0;color:var(--ash)}
+.crafts .toggle:hover,.crafts.is-open .toggle{color:var(--paper)}
+.crafts .toggle svg{display:block;transition:transform .45s cubic-bezier(.2,.7,.2,1)}
+.crafts.is-open .toggle svg{transform:rotate(45deg)}
+.quiet{padding:.15rem 0;text-decoration:none;border-bottom:1px solid var(--line)}
+.quiet:hover{color:var(--patina);border-bottom-color:var(--patina)}
 .quiet{color:var(--ash)}
 
 /* ---------- the sheet ---------- */
@@ -106,7 +111,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .cell:focus-visible,.end a:focus-visible{outline:0}
 .t,.r{display:block;margin-right:.8rem;font-size:.8125rem;line-height:1.32}
 .t{margin-top:.5rem;text-wrap:balance}
-.r{margin-top:.08rem;color:var(--patina);font-style:italic}
+.r{margin-top:.3rem;color:#77746d;font-size:.625rem;line-height:1.3;letter-spacing:.08em;text-transform:uppercase}
 .sheet.is-sorted .cell:not(.is-in),.sheet.is-sorted .end a{opacity:.14}
 /* the end card: a black frame with the address, closing the sheet */
 .end .pic{display:grid;place-items:center;padding:0 .5rem;font-size:.8125rem;text-align:center}
@@ -119,14 +124,15 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .foot .reach{grid-column:4/span 2}
 .foot .reach a{text-decoration:none;border-bottom:1px solid var(--line)}
 .foot .reach a:hover{color:var(--patina);border-bottom-color:var(--patina)}
+.foot .reach a + a{margin-left:1rem}
 
 /* ---------- viewer ---------- */
 dialog.viewer{position:fixed;inset:0;width:100vw;max-width:none;height:100vh;height:100dvh;max-height:none;margin:0;padding:0;border:0;background:var(--ground);color:var(--paper)}
 dialog.viewer::backdrop{background:var(--ground)}
 .v-wrap{display:grid;grid-template-rows:auto minmax(0,1fr) auto;height:100%}
 .v-head{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem 2rem;padding:1.05rem var(--gutter) .8rem}
-.v-title{margin:0;font:inherit;font-size:1rem;line-height:1.3;text-wrap:balance}
-.v-role{margin:.1rem 0 0;color:var(--patina);font-style:italic}
+.v-title{margin:0;font:inherit;font-size:1rem;font-weight:500;line-height:1.3;text-wrap:balance}
+.v-role{margin:.3rem 0 0;color:#8a877f;font-size:.6875rem;letter-spacing:.08em;text-transform:uppercase}
 .v-stage{display:grid;place-items:center;min-height:0;padding:0 var(--gutter)}
 .v-player{--r:1.7778;aspect-ratio:var(--r);width:min(100%,calc((100vh - 12rem)*var(--r)));background:#000}
 @supports (width:1cqw){
@@ -151,7 +157,11 @@ dialog.viewer::backdrop{background:var(--ground)}
 }
 @media (max-width:899px){
   .top{grid-template-columns:minmax(0,1fr);align-items:start}
-  .links{justify-content:flex-start}
+  .crafts{justify-content:flex-start;flex-wrap:wrap}
+  .crafts .toggle{order:-1}
+  .crafts .list{flex-basis:100%;flex-wrap:wrap;max-width:none;max-height:0;
+    transition:max-height .5s cubic-bezier(.2,.7,.2,1),opacity .35s ease,visibility 0s linear .5s}
+  .crafts.is-open .list{max-width:none;max-height:6rem;transition:max-height .5s cubic-bezier(.2,.7,.2,1),opacity .45s ease .1s,visibility 0s}
 }
 @media (max-width:859px){
   .sheet,.foot{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -162,12 +172,11 @@ dialog.viewer::backdrop{background:var(--ground)}
   .end .pic{font-size:.75rem;padding:0 .25rem}
 }
 @media (max-width:520px){
-  .crafts{gap:.1rem 1rem}
-  .crafts .arrow{display:none}   /* on a phone the crafts are tapped directly; the four fit on one line */
+  .crafts .list{gap:.1rem 1rem}
 }
 @media (prefers-reduced-motion:reduce){
   .grain{animation:none}
-  .cell,.end a{transition:none}
+  .cell,.end a,.crafts .list,.crafts .toggle svg{transition:none!important}
 }
 </style>
 <!-- Vercel Web Analytics: page views, visitors, countries, devices, referrers (no personal data) -->
@@ -184,19 +193,14 @@ dialog.viewer::backdrop{background:var(--ground)}
     <p>director, cinematographer, editor. Barcelona</p>
   </div>
   <div class="crafts" role="group" aria-label="Highlight the work by craft; the left and right arrow keys step through">
-    <button class="arrow" type="button" data-step="-1" aria-label="Previous craft"><svg viewBox="0 0 18 10" width="18" height="10" aria-hidden="true"><path d="M5 1 1 5l4 4M1 5h16" fill="none" stroke="currentColor" stroke-width="1.2"/></svg></button>
-    <button type="button" data-craft="directed" aria-pressed="false">Directed<i>7</i></button>
-    <button type="button" data-craft="shot" aria-pressed="false">Shot<i>6</i></button>
-    <button type="button" data-craft="edit" aria-pressed="false">Edited<i>19</i></button>
-    <button type="button" data-craft="ai" aria-pressed="false" title="AI-generated film">Generated<i>3</i></button>
-    <button class="arrow" type="button" data-step="1" aria-label="Next craft"><svg viewBox="0 0 18 10" width="18" height="10" aria-hidden="true"><path d="M13 1l4 4-4 4M17 5H1" fill="none" stroke="currentColor" stroke-width="1.2"/></svg></button>
+    <div class="list" id="craft-list">
+      <button type="button" data-craft="directed" aria-pressed="false">Directed<i>7</i></button>
+      <button type="button" data-craft="shot" aria-pressed="false">Shot<i>6</i></button>
+      <button type="button" data-craft="edit" aria-pressed="false">Edited<i>19</i></button>
+      <button type="button" data-craft="ai" aria-pressed="false" title="AI-generated film">Generated<i>3</i></button>
+    </div>
+    <button class="toggle" type="button" aria-expanded="false" aria-controls="craft-list">Roles<svg viewBox="0 0 10 10" width="10" height="10" aria-hidden="true"><path d="M5 0v10M0 5h10" fill="none" stroke="currentColor" stroke-width="1.2"/></svg></button>
   </div>
-  <ul class="links">
-    <!-- CV: when the PDF is in /work, add  <li><a href="/work/Saveliy-Sharkov-CV.pdf">CV</a></li>  here -->
-    <li><a href="mailto:savelsharkov@gmail.com">Email</a></li>
-    <li><a href="https://t.me/savell">Telegram</a></li>
-    <li><a href="https://www.instagram.com/savelliy/">Instagram</a></li>
-  </ul>
 </header>
 
 <main id="work">
@@ -208,43 +212,43 @@ dialog.viewer::backdrop{background:var(--ground)}
     <li><a class="cell" id="how-have-you-been-1" href="/work/video/how-have-you-been-1.mp4" data-host="file" data-file="/work/video/how-have-you-been-1.mp4" data-ratio="2:3" data-clip="/work/clips/how-have-you-been-1.mp4" data-frames="1" data-crafts="directed edit ai" data-note="AI-generated short set in the year 2225. Part one of two.">
       <span class="pic"><img class="on" src="/work/frames/how-have-you-been-1-1-s.webp" srcset="/work/frames/how-have-you-been-1-1-s.webp 480w, /work/frames/how-have-you-been-1-1.webp 960w" sizes="(min-width:1180px) 20vw, (min-width:860px) 25vw, 50vw" width="960" height="540" alt=""></span>
       <span class="t">How’ve you been? Part 1</span>
-      <span class="r">Directed, generated, edited</span>
+      <span class="r">Director · Editor · AI film</span>
     </a></li>
 
     <li><a class="cell" id="how-have-you-been-2" href="/work/video/how-have-you-been-2.mp4" data-host="file" data-file="/work/video/how-have-you-been-2.mp4" data-ratio="2:3" data-clip="/work/clips/how-have-you-been-2.mp4" data-frames="1" data-crafts="directed edit ai" data-note="AI-generated short set in the year 2225. Part two of two.">
       <span class="pic"><img class="on" src="/work/frames/how-have-you-been-2-1-s.webp" srcset="/work/frames/how-have-you-been-2-1-s.webp 480w, /work/frames/how-have-you-been-2-1.webp 960w" sizes="(min-width:1180px) 20vw, (min-width:860px) 25vw, 50vw" width="960" height="540" alt=""></span>
       <span class="t">How’ve you been? Part 2</span>
-      <span class="r">Directed, generated, edited</span>
+      <span class="r">Director · Editor · AI film</span>
     </a></li>
 
     <li><a class="cell" id="together" href="/work/video/together-4x3.mp4" data-host="file" data-file="/work/video/together-4x3.mp4" data-ratio="4:3" data-alt-file="/work/video/together-9x16.mp4" data-alt-ratio="9:16" data-alt-label="vertical cut" data-label="4:3 cut" data-clip="/work/clips/together.mp4" data-frames="1" data-aspect="4:3" data-crafts="directed edit ai" data-note="AI-generated film.">
       <span class="pic"><img class="on" src="/work/frames/together-1-s.webp" srcset="/work/frames/together-1-s.webp 360w, /work/frames/together-1.webp 720w" sizes="(min-width:1180px) 15vw, (min-width:860px) 19vw, 38vw" width="720" height="540" alt=""></span>
       <span class="t">Together, we hold the world</span>
-      <span class="r">Directed, generated, edited</span>
+      <span class="r">Director · Editor · AI film</span>
     </a></li>
 
     <li><a class="cell" id="lcr-3" href="https://www.youtube.com/watch?v=hZs6oK-qbWc" data-host="youtube" data-id="hZs6oK-qbWc" data-crafts="directed shot edit" data-aspect="4:3">
       <span class="pic"><img class="on" src="/work/frames/lcr-3-1-s.webp" srcset="/work/frames/lcr-3-1-s.webp 360w, /work/frames/lcr-3-1.webp 720w" sizes="(min-width:1180px) 15vw, (min-width:860px) 19vw, 38vw" width="720" height="540" alt=""></span>
       <span class="t">LCR 3</span>
-      <span class="r">Directed, shot, edited</span>
+      <span class="r">Director · DoP · Editor</span>
     </a></li>
 
     <li><a class="cell" id="complex-bits" href="https://vimeo.com/390277808" data-host="vimeo" data-id="390277808" data-crafts="directed shot edit">
       <span class="pic"><img class="on" src="/work/frames/complex-bits-1-s.webp" srcset="/work/frames/complex-bits-1-s.webp 480w, /work/frames/complex-bits-1.webp 960w" sizes="(min-width:1180px) 20vw, (min-width:860px) 25vw, 50vw" width="960" height="540" alt=""></span>
       <span class="t">Complex bits</span>
-      <span class="r">Directed, shot, edited</span>
+      <span class="r">Director · DoP · Editor</span>
     </a></li>
 
     <li><a class="cell" id="geodesign" href="https://vimeo.com/924939710" data-host="vimeo" data-id="924939710" data-crafts="directed shot edit" data-note="Made with Peter Kroshchinskiy: a steel soil sampler in a valley of the Caucasus.">
       <span class="pic"><img class="on" src="/work/frames/geodesign-1-s.webp" srcset="/work/frames/geodesign-1-s.webp 480w, /work/frames/geodesign-1.webp 960w" sizes="(min-width:1180px) 20vw, (min-width:860px) 25vw, 50vw" width="960" height="540" alt=""></span>
       <span class="t">Geo-Design, Design Academy Eindhoven</span>
-      <span class="r">Directed, shot, edited</span>
+      <span class="r">Director · DoP · Editor</span>
     </a></li>
 
     <li><a class="cell" id="pepsi-fencing" href="https://www.youtube.com/watch?v=IFGeESsxih4" data-host="youtube" data-id="IFGeESsxih4" data-crafts="directed shot edit">
       <span class="pic"><img class="on" src="/work/frames/pepsi-fencing-1-s.webp" srcset="/work/frames/pepsi-fencing-1-s.webp 480w, /work/frames/pepsi-fencing-1.webp 960w" sizes="(min-width:1180px) 20vw, (min-width:860px) 25vw, 50vw" width="960" height="540" alt=""></span>
       <span class="t">Pepsi × Fencing</span>
-      <span class="r">Directed, shot, edited</span>
+      <span class="r">Director · DoP · Editor</span>
     </a></li>
 
     <!-- ===== shot ===== -->
@@ -252,13 +256,13 @@ dialog.viewer::backdrop{background:var(--ground)}
     <li><a class="cell" id="meaningful-neighborhood" href="https://vimeo.com/1222547853/2e0bb67d4d" data-host="vimeo" data-id="1222547853" data-hash="2e0bb67d4d" data-crafts="shot edit" data-note="An EastEast Films documentary from INTBAU Qatar’s Winter School, January 2026: two weeks of designing a neighborhood on the principles of traditional architecture.">
       <span class="pic"><img class="on" src="/work/frames/meaningful-neighborhood-1-s.webp" srcset="/work/frames/meaningful-neighborhood-1-s.webp 480w, /work/frames/meaningful-neighborhood-1.webp 960w" sizes="(min-width:1180px) 20vw, (min-width:860px) 25vw, 50vw" width="960" height="540" alt=""></span>
       <span class="t">In Search of a Meaningful Neighborhood</span>
-      <span class="r">Shot, edited</span>
+      <span class="r">DoP · Editor</span>
     </a></li>
 
     <li><a class="cell" id="cyrille-gassiline" href="https://vimeo.com/390278999" data-host="vimeo" data-id="390278999" data-crafts="shot edit">
       <span class="pic"><img class="on" src="/work/frames/cyrille-gassiline-1-s.webp" srcset="/work/frames/cyrille-gassiline-1-s.webp 480w, /work/frames/cyrille-gassiline-1.webp 960w" sizes="(min-width:1180px) 20vw, (min-width:860px) 25vw, 50vw" width="960" height="540" alt=""></span>
       <span class="t">Cyrille Gassiline</span>
-      <span class="r">Shot, edited</span>
+      <span class="r">DoP · Editor</span>
     </a></li>
 
     <!-- ===== edited ===== -->
@@ -266,61 +270,61 @@ dialog.viewer::backdrop{background:var(--ground)}
     <li><a class="cell" id="el-wakil" href="https://www.youtube.com/watch?v=eU8ST_-OUZQ" data-host="youtube" data-id="eU8ST_-OUZQ" data-crafts="edit" data-note="Documentary by Olya Korsun and Furqat Palvan-Zade, commissioned by Caravane Earth Foundation.">
       <span class="pic"><img class="on" src="/work/frames/el-wakil-1-s.webp" srcset="/work/frames/el-wakil-1-s.webp 480w, /work/frames/el-wakil-1.webp 960w" sizes="(min-width:1180px) 20vw, (min-width:860px) 25vw, 50vw" width="960" height="540" alt=""></span>
       <span class="t">Abdel-Wahed El-Wakil: A&nbsp;Portrait of an Architect</span>
-      <span class="r">Edited, tutored the edit</span>
+      <span class="r">Editor · Edit supervisor</span>
     </a></li>
 
     <li><a class="cell" id="easteast" href="https://www.youtube.com/watch?v=_Nt0Mb39THs" data-host="youtube" data-id="_Nt0Mb39THs" data-frames="2" data-crafts="edit">
       <span class="pic"><img class="on" src="/work/frames/easteast-1-s.webp" srcset="/work/frames/easteast-1-s.webp 480w, /work/frames/easteast-1.webp 960w" sizes="(min-width:1180px) 20vw, (min-width:860px) 25vw, 50vw" width="960" height="540" alt=""></span>
       <span class="t">EastEast</span>
-      <span class="r">Edited, consulted</span>
+      <span class="r">Editor · Consultant</span>
     </a></li>
 
     <li><a class="cell" id="no-ribbons" href="https://www.youtube.com/watch?v=S7F5RqxTJbQ&amp;t=320s" data-host="youtube" data-id="S7F5RqxTJbQ" data-start="320" data-crafts="edit" data-note="Anthology film.">
       <span class="pic"><img class="on" src="/work/frames/no-ribbons-1-s.webp" srcset="/work/frames/no-ribbons-1-s.webp 480w, /work/frames/no-ribbons-1.webp 960w" sizes="(min-width:1180px) 20vw, (min-width:860px) 25vw, 50vw" width="960" height="540" alt=""></span>
       <span class="t">No Ribbons, Trophies, Medals</span>
-      <span class="r">Edited</span>
+      <span class="r">Editor</span>
     </a></li>
 
     <li><a class="cell" id="polo-stick" href="https://vimeo.com/924933728" data-host="vimeo" data-id="924933728" data-crafts="edit" data-note="Film by Furqat Palvan-Zade, made at Sandberg Instituut Amsterdam.">
       <span class="pic"><img class="on" src="/work/frames/polo-stick-1-s.webp" srcset="/work/frames/polo-stick-1-s.webp 480w, /work/frames/polo-stick-1.webp 960w" sizes="(min-width:1180px) 20vw, (min-width:860px) 25vw, 50vw" width="960" height="540" alt=""></span>
       <span class="t">The Ball and the Polo Stick, or the Book of Ecstasy</span>
-      <span class="r">Edited, consulted</span>
+      <span class="r">Editor · Consultant</span>
     </a></li>
 
     <li><a class="cell" id="adidas-dubai" href="https://www.youtube.com/watch?v=-eEbeLiXg44" data-host="youtube" data-id="-eEbeLiXg44" data-crafts="edit">
       <span class="pic"><img class="on" src="/work/frames/adidas-dubai-1-s.webp" srcset="/work/frames/adidas-dubai-1-s.webp 480w, /work/frames/adidas-dubai-1.webp 960w" sizes="(min-width:1180px) 20vw, (min-width:860px) 25vw, 50vw" width="960" height="540" alt=""></span>
       <span class="t">Adidas Dubai</span>
-      <span class="r">Edited, consulted</span>
+      <span class="r">Editor · Consultant</span>
     </a></li>
 
     <li><a class="cell" id="natakhtari-cold-beer" href="https://www.youtube.com/watch?v=B7ifCO_MkAw" data-host="youtube" data-id="B7ifCO_MkAw" data-crafts="edit" data-note="Commercial for Natakhtari beer, Efes Georgia.">
       <span class="pic"><img class="on" src="/work/frames/natakhtari-cold-beer-1-s.webp" srcset="/work/frames/natakhtari-cold-beer-1-s.webp 480w, /work/frames/natakhtari-cold-beer-1.webp 960w" sizes="(min-width:1180px) 20vw, (min-width:860px) 25vw, 50vw" width="960" height="540" alt=""></span>
       <span class="t">Natakhtari, 100% cold beer</span>
-      <span class="r">Edited</span>
+      <span class="r">Editor</span>
     </a></li>
 
     <li><a class="cell" id="mir" href="https://www.youtube.com/watch?v=rBkYWOMamCQ" data-host="youtube" data-id="rBkYWOMamCQ" data-crafts="edit" data-note="“Why do fans from Italy dream of a Mir card?”, a campaign film.">
       <span class="pic"><img class="on" src="/work/frames/mir-1-s.webp" srcset="/work/frames/mir-1-s.webp 480w, /work/frames/mir-1.webp 960w" sizes="(min-width:1180px) 20vw, (min-width:860px) 25vw, 50vw" width="960" height="540" alt=""></span>
       <span class="t">Mir payment system</span>
-      <span class="r">Edited</span>
+      <span class="r">Editor</span>
     </a></li>
 
     <li><a class="cell" id="natakhtari-rugby" href="https://www.youtube.com/watch?v=btXuUKnQUrE" data-host="youtube" data-id="btXuUKnQUrE" data-crafts="edit" data-note="The maul, explained. From a rugby series for Natakhtari with Saatchi &amp; Saatchi Tbilisi.">
       <span class="pic"><img class="on" src="/work/frames/natakhtari-rugby-1-s.webp" srcset="/work/frames/natakhtari-rugby-1-s.webp 480w, /work/frames/natakhtari-rugby-1.webp 960w" sizes="(min-width:1180px) 20vw, (min-width:860px) 25vw, 50vw" width="960" height="540" alt=""></span>
       <span class="t">Natakhtari Rugby, lesson 3</span>
-      <span class="r">Edited, DIT on set</span>
+      <span class="r">Editor · DIT</span>
     </a></li>
 
     <li><a class="cell" id="ska-juice-bar" href="https://www.youtube.com/watch?v=udnO5cWODpU" data-host="youtube" data-id="udnO5cWODpU" data-crafts="edit">
       <span class="pic"><img class="on" src="/work/frames/ska-juice-bar-1-s.webp" srcset="/work/frames/ska-juice-bar-1-s.webp 480w, /work/frames/ska-juice-bar-1.webp 960w" sizes="(min-width:1180px) 20vw, (min-width:860px) 25vw, 50vw" width="960" height="540" alt=""></span>
       <span class="t">Ska juice bar</span>
-      <span class="r">Edited</span>
+      <span class="r">Editor</span>
     </a></li>
 
     <li><a class="cell" id="hotel-by-the-hour" href="https://www.youtube.com/watch?v=cJFHdPu-xTk" data-host="youtube" data-id="cJFHdPu-xTk" data-crafts="edit" data-aspect="4:3" data-note="Fashion story for Buro 24/7 with artist Ekaterina Shcheglova and actor Ilya Romashko.">
       <span class="pic"><img class="on" src="/work/frames/hotel-by-the-hour-1-s.webp" srcset="/work/frames/hotel-by-the-hour-1-s.webp 360w, /work/frames/hotel-by-the-hour-1.webp 720w" sizes="(min-width:1180px) 15vw, (min-width:860px) 19vw, 38vw" width="720" height="540" alt=""></span>
       <span class="t">Hotel by the Hour</span>
-      <span class="r">Edited</span>
+      <span class="r">Editor</span>
     </a></li>
 
     <!-- ===== end card ===== -->
