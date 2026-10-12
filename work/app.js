@@ -3,14 +3,16 @@
   from the page, so adding, removing or reordering a work never needs a change here.
 
   1. Viewer  a cell opens the film in a full-screen player; /work#<id> links straight to it.
-  2. Sheet   every cell hard-cuts between its three frames; the one under the cursor holds.
-  3. Crafts  "Edited / Shot / Directed" in the header count the work and dim the rest.
-  4. Grain   one noise tile, drawn once, drifting over the page.
+  2. Sheet   cells are still; the one under the cursor plays its fragment, or, where there
+             is no fragment yet, cuts between its three frames.
+  3. Crafts  "Directed / Shot / Edited / AI" in the header count the work and dim the rest;
+             the left and right arrow keys step through them.
+  4. Grain   one noise tile, drawn once, shifting slowly over the page.
 */
 (function () {
   "use strict";
 
-  var BEAT = 700;   // milliseconds each frame stays up; three frames make a 2.1 s loop
+  var BEAT = 700;   // milliseconds each frame stays up when a cell cuts between frames
 
   var links = [].slice.call(document.querySelectorAll(".sheet .cell"));
   if (!links.length) return;
@@ -20,17 +22,30 @@
     return n ? n.textContent.trim() : "";
   }
 
+  function ratio(s) {   // "4:3" -> 1.3333
+    var m = /^(\d+(?:\.\d+)?)\s*[:\/x]\s*(\d+(?:\.\d+)?)$/.exec(s || "");
+    return m ? Number(m[1]) / Number(m[2]) : 16 / 9;
+  }
+
   var works = links.map(function (a) {
+    var d = a.dataset;
     return {
       el: a,
       slug: a.id,
       title: txt(a, ".t"),
       role: txt(a, ".r"),
-      note: a.dataset.note || "",
-      host: a.dataset.host,
-      id: a.dataset.id,
-      start: a.dataset.start || "",
-      crafts: (a.dataset.crafts || "").split(/\s+/).filter(Boolean),
+      note: d.note || "",
+      host: d.host,
+      id: d.id,
+      start: d.start || "",
+      file: d.file || "",
+      ratio: ratio(d.ratio),
+      label: d.label || "",
+      altFile: d.altFile || "",
+      altRatio: ratio(d.altRatio),
+      altLabel: d.altLabel || "",
+      clip: d.clip || "",
+      crafts: (d.crafts || "").split(/\s+/).filter(Boolean),
       href: a.href
     };
   });
@@ -45,8 +60,9 @@
 
   var dlg = document.querySelector("dialog.viewer");
   var canModal = !!dlg && typeof dlg.showModal === "function";
-  var vTitle, vRole, vNote, vLink, vPlayer;
+  var vTitle, vRole, vNote, vLink, vAlt, vPlayer;
   var current = -1;            // index of the film in the viewer, -1 when closed
+  var onAlt = false;           // the second cut of the film is showing
   var pushed = false;          // opening the viewer added a history entry
   var closedByHistory = false; // the browser's Back button is closing the viewer
 
@@ -55,6 +71,7 @@
     vRole = dlg.querySelector(".v-role");
     vNote = dlg.querySelector(".v-note");
     vLink = dlg.querySelector(".v-link");
+    vAlt = dlg.querySelector(".v-alt");
     vPlayer = dlg.querySelector(".v-player");
   }
 
@@ -67,15 +84,38 @@
       "?autoplay=1&rel=0&playsinline=1" + (w.start ? "&start=" + encodeURIComponent(w.start) : "");
   }
 
-  function fill(i) {
+  function fill(i, alt) {
     var w = works[i];
     current = i;
+    onAlt = !!alt && !!w.altFile;
     vTitle.textContent = w.title;
     vRole.textContent = w.role;
     vNote.textContent = w.note;
     vNote.hidden = !w.note;
+
+    if (w.host === "file") {
+      vLink.hidden = true;
+      vAlt.hidden = !w.altFile;
+      if (w.altFile) vAlt.textContent = "Watch the " + (onAlt ? w.label : w.altLabel);
+      vPlayer.style.setProperty("--r", String(onAlt ? w.altRatio : w.ratio));
+
+      var v = document.createElement("video");
+      v.controls = true;
+      v.autoplay = true;
+      v.preload = "auto";
+      v.setAttribute("playsinline", "");
+      v.src = onAlt ? w.altFile : w.file;
+      vPlayer.replaceChildren(v);
+      var p = v.play();
+      if (p && p.catch) p.catch(function () {});   // a browser may refuse sound before a click; the controls remain
+      return;
+    }
+
+    vAlt.hidden = true;
+    vLink.hidden = false;
     vLink.href = w.href;
     vLink.textContent = w.host === "vimeo" ? "Watch on Vimeo" : "Watch on YouTube";
+    vPlayer.style.setProperty("--r", String(16 / 9));
 
     var f = document.createElement("iframe");
     f.title = w.title;
@@ -86,10 +126,16 @@
     vPlayer.replaceChildren(f);
   }
 
+  // an upright phone gets the upright cut first, where a film has one
+  function preferAlt(w) {
+    return !!w.altFile && w.altRatio < 1 && window.innerHeight > window.innerWidth;
+  }
+
   // how: "push" a person opened it, "replace" a link straight to a film, "none" Back/Forward
   function openViewer(i, how) {
     if (!canModal) { window.location.href = works[i].href; return; }
-    fill(i);
+    works.forEach(rest);
+    fill(i, preferAlt(works[i]));
     if (!dlg.open) dlg.showModal();
     var url = "#" + works[i].slug;
     if (how === "push") {
@@ -103,7 +149,7 @@
   function step(d) {
     if (current < 0) return;
     var i = (current + d + works.length) % works.length;
-    fill(i);
+    fill(i, preferAlt(works[i]));
     history.replaceState({ work: works[i].slug, pushed: pushed }, "", "#" + works[i].slug);
   }
 
@@ -128,9 +174,11 @@
       if (b.dataset.act === "close") dlg.close();
       else if (b.dataset.act === "prev") step(-1);
       else if (b.dataset.act === "next") step(1);
+      else if (b.dataset.act === "alt" && current >= 0) fill(current, !onAlt);
     });
 
     dlg.addEventListener("keydown", function (e) {
+      if (e.target && e.target.tagName === "VIDEO") return;   // there the arrows scrub the film
       if (e.key === "ArrowLeft") step(-1);
       else if (e.key === "ArrowRight") step(1);
     });
@@ -149,7 +197,7 @@
 
   works.forEach(function (w, i) {
     w.el.addEventListener("click", function (e) {
-      if (!plainClick(e)) return;   // cmd-click and friends still open YouTube or Vimeo in a new tab
+      if (!plainClick(e)) return;   // cmd-click and friends still open the film in a new tab
       e.preventDefault();
       openViewer(i, "push");
     });
@@ -157,94 +205,126 @@
 
   /* ------------------------------------------------------------------- sheet */
 
-  var motionOK = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  var holdBtn = document.querySelector('[data-act="hold"]');
-  var held = false;   // the Pause button
+  var canHover = window.matchMedia("(hover: hover)").matches;
 
-  function setUpCell(w, i) {
-    var pic = w.el.querySelector(".pic");
-    var first = pic.querySelector("img");
-    var count = Math.max(1, parseInt(w.el.dataset.frames || "3", 10));
+  works.forEach(function (w) {
+    w.pic = w.el.querySelector(".pic");
+    w.first = w.pic.querySelector("img");
+    w.count = Math.max(1, parseInt(w.el.dataset.frames || "3", 10));
+    w.frames = [w.first];
+    w.shown = w.first;
+    w.k = 0;
+    w.timer = 0;
+    w.video = null;
+    w.active = false;
+    w.warm = false;
+  });
+
+  // fetch what a cell needs to come alive: its fragment, or its other frames
+  function warm(w) {
+    if (w.warm) return;
+    w.warm = true;
+
+    if (w.clip) {
+      var v = document.createElement("video");
+      v.muted = true;
+      v.loop = true;
+      v.preload = "auto";
+      v.tabIndex = -1;
+      v.setAttribute("muted", "");
+      v.setAttribute("playsinline", "");
+      v.setAttribute("aria-hidden", "true");
+      v.addEventListener("playing", function () { if (w.active) w.pic.classList.add("is-live"); });
+      v.src = w.clip;
+      w.pic.appendChild(v);
+      w.video = v;
+      return;
+    }
+
     var narrow = w.el.dataset.aspect === "4:3";
     var small = narrow ? 360 : 480;
-
-    w.imgs = [first];
-    w.cur = 0;
-    w.frozen = false;
-    w.seen = true;
-    w.offset = ((i * 0.618034) % 1) * BEAT;   // every cell cuts at its own moment
-
-    for (var k = 2; k <= count; k++) {
+    for (var k = 2; k <= w.count; k++) {
       (function (k) {
         var base = "/work/frames/" + w.slug + "-" + k;
         var im = new Image();
         im.alt = "";
         im.decoding = "async";
-        im.width = first.width;
-        im.height = first.height;
-        im.sizes = first.sizes;
+        im.width = w.first.width;
+        im.height = w.first.height;
+        im.sizes = w.first.sizes;
         im.srcset = base + "-s.webp " + small + "w, " + base + ".webp " + (small * 2) + "w";
-        im.onload = function () { w.imgs[k - 1] = im; };   // a frame joins the loop once it has arrived
+        im.onload = function () { w.frames[k - 1] = im; };   // a frame joins the loop once it has arrived
         im.src = base + "-s.webp";
-        pic.appendChild(im);
+        w.pic.appendChild(im);
       })(k);
     }
+  }
 
-    w.el.addEventListener("pointerenter", function (e) {
-      if (e.pointerType === "mouse") w.frozen = true;
-    });
-    w.el.addEventListener("pointerleave", function () { w.frozen = false; });
+  function show(w, img) {
+    if (w.shown === img) return;
+    w.shown.classList.remove("on");
+    img.classList.add("on");
+    w.shown = img;
+  }
+
+  function nextFrame(w) {
+    var ready = w.frames.filter(Boolean);
+    if (ready.length < 2) return;
+    w.k = (w.k + 1) % ready.length;
+    show(w, ready[w.k]);
+  }
+
+  function wake(w) {
+    if (w.active) return;
+    w.active = true;
+    warm(w);
+    if (w.video) {
+      var p = w.video.play();
+      if (p && p.catch) p.catch(function () {});
+      return;
+    }
+    nextFrame(w);   // the first cut comes at once, so the cell answers the cursor
+    w.timer = window.setInterval(function () { nextFrame(w); }, BEAT);
+  }
+
+  function rest(w) {
+    if (!w.active) return;
+    w.active = false;
+    if (w.video) {
+      w.video.pause();
+      w.pic.classList.remove("is-live");
+      try { w.video.currentTime = 0; } catch (err) { /* not loaded yet */ }
+      return;
+    }
+    window.clearInterval(w.timer);
+    w.timer = 0;
+    w.k = 0;
+    show(w, w.first);
+  }
+
+  works.forEach(function (w) {
+    w.el.addEventListener("pointerenter", function (e) { if (e.pointerType === "mouse") wake(w); });
+    w.el.addEventListener("pointerleave", function () { rest(w); });
     w.el.addEventListener("focus", function () {
-      try { w.frozen = w.el.matches(":focus-visible"); } catch (err) { w.frozen = false; }
+      var byKeyboard = false;
+      try { byKeyboard = w.el.matches(":focus-visible"); } catch (err) { byKeyboard = false; }
+      if (byKeyboard) wake(w);
     });
-    w.el.addEventListener("blur", function () { w.frozen = false; });
-  }
+    w.el.addEventListener("blur", function () { rest(w); });
+  });
 
-  function cut(now) {
-    if (!held && !(canModal && dlg.open)) {
-      for (var i = 0; i < works.length; i++) {
-        var w = works[i];
-        if (w.frozen || !w.seen) continue;
-        var beat = Math.floor((now + w.offset) / BEAT);
-        if (beat === w.beat) continue;
-        w.beat = beat;
-        var ready = w.imgs.filter(Boolean);
-        if (ready.length < 2) continue;
-        var next = ready[beat % ready.length];
-        if (next !== w.shown) {
-          if (w.shown) w.shown.classList.remove("on"); else w.imgs[0].classList.remove("on");
-          next.classList.add("on");
-          w.shown = next;
-        }
-      }
-    }
-    window.requestAnimationFrame(cut);
-  }
-
-  if (motionOK) {
-    works.forEach(setUpCell);
-
-    if ("IntersectionObserver" in window) {
-      var seen = new IntersectionObserver(function (entries) {
-        entries.forEach(function (en) { works[bySlug[en.target.id]].seen = en.isIntersecting; });
-      }, { rootMargin: "120px" });
-      works.forEach(function (w) { seen.observe(w.el); });
-    }
-
-    if (holdBtn) {
-      holdBtn.hidden = false;
-      holdBtn.addEventListener("click", function () {
-        held = !held;
-        holdBtn.textContent = held ? "Play" : "Pause";
-      });
-    }
-    window.requestAnimationFrame(cut);
+  // with a mouse around, load fragments and frames ahead of the first hover
+  if (canHover) {
+    var warmAll = function () { works.forEach(warm); };
+    if (document.readyState === "complete") window.setTimeout(warmAll, 300);
+    else window.addEventListener("load", function () { window.setTimeout(warmAll, 300); });
   }
 
   /* ------------------------------------------------------------------ crafts */
 
   var sheet = document.querySelector(".sheet");
-  var craftBtns = [].slice.call(document.querySelectorAll(".crafts button"));
+  var craftBtns = [].slice.call(document.querySelectorAll(".crafts [data-craft]"));
+  var craftOrder = craftBtns.map(function (b) { return b.dataset.craft; });
   var locked = "";
 
   function sortBy(craft) {
@@ -257,6 +337,20 @@
     sheet.classList.toggle("is-sorted", !!craft && total < works.length);
   }
 
+  function lock(craft) {
+    locked = craft;
+    craftBtns.forEach(function (x) { x.setAttribute("aria-pressed", String(x.dataset.craft === locked)); });
+    sortBy(locked);
+  }
+
+  // all → directed → shot → edited → ai → all …
+  function stepCraft(d) {
+    var n = craftOrder.length + 1;
+    var at = craftOrder.indexOf(locked) + 1;   // 0 = everything
+    var to = ((at + d) % n + n) % n;
+    lock(to === 0 ? "" : craftOrder[to - 1]);
+  }
+
   craftBtns.forEach(function (b) {
     var craft = b.dataset.craft;
     var n = works.filter(function (w) { return w.crafts.indexOf(craft) >= 0; }).length;
@@ -265,11 +359,21 @@
 
     b.addEventListener("pointerenter", function (e) { if (e.pointerType === "mouse") sortBy(craft); });
     b.addEventListener("pointerleave", function () { sortBy(locked); });
-    b.addEventListener("click", function () {
-      locked = locked === craft ? "" : craft;
-      craftBtns.forEach(function (x) { x.setAttribute("aria-pressed", String(x.dataset.craft === locked)); });
-      sortBy(locked);
-    });
+    b.addEventListener("click", function () { lock(locked === craft ? "" : craft); });
+  });
+
+  [].slice.call(document.querySelectorAll(".crafts [data-step]")).forEach(function (b) {
+    b.addEventListener("click", function () { stepCraft(Number(b.dataset.step)); });
+  });
+
+  document.addEventListener("keydown", function (e) {
+    if (canModal && dlg.open) return;   // in the viewer the arrows change the film
+    if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+    var t = e.target;
+    if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
+    if (e.key === "ArrowRight") { e.preventDefault(); stepCraft(1); }
+    else if (e.key === "ArrowLeft") { e.preventDefault(); stepCraft(-1); }
+    else if (e.key === "Escape" && locked) lock("");
   });
 
   /* ------------------------------------------------------------------- grain */
@@ -288,7 +392,7 @@
       var r = Math.random();
       var light = Math.random() < 0.5;
       p[i] = p[i + 1] = p[i + 2] = light ? 255 : 0;
-      p[i + 3] = (light ? 15 : 26) * r * r;   // mostly faint, a few stronger specks
+      p[i + 3] = (light ? 12 : 26) * r * r;   // mostly faint, a few stronger specks
     }
     ctx.putImageData(d, 0, 0);
     layer.style.backgroundImage = "url(" + c.toDataURL("image/png") + ")";
