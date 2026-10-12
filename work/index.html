@@ -24,9 +24,11 @@
   - id            short name used in links, e.g. /work#adidas-dubai opens that film
   - data-host     "youtube", "vimeo" or "file"
                   youtube / vimeo: data-id = the video id;  data-start = optional start in seconds
+                  vimeo, unlisted: data-hash = the part after the id in a private link (vimeo.com/<id>/<hash>)
                   file: data-file = the film in /work/video, data-ratio = its shape ("2:3", "4:3", "16:9", "9:16");
                         data-alt-file / data-alt-ratio / data-alt-label = an optional second cut
-  - data-crafts   which of  directed  shot  edit  ai  apply (drives the counts and the highlight in the header)
+  - data-crafts   which of  directed  shot  edit  ai  apply (drives the counts and the highlight in the header;
+                  "ai" is the one labelled Generated)
   - data-aspect   "4:3" for films shot 4:3: the frame is shown whole, with black bars, in the 16:9 cell
   - data-note     one line shown in the viewer under the film (optional)
   - .t title, .r role
@@ -35,6 +37,9 @@
       frames      /work/frames/<id>-1.webp, -2, -3 (960x540, or 720x540 for 4:3; "-s" = half size) that it cuts between.
                   data-frames="1" when there is only the still.
   - speed of the cuts between frames: BEAT in app.js (milliseconds per frame)
+  - the sheet is 5 across (4 on tablets, 2 on phones). The last <li class="end"> is a contact card that
+    closes it: 19 works + the card = 20, so every row is full. With another number of works the last row
+    comes up short.
   Pushing to main publishes the page.
 -->
 
@@ -91,24 +96,27 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .quiet{color:var(--ash)}
 
 /* ---------- the sheet ---------- */
-.sheet{list-style:none;margin:0;padding:0 var(--gutter);display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:1.35rem var(--gap)}
-.cell{display:block;text-decoration:none;scroll-margin-top:1rem;transition:opacity .25s}
+.sheet{list-style:none;margin:0;padding:0 var(--gutter);display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:1.35rem var(--gap)}
+.cell,.end a{display:block;text-decoration:none;scroll-margin-top:1rem;transition:opacity .25s}
 .pic{position:relative;display:block;aspect-ratio:16/9;overflow:hidden;background:var(--bar)}
 .pic img,.pic video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;visibility:hidden}
 .pic img.on,.pic.is-live video{visibility:visible}
 .cell[data-aspect="4:3"] .pic img,.cell[data-aspect="4:3"] .pic video{object-fit:contain}
-.cell:hover .pic,.cell:focus-visible .pic{outline:1px solid var(--patina);outline-offset:-1px}
-.cell:focus-visible{outline:0}
+.cell:focus-visible .pic,.end a:focus-visible .pic{outline:1px solid var(--patina);outline-offset:-1px}   /* keyboard only; the mouse gets no frame */
+.cell:focus-visible,.end a:focus-visible{outline:0}
 .t,.r{display:block;margin-right:.8rem;font-size:.8125rem;line-height:1.32}
 .t{margin-top:.5rem;text-wrap:balance}
 .r{margin-top:.08rem;color:var(--patina);font-style:italic}
-.sheet.is-sorted .cell:not(.is-in){opacity:.14}
+.sheet.is-sorted .cell:not(.is-in),.sheet.is-sorted .end a{opacity:.14}
+/* the end card: a black frame with the address, closing the sheet */
+.end .pic{display:grid;place-items:center;padding:0 .5rem;font-size:.8125rem;text-align:center}
+.end a:hover .pic{color:var(--patina)}
 
 /* ---------- footer ---------- */
-.foot{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:1rem var(--gap);margin-top:clamp(2.2rem,4.5vw,3.8rem);padding:1.1rem var(--gutter) 1.6rem;border-top:1px solid var(--line)}
+.foot{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:1rem var(--gap);margin-top:clamp(2.2rem,4.5vw,3.8rem);padding:1.1rem var(--gutter) 1.6rem;border-top:1px solid var(--line)}
 .foot p{margin:0 .8rem .5rem 0;text-wrap:pretty}
 .foot .about{grid-column:1/span 3;max-width:64ch}
-.foot .reach{grid-column:5/span 2}
+.foot .reach{grid-column:4/span 2}
 .foot .reach a{text-decoration:none;border-bottom:1px solid var(--line)}
 .foot .reach a:hover{color:var(--patina);border-bottom-color:var(--patina)}
 
@@ -137,23 +145,29 @@ dialog.viewer::backdrop{background:var(--ground)}
 
 /* ---------- smaller screens ---------- */
 @media (max-width:1179px){
-  .sheet,.foot{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .sheet,.foot{grid-template-columns:repeat(4,minmax(0,1fr))}
   .foot .about{grid-column:1/span 2}
-  .foot .reach{grid-column:3/span 1}
+  .foot .reach{grid-column:3/span 2}
 }
 @media (max-width:899px){
   .top{grid-template-columns:minmax(0,1fr);align-items:start}
   .links{justify-content:flex-start}
 }
-@media (max-width:699px){
+@media (max-width:859px){
   .sheet,.foot{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .sheet li:last-child:nth-child(odd){grid-column:1/-1}   /* an odd one out closes the sheet full width */
   .foot .about,.foot .reach{grid-column:1/-1}
+}
+@media (max-width:699px){
   .v-foot{flex-direction:column}
+  .end .pic{font-size:.75rem;padding:0 .25rem}
+}
+@media (max-width:520px){
+  .crafts{gap:.1rem 1rem}
+  .crafts .arrow{display:none}   /* on a phone the crafts are tapped directly; the four fit on one line */
 }
 @media (prefers-reduced-motion:reduce){
   .grain{animation:none}
-  .cell{transition:none}
+  .cell,.end a{transition:none}
 }
 </style>
 <!-- Vercel Web Analytics: page views, visitors, countries, devices, referrers (no personal data) -->
@@ -172,9 +186,9 @@ dialog.viewer::backdrop{background:var(--ground)}
   <div class="crafts" role="group" aria-label="Highlight the work by craft; the left and right arrow keys step through">
     <button class="arrow" type="button" data-step="-1" aria-label="Previous craft"><svg viewBox="0 0 18 10" width="18" height="10" aria-hidden="true"><path d="M5 1 1 5l4 4M1 5h16" fill="none" stroke="currentColor" stroke-width="1.2"/></svg></button>
     <button type="button" data-craft="directed" aria-pressed="false">Directed<i>7</i></button>
-    <button type="button" data-craft="shot" aria-pressed="false">Shot<i>5</i></button>
-    <button type="button" data-craft="edit" aria-pressed="false">Edited<i>18</i></button>
-    <button type="button" data-craft="ai" aria-pressed="false">AI<i>3</i></button>
+    <button type="button" data-craft="shot" aria-pressed="false">Shot<i>6</i></button>
+    <button type="button" data-craft="edit" aria-pressed="false">Edited<i>19</i></button>
+    <button type="button" data-craft="ai" aria-pressed="false" title="AI-generated film">Generated<i>3</i></button>
     <button class="arrow" type="button" data-step="1" aria-label="Next craft"><svg viewBox="0 0 18 10" width="18" height="10" aria-hidden="true"><path d="M13 1l4 4-4 4M17 5H1" fill="none" stroke="currentColor" stroke-width="1.2"/></svg></button>
   </div>
   <ul class="links">
@@ -192,51 +206,57 @@ dialog.viewer::backdrop{background:var(--ground)}
     <!-- ===== directed ===== -->
 
     <li><a class="cell" id="how-have-you-been-1" href="/work/video/how-have-you-been-1.mp4" data-host="file" data-file="/work/video/how-have-you-been-1.mp4" data-ratio="2:3" data-clip="/work/clips/how-have-you-been-1.mp4" data-frames="1" data-crafts="directed edit ai" data-note="AI-generated short set in the year 2225. Part one of two.">
-      <span class="pic"><img class="on" src="/work/frames/how-have-you-been-1-1-s.webp" srcset="/work/frames/how-have-you-been-1-1-s.webp 480w, /work/frames/how-have-you-been-1-1.webp 960w" sizes="(min-width:1180px) 16vw, (min-width:700px) 33vw, 50vw" width="960" height="540" alt=""></span>
+      <span class="pic"><img class="on" src="/work/frames/how-have-you-been-1-1-s.webp" srcset="/work/frames/how-have-you-been-1-1-s.webp 480w, /work/frames/how-have-you-been-1-1.webp 960w" sizes="(min-width:1180px) 20vw, (min-width:860px) 25vw, 50vw" width="960" height="540" alt=""></span>
       <span class="t">How’ve you been? Part 1</span>
       <span class="r">Directed, generated, edited</span>
     </a></li>
 
     <li><a class="cell" id="how-have-you-been-2" href="/work/video/how-have-you-been-2.mp4" data-host="file" data-file="/work/video/how-have-you-been-2.mp4" data-ratio="2:3" data-clip="/work/clips/how-have-you-been-2.mp4" data-frames="1" data-crafts="directed edit ai" data-note="AI-generated short set in the year 2225. Part two of two.">
-      <span class="pic"><img class="on" src="/work/frames/how-have-you-been-2-1-s.webp" srcset="/work/frames/how-have-you-been-2-1-s.webp 480w, /work/frames/how-have-you-been-2-1.webp 960w" sizes="(min-width:1180px) 16vw, (min-width:700px) 33vw, 50vw" width="960" height="540" alt=""></span>
+      <span class="pic"><img class="on" src="/work/frames/how-have-you-been-2-1-s.webp" srcset="/work/frames/how-have-you-been-2-1-s.webp 480w, /work/frames/how-have-you-been-2-1.webp 960w" sizes="(min-width:1180px) 20vw, (min-width:860px) 25vw, 50vw" width="960" height="540" alt=""></span>
       <span class="t">How’ve you been? Part 2</span>
       <span class="r">Directed, generated, edited</span>
     </a></li>
 
     <li><a class="cell" id="together" href="/work/video/together-4x3.mp4" data-host="file" data-file="/work/video/together-4x3.mp4" data-ratio="4:3" data-alt-file="/work/video/together-9x16.mp4" data-alt-ratio="9:16" data-alt-label="vertical cut" data-label="4:3 cut" data-clip="/work/clips/together.mp4" data-frames="1" data-aspect="4:3" data-crafts="directed edit ai" data-note="AI-generated film.">
-      <span class="pic"><img class="on" src="/work/frames/together-1-s.webp" srcset="/work/frames/together-1-s.webp 360w, /work/frames/together-1.webp 720w" sizes="(min-width:1180px) 12vw, (min-width:700px) 25vw, 38vw" width="720" height="540" alt=""></span>
+      <span class="pic"><img class="on" src="/work/frames/together-1-s.webp" srcset="/work/frames/together-1-s.webp 360w, /work/frames/together-1.webp 720w" sizes="(min-width:1180px) 15vw, (min-width:860px) 19vw, 38vw" width="720" height="540" alt=""></span>
       <span class="t">Together, we hold the world</span>
       <span class="r">Directed, generated, edited</span>
     </a></li>
 
     <li><a class="cell" id="pepsi-fencing" href="https://www.youtube.com/watch?v=IFGeESsxih4" data-host="youtube" data-id="IFGeESsxih4" data-crafts="directed shot edit">
-      <span class="pic"><img class="on" src="/work/frames/pepsi-fencing-1-s.webp" srcset="/work/frames/pepsi-fencing-1-s.webp 480w, /work/frames/pepsi-fencing-1.webp 960w" sizes="(min-width:1180px) 16vw, (min-width:700px) 33vw, 50vw" width="960" height="540" alt=""></span>
+      <span class="pic"><img class="on" src="/work/frames/pepsi-fencing-1-s.webp" srcset="/work/frames/pepsi-fencing-1-s.webp 480w, /work/frames/pepsi-fencing-1.webp 960w" sizes="(min-width:1180px) 20vw, (min-width:860px) 25vw, 50vw" width="960" height="540" alt=""></span>
       <span class="t">Pepsi × Fencing</span>
       <span class="r">Directed, shot, edited</span>
     </a></li>
 
     <li><a class="cell" id="lcr-3" href="https://www.youtube.com/watch?v=hZs6oK-qbWc" data-host="youtube" data-id="hZs6oK-qbWc" data-crafts="directed shot edit" data-aspect="4:3">
-      <span class="pic"><img class="on" src="/work/frames/lcr-3-1-s.webp" srcset="/work/frames/lcr-3-1-s.webp 360w, /work/frames/lcr-3-1.webp 720w" sizes="(min-width:1180px) 12vw, (min-width:700px) 25vw, 38vw" width="720" height="540" alt=""></span>
+      <span class="pic"><img class="on" src="/work/frames/lcr-3-1-s.webp" srcset="/work/frames/lcr-3-1-s.webp 360w, /work/frames/lcr-3-1.webp 720w" sizes="(min-width:1180px) 15vw, (min-width:860px) 19vw, 38vw" width="720" height="540" alt=""></span>
       <span class="t">LCR 3</span>
       <span class="r">Directed, shot, edited</span>
     </a></li>
 
     <li><a class="cell" id="complex-bits" href="https://vimeo.com/390277808" data-host="vimeo" data-id="390277808" data-crafts="directed shot edit">
-      <span class="pic"><img class="on" src="/work/frames/complex-bits-1-s.webp" srcset="/work/frames/complex-bits-1-s.webp 480w, /work/frames/complex-bits-1.webp 960w" sizes="(min-width:1180px) 16vw, (min-width:700px) 33vw, 50vw" width="960" height="540" alt=""></span>
+      <span class="pic"><img class="on" src="/work/frames/complex-bits-1-s.webp" srcset="/work/frames/complex-bits-1-s.webp 480w, /work/frames/complex-bits-1.webp 960w" sizes="(min-width:1180px) 20vw, (min-width:860px) 25vw, 50vw" width="960" height="540" alt=""></span>
       <span class="t">Complex bits</span>
       <span class="r">Directed, shot, edited</span>
     </a></li>
 
     <li><a class="cell" id="geodesign" href="https://vimeo.com/924939710" data-host="vimeo" data-id="924939710" data-crafts="directed shot edit" data-note="Made with Peter Kroshchinskiy: a steel soil sampler in a valley of the Caucasus.">
-      <span class="pic"><img class="on" src="/work/frames/geodesign-1-s.webp" srcset="/work/frames/geodesign-1-s.webp 480w, /work/frames/geodesign-1.webp 960w" sizes="(min-width:1180px) 16vw, (min-width:700px) 33vw, 50vw" width="960" height="540" alt=""></span>
+      <span class="pic"><img class="on" src="/work/frames/geodesign-1-s.webp" srcset="/work/frames/geodesign-1-s.webp 480w, /work/frames/geodesign-1.webp 960w" sizes="(min-width:1180px) 20vw, (min-width:860px) 25vw, 50vw" width="960" height="540" alt=""></span>
       <span class="t">Geo-Design, Design Academy Eindhoven</span>
       <span class="r">Directed, shot, edited</span>
     </a></li>
 
     <!-- ===== shot ===== -->
 
+    <li><a class="cell" id="meaningful-neighborhood" href="https://vimeo.com/1222547853/2e0bb67d4d" data-host="vimeo" data-id="1222547853" data-hash="2e0bb67d4d" data-crafts="shot edit" data-note="An EastEast Films documentary from INTBAU Qatar’s Winter School, January 2026: two weeks of designing a neighborhood on the principles of traditional architecture.">
+      <span class="pic"><img class="on" src="/work/frames/meaningful-neighborhood-1-s.webp" srcset="/work/frames/meaningful-neighborhood-1-s.webp 480w, /work/frames/meaningful-neighborhood-1.webp 960w" sizes="(min-width:1180px) 20vw, (min-width:860px) 25vw, 50vw" width="960" height="540" alt=""></span>
+      <span class="t">In Search of a Meaningful Neighborhood</span>
+      <span class="r">Shot, edited</span>
+    </a></li>
+
     <li><a class="cell" id="cyrille-gassiline" href="https://vimeo.com/390278999" data-host="vimeo" data-id="390278999" data-crafts="shot edit">
-      <span class="pic"><img class="on" src="/work/frames/cyrille-gassiline-1-s.webp" srcset="/work/frames/cyrille-gassiline-1-s.webp 480w, /work/frames/cyrille-gassiline-1.webp 960w" sizes="(min-width:1180px) 16vw, (min-width:700px) 33vw, 50vw" width="960" height="540" alt=""></span>
+      <span class="pic"><img class="on" src="/work/frames/cyrille-gassiline-1-s.webp" srcset="/work/frames/cyrille-gassiline-1-s.webp 480w, /work/frames/cyrille-gassiline-1.webp 960w" sizes="(min-width:1180px) 20vw, (min-width:860px) 25vw, 50vw" width="960" height="540" alt=""></span>
       <span class="t">Cyrille Gassiline</span>
       <span class="r">Shot, edited</span>
     </a></li>
@@ -244,63 +264,71 @@ dialog.viewer::backdrop{background:var(--ground)}
     <!-- ===== edited ===== -->
 
     <li><a class="cell" id="adidas-dubai" href="https://www.youtube.com/watch?v=-eEbeLiXg44" data-host="youtube" data-id="-eEbeLiXg44" data-crafts="edit">
-      <span class="pic"><img class="on" src="/work/frames/adidas-dubai-1-s.webp" srcset="/work/frames/adidas-dubai-1-s.webp 480w, /work/frames/adidas-dubai-1.webp 960w" sizes="(min-width:1180px) 16vw, (min-width:700px) 33vw, 50vw" width="960" height="540" alt=""></span>
+      <span class="pic"><img class="on" src="/work/frames/adidas-dubai-1-s.webp" srcset="/work/frames/adidas-dubai-1-s.webp 480w, /work/frames/adidas-dubai-1.webp 960w" sizes="(min-width:1180px) 20vw, (min-width:860px) 25vw, 50vw" width="960" height="540" alt=""></span>
       <span class="t">Adidas Dubai</span>
       <span class="r">Edited, consulted</span>
     </a></li>
 
     <li><a class="cell" id="natakhtari-cold-beer" href="https://www.youtube.com/watch?v=B7ifCO_MkAw" data-host="youtube" data-id="B7ifCO_MkAw" data-crafts="edit" data-note="Commercial for Natakhtari beer, Efes Georgia.">
-      <span class="pic"><img class="on" src="/work/frames/natakhtari-cold-beer-1-s.webp" srcset="/work/frames/natakhtari-cold-beer-1-s.webp 480w, /work/frames/natakhtari-cold-beer-1.webp 960w" sizes="(min-width:1180px) 16vw, (min-width:700px) 33vw, 50vw" width="960" height="540" alt=""></span>
+      <span class="pic"><img class="on" src="/work/frames/natakhtari-cold-beer-1-s.webp" srcset="/work/frames/natakhtari-cold-beer-1-s.webp 480w, /work/frames/natakhtari-cold-beer-1.webp 960w" sizes="(min-width:1180px) 20vw, (min-width:860px) 25vw, 50vw" width="960" height="540" alt=""></span>
       <span class="t">Natakhtari, 100% cold beer</span>
       <span class="r">Edited</span>
     </a></li>
 
     <li><a class="cell" id="mir" href="https://www.youtube.com/watch?v=rBkYWOMamCQ" data-host="youtube" data-id="rBkYWOMamCQ" data-crafts="edit" data-note="“Why do fans from Italy dream of a Mir card?”, a campaign film.">
-      <span class="pic"><img class="on" src="/work/frames/mir-1-s.webp" srcset="/work/frames/mir-1-s.webp 480w, /work/frames/mir-1.webp 960w" sizes="(min-width:1180px) 16vw, (min-width:700px) 33vw, 50vw" width="960" height="540" alt=""></span>
+      <span class="pic"><img class="on" src="/work/frames/mir-1-s.webp" srcset="/work/frames/mir-1-s.webp 480w, /work/frames/mir-1.webp 960w" sizes="(min-width:1180px) 20vw, (min-width:860px) 25vw, 50vw" width="960" height="540" alt=""></span>
       <span class="t">Mir payment system</span>
       <span class="r">Edited</span>
     </a></li>
 
     <li><a class="cell" id="natakhtari-rugby" href="https://www.youtube.com/watch?v=btXuUKnQUrE" data-host="youtube" data-id="btXuUKnQUrE" data-crafts="edit" data-note="The maul, explained. From a rugby series for Natakhtari with Saatchi &amp; Saatchi Tbilisi.">
-      <span class="pic"><img class="on" src="/work/frames/natakhtari-rugby-1-s.webp" srcset="/work/frames/natakhtari-rugby-1-s.webp 480w, /work/frames/natakhtari-rugby-1.webp 960w" sizes="(min-width:1180px) 16vw, (min-width:700px) 33vw, 50vw" width="960" height="540" alt=""></span>
+      <span class="pic"><img class="on" src="/work/frames/natakhtari-rugby-1-s.webp" srcset="/work/frames/natakhtari-rugby-1-s.webp 480w, /work/frames/natakhtari-rugby-1.webp 960w" sizes="(min-width:1180px) 20vw, (min-width:860px) 25vw, 50vw" width="960" height="540" alt=""></span>
       <span class="t">Natakhtari Rugby, lesson 3</span>
       <span class="r">Edited, DIT on set</span>
     </a></li>
 
     <li><a class="cell" id="ska-juice-bar" href="https://www.youtube.com/watch?v=udnO5cWODpU" data-host="youtube" data-id="udnO5cWODpU" data-crafts="edit">
-      <span class="pic"><img class="on" src="/work/frames/ska-juice-bar-1-s.webp" srcset="/work/frames/ska-juice-bar-1-s.webp 480w, /work/frames/ska-juice-bar-1.webp 960w" sizes="(min-width:1180px) 16vw, (min-width:700px) 33vw, 50vw" width="960" height="540" alt=""></span>
+      <span class="pic"><img class="on" src="/work/frames/ska-juice-bar-1-s.webp" srcset="/work/frames/ska-juice-bar-1-s.webp 480w, /work/frames/ska-juice-bar-1.webp 960w" sizes="(min-width:1180px) 20vw, (min-width:860px) 25vw, 50vw" width="960" height="540" alt=""></span>
       <span class="t">Ska juice bar</span>
       <span class="r">Edited</span>
     </a></li>
 
     <li><a class="cell" id="hotel-by-the-hour" href="https://www.youtube.com/watch?v=cJFHdPu-xTk" data-host="youtube" data-id="cJFHdPu-xTk" data-crafts="edit" data-aspect="4:3" data-note="Fashion story for Buro 24/7 with artist Ekaterina Shcheglova and actor Ilya Romashko.">
-      <span class="pic"><img class="on" src="/work/frames/hotel-by-the-hour-1-s.webp" srcset="/work/frames/hotel-by-the-hour-1-s.webp 360w, /work/frames/hotel-by-the-hour-1.webp 720w" sizes="(min-width:1180px) 12vw, (min-width:700px) 25vw, 38vw" width="720" height="540" alt=""></span>
+      <span class="pic"><img class="on" src="/work/frames/hotel-by-the-hour-1-s.webp" srcset="/work/frames/hotel-by-the-hour-1-s.webp 360w, /work/frames/hotel-by-the-hour-1.webp 720w" sizes="(min-width:1180px) 15vw, (min-width:860px) 19vw, 38vw" width="720" height="540" alt=""></span>
       <span class="t">Hotel by the Hour</span>
       <span class="r">Edited</span>
     </a></li>
 
     <li><a class="cell" id="el-wakil" href="https://www.youtube.com/watch?v=eU8ST_-OUZQ" data-host="youtube" data-id="eU8ST_-OUZQ" data-crafts="edit" data-note="Documentary by Olya Korsun and Furqat Palvan-Zade, commissioned by Caravane Earth Foundation.">
-      <span class="pic"><img class="on" src="/work/frames/el-wakil-1-s.webp" srcset="/work/frames/el-wakil-1-s.webp 480w, /work/frames/el-wakil-1.webp 960w" sizes="(min-width:1180px) 16vw, (min-width:700px) 33vw, 50vw" width="960" height="540" alt=""></span>
+      <span class="pic"><img class="on" src="/work/frames/el-wakil-1-s.webp" srcset="/work/frames/el-wakil-1-s.webp 480w, /work/frames/el-wakil-1.webp 960w" sizes="(min-width:1180px) 20vw, (min-width:860px) 25vw, 50vw" width="960" height="540" alt=""></span>
       <span class="t">Abdel-Wahed El-Wakil: A&nbsp;Portrait of an Architect</span>
       <span class="r">Edited, tutored the edit</span>
     </a></li>
 
-    <li><a class="cell" id="easteast" href="https://www.youtube.com/watch?v=_Nt0Mb39THs" data-host="youtube" data-id="_Nt0Mb39THs" data-crafts="edit">
-      <span class="pic"><img class="on" src="/work/frames/easteast-1-s.webp" srcset="/work/frames/easteast-1-s.webp 480w, /work/frames/easteast-1.webp 960w" sizes="(min-width:1180px) 16vw, (min-width:700px) 33vw, 50vw" width="960" height="540" alt=""></span>
+    <li><a class="cell" id="easteast" href="https://www.youtube.com/watch?v=_Nt0Mb39THs" data-host="youtube" data-id="_Nt0Mb39THs" data-frames="2" data-crafts="edit">
+      <span class="pic"><img class="on" src="/work/frames/easteast-1-s.webp" srcset="/work/frames/easteast-1-s.webp 480w, /work/frames/easteast-1.webp 960w" sizes="(min-width:1180px) 20vw, (min-width:860px) 25vw, 50vw" width="960" height="540" alt=""></span>
       <span class="t">EastEast</span>
       <span class="r">Edited, consulted</span>
     </a></li>
 
     <li><a class="cell" id="no-ribbons" href="https://www.youtube.com/watch?v=S7F5RqxTJbQ&amp;t=320s" data-host="youtube" data-id="S7F5RqxTJbQ" data-start="320" data-crafts="edit" data-note="Anthology film.">
-      <span class="pic"><img class="on" src="/work/frames/no-ribbons-1-s.webp" srcset="/work/frames/no-ribbons-1-s.webp 480w, /work/frames/no-ribbons-1.webp 960w" sizes="(min-width:1180px) 16vw, (min-width:700px) 33vw, 50vw" width="960" height="540" alt=""></span>
+      <span class="pic"><img class="on" src="/work/frames/no-ribbons-1-s.webp" srcset="/work/frames/no-ribbons-1-s.webp 480w, /work/frames/no-ribbons-1.webp 960w" sizes="(min-width:1180px) 20vw, (min-width:860px) 25vw, 50vw" width="960" height="540" alt=""></span>
       <span class="t">No Ribbons, Trophies, Medals</span>
       <span class="r">Edited</span>
     </a></li>
 
     <li><a class="cell" id="polo-stick" href="https://vimeo.com/924933728" data-host="vimeo" data-id="924933728" data-crafts="edit" data-note="Film by Furqat Palvan-Zade, made at Sandberg Instituut Amsterdam.">
-      <span class="pic"><img class="on" src="/work/frames/polo-stick-1-s.webp" srcset="/work/frames/polo-stick-1-s.webp 480w, /work/frames/polo-stick-1.webp 960w" sizes="(min-width:1180px) 16vw, (min-width:700px) 33vw, 50vw" width="960" height="540" alt=""></span>
+      <span class="pic"><img class="on" src="/work/frames/polo-stick-1-s.webp" srcset="/work/frames/polo-stick-1-s.webp 480w, /work/frames/polo-stick-1.webp 960w" sizes="(min-width:1180px) 20vw, (min-width:860px) 25vw, 50vw" width="960" height="540" alt=""></span>
       <span class="t">The Ball and the Polo Stick, or the Book of Ecstasy</span>
       <span class="r">Edited, consulted</span>
+    </a></li>
+
+    <!-- ===== end card ===== -->
+
+    <li class="end"><a href="mailto:savelsharkov@gmail.com">
+      <span class="pic">savelsharkov@gmail.com</span>
+      <span class="t">Contact</span>
+      <span class="r">Commissions and collaborations</span>
     </a></li>
 
   </ul>

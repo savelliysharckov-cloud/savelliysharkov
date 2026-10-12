@@ -5,8 +5,8 @@
   1. Viewer  a cell opens the film in a full-screen player; /work#<id> links straight to it.
   2. Sheet   cells are still; the one under the cursor plays its fragment, or, where there
              is no fragment yet, cuts between its three frames.
-  3. Crafts  "Directed / Shot / Edited / AI" in the header count the work and dim the rest;
-             the left and right arrow keys step through them.
+  3. Crafts  "Directed / Shot / Edited / Generated" in the header count the work and dim the
+             rest; the left and right arrow keys step through them.
   4. Grain   one noise tile, drawn once, shifting slowly over the page.
 */
 (function () {
@@ -37,6 +37,7 @@
       note: d.note || "",
       host: d.host,
       id: d.id,
+      hash: d.hash || "",   // unlisted Vimeo films
       start: d.start || "",
       file: d.file || "",
       ratio: ratio(d.ratio),
@@ -78,7 +79,8 @@
   function embedUrl(w) {
     if (w.host === "vimeo") {
       return "https://player.vimeo.com/video/" + encodeURIComponent(w.id) +
-        "?autoplay=1&dnt=1&title=0&byline=0&portrait=0&color=86c2ad";
+        "?" + (w.hash ? "h=" + encodeURIComponent(w.hash) + "&" : "") +
+        "autoplay=1&dnt=1&title=0&byline=0&portrait=0&color=86c2ad";
     }
     return "https://www.youtube-nocookie.com/embed/" + encodeURIComponent(w.id) +
       "?autoplay=1&rel=0&playsinline=1" + (w.start ? "&start=" + encodeURIComponent(w.start) : "");
@@ -343,7 +345,7 @@
     sortBy(locked);
   }
 
-  // all → directed → shot → edited → ai → all …
+  // all → directed → shot → edited → generated → all …
   function stepCraft(d) {
     var n = craftOrder.length + 1;
     var at = craftOrder.indexOf(locked) + 1;   // 0 = everything
