@@ -72,30 +72,23 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .skip{position:absolute;left:var(--gutter);top:-4rem;z-index:5;padding:.4rem .7rem;background:var(--patina);color:#000;text-decoration:none}
 .skip:focus{top:.6rem}
 
-/* film grain over everything; the tile is drawn once by app.js and shifts about three times a second */
-.grain{position:fixed;inset:-160px;z-index:3;pointer-events:none;background-repeat:repeat;animation:grain 2.8s steps(1) infinite}
+/* film grain over everything: one tile drawn by app.js, jumping to a new place every frame (24 a second),
+   so it boils like grain on film */
+.grain{position:fixed;inset:-160px;z-index:3;pointer-events:none;background-repeat:repeat;will-change:transform;animation:grain .5s steps(1) infinite}
 @keyframes grain{
-  0%{transform:translate3d(0,0,0)} 11%{transform:translate3d(-41px,23px,0)} 22%{transform:translate3d(67px,-58px,0)}
-  33%{transform:translate3d(-93px,-12px,0)} 44%{transform:translate3d(29px,81px,0)} 55%{transform:translate3d(-17px,-77px,0)}
-  66%{transform:translate3d(88px,39px,0)} 77%{transform:translate3d(-64px,62px,0)} 88%{transform:translate3d(12px,-31px,0)}
+  0.0%{transform:translate3d(15px,-73px,0)} 8.33%{transform:translate3d(52px,-126px,0)} 16.67%{transform:translate3d(-113px,124px,0)} 25.0%{transform:translate3d(-102px,37px,0)}
+  33.33%{transform:translate3d(148px,-121px,0)} 41.67%{transform:translate3d(109px,-41px,0)} 50.0%{transform:translate3d(-131px,-106px,0)} 58.33%{transform:translate3d(72px,64px,0)}
+  66.67%{transform:translate3d(-115px,-27px,0)} 75.0%{transform:translate3d(-104px,132px,0)} 83.33%{transform:translate3d(67px,-120px,0)} 91.67%{transform:translate3d(139px,-87px,0)}
 }
 
 /* ---------- header ---------- */
 .top{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:.5rem 2rem;padding:1.15rem var(--gutter) 1.05rem}
 .who h1{margin:0;font:inherit;font-size:1rem;font-weight:500;line-height:1.3}
 .who p{margin:.1rem 0 0;color:var(--ash);font-style:italic}
-.crafts{display:flex;align-items:center;justify-content:flex-end;gap:.1rem 1.2rem}
-/* the crafts stay folded behind "Roles"; opening slides them out to the left of it */
-.crafts .list{display:flex;flex-wrap:nowrap;gap:.1rem 1.4rem;max-width:0;overflow:hidden;opacity:0;visibility:hidden;
-  transition:max-width .6s cubic-bezier(.2,.7,.2,1),opacity .35s ease,visibility 0s linear .6s}
-.crafts.is-open .list{max-width:36rem;opacity:1;visibility:visible;transition:max-width .6s cubic-bezier(.2,.7,.2,1),opacity .45s ease .1s,visibility 0s}
-.crafts .list button{padding:.15rem 0;border-bottom:1px solid transparent;white-space:nowrap}
-.crafts .list button i{font-style:normal;color:var(--ash);margin-left:.4em}
-.crafts .list button:hover,.crafts .list button[aria-pressed="true"]{border-bottom-color:var(--paper)}
-.crafts .toggle{display:inline-flex;align-items:center;gap:.5rem;padding:.15rem 0;color:var(--ash)}
-.crafts .toggle:hover,.crafts.is-open .toggle{color:var(--paper)}
-.crafts .toggle svg{display:block;transition:transform .45s cubic-bezier(.2,.7,.2,1)}
-.crafts.is-open .toggle svg{transform:rotate(45deg)}
+.crafts{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:.1rem 1.4rem}
+.crafts button{padding:.15rem 0;border-bottom:1px solid transparent;white-space:nowrap}
+.crafts button i{font-style:normal;color:var(--ash);margin-left:.4em}
+.crafts button:hover,.crafts button[aria-pressed="true"]{border-bottom-color:var(--paper)}
 .quiet{padding:.15rem 0;text-decoration:none;border-bottom:1px solid var(--line)}
 .quiet:hover{color:var(--patina);border-bottom-color:var(--patina)}
 .quiet{color:var(--ash)}
@@ -157,11 +150,7 @@ dialog.viewer::backdrop{background:var(--ground)}
 }
 @media (max-width:899px){
   .top{grid-template-columns:minmax(0,1fr);align-items:start}
-  .crafts{justify-content:flex-start;flex-wrap:wrap}
-  .crafts .toggle{order:-1}
-  .crafts .list{flex-basis:100%;flex-wrap:wrap;max-width:none;max-height:0;
-    transition:max-height .5s cubic-bezier(.2,.7,.2,1),opacity .35s ease,visibility 0s linear .5s}
-  .crafts.is-open .list{max-width:none;max-height:6rem;transition:max-height .5s cubic-bezier(.2,.7,.2,1),opacity .45s ease .1s,visibility 0s}
+  .crafts{justify-content:flex-start}
 }
 @media (max-width:859px){
   .sheet,.foot{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -172,11 +161,11 @@ dialog.viewer::backdrop{background:var(--ground)}
   .end .pic{font-size:.75rem;padding:0 .25rem}
 }
 @media (max-width:520px){
-  .crafts .list{gap:.1rem 1rem}
+  .crafts{gap:.1rem 1rem}
 }
 @media (prefers-reduced-motion:reduce){
   .grain{animation:none}
-  .cell,.end a,.crafts .list,.crafts .toggle svg{transition:none!important}
+  .cell,.end a{transition:none!important}
 }
 </style>
 <!-- Vercel Web Analytics: page views, visitors, countries, devices, referrers (no personal data) -->
@@ -193,13 +182,10 @@ dialog.viewer::backdrop{background:var(--ground)}
     <p>director, cinematographer, editor. Barcelona</p>
   </div>
   <div class="crafts" role="group" aria-label="Highlight the work by craft; the left and right arrow keys step through">
-    <div class="list" id="craft-list">
-      <button type="button" data-craft="directed" aria-pressed="false">Directed<i>7</i></button>
-      <button type="button" data-craft="shot" aria-pressed="false">Shot<i>6</i></button>
-      <button type="button" data-craft="edit" aria-pressed="false">Edited<i>19</i></button>
-      <button type="button" data-craft="ai" aria-pressed="false" title="AI-generated film">Generated<i>3</i></button>
-    </div>
-    <button class="toggle" type="button" aria-expanded="false" aria-controls="craft-list">Roles<svg viewBox="0 0 10 10" width="10" height="10" aria-hidden="true"><path d="M5 0v10M0 5h10" fill="none" stroke="currentColor" stroke-width="1.2"/></svg></button>
+    <button type="button" data-craft="directed" aria-pressed="false">Directed<i>7</i></button>
+    <button type="button" data-craft="shot" aria-pressed="false">Shot<i>6</i></button>
+    <button type="button" data-craft="edit" aria-pressed="false">Edited<i>19</i></button>
+    <button type="button" data-craft="ai" aria-pressed="false" title="AI-generated film">Generated<i>3</i></button>
   </div>
 </header>
 
@@ -279,7 +265,7 @@ dialog.viewer::backdrop{background:var(--ground)}
       <span class="r">Editor · Consultant</span>
     </a></li>
 
-    <li><a class="cell" id="no-ribbons" href="https://www.youtube.com/watch?v=S7F5RqxTJbQ&amp;t=320s" data-host="youtube" data-id="S7F5RqxTJbQ" data-start="320" data-crafts="edit" data-note="Anthology film.">
+    <li><a class="cell" id="no-ribbons" href="https://www.youtube.com/watch?v=S7F5RqxTJbQ&amp;t=320s" data-host="youtube" data-id="S7F5RqxTJbQ" data-start="320" data-frames="4" data-crafts="edit" data-note="Anthology film.">
       <span class="pic"><img class="on" src="/work/frames/no-ribbons-1-s.webp" srcset="/work/frames/no-ribbons-1-s.webp 480w, /work/frames/no-ribbons-1.webp 960w" sizes="(min-width:1180px) 20vw, (min-width:860px) 25vw, 50vw" width="960" height="540" alt=""></span>
       <span class="t">No Ribbons, Trophies, Medals</span>
       <span class="r">Editor</span>
