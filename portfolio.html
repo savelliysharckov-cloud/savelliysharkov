@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>portfolio — saveliy sharkov</title>
+<meta name="description" content="Saveliy Sharkov — portfolio 2026. Artist, filmmaker and curator.">
+<style>
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: #050505;
+    color: rgba(255,255,255,0.88);
+    font-family: monospace;
+  }
+  .top {
+    position: sticky; top: 0; z-index: 10;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 20px;
+    background: rgba(5,5,5,0.82);
+    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    font-size: 13px; letter-spacing: 0.3px;
+  }
+  .top a, .top span { color: rgba(255,255,255,0.55); text-decoration: none; transition: color .3s ease; }
+  .top a:hover { color: #fff; animation: burn 0.14s infinite alternate; }
+  .top .count { color: rgba(255,255,255,0.3); }
+  @keyframes burn {
+    0%   { text-shadow: 0 0 4px rgba(255,100,40,1), 0 0 12px rgba(255,60,20,.9), 0 0 24px rgba(255,30,0,.7); }
+    100% { text-shadow: 0 0 6px rgba(255,220,100,1), 0 0 16px rgba(255,100,30,1), 0 0 32px rgba(255,40,0,.8); }
+  }
+  main {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px 20px 120px;
+    display: flex; flex-direction: column; gap: 28px;
+  }
+  .slide {
+    position: relative; margin: 0;
+    aspect-ratio: 16 / 9;
+    background: #f3f3f3;
+  }
+  .slide img { display: block; width: 100%; height: 100%; }
+  .hot { position: absolute; display: block; }
+  .hot:hover { background: rgba(255,120,40,0.18); outline: 1px solid rgba(255,120,40,0.6); }
+  @media (max-width: 700px) {
+    main { padding: 12px 0 80px; gap: 10px; }
+    .top { padding: 12px 16px; }
+  }
+</style>
+</head>
+<body>
+<nav class="top">
+  <a href="about.html">← back</a>
+  <span class="count" id="count">1 / 19</span>
+  <a href="portfolio.pdf" target="_blank" rel="noopener">pdf ↓</a>
+</nav>
+<main>
+  <figure class="slide" id="s1">
+    <img src="portfolio/p01.webp" srcset="portfolio/p01-m.webp 1000w, portfolio/p01.webp 1920w" sizes="(max-width: 1100px) 100vw, 1400px" width="1920" height="1080" loading="eager" decoding="async" alt="Saveliy Sharkov Portfolio · 2026 Artist, filmmaker, and curator working at the intersection of moving image, AI-driven generation, and time-based digital systems. Practice spans video, sound installation, performance, and curatorial work, with current focus on AI as a creative and critical material ">
+    <a class="hot" href="mailto:savelsharkov@gmail.com" style="left:6.09%;top:86.76%;width:17.67%;height:3.14%" aria-label="mailto:savelsharkov@gmail.com"></a><a class="hot" href="https://www.instagram.com/savelliy/" target="_blank" rel="noopener" style="left:32.32%;top:86.65%;width:6.56%;height:3.17%" aria-label="https://www.instagram.com/savelliy/"></a>
+  </figure>
+  <figure class="slide" id="s2">
+    <img src="portfolio/p02.webp" srcset="portfolio/p02-m.webp 1000w, portfolio/p02.webp 1920w" sizes="(max-width: 1100px) 100vw, 1400px" width="1920" height="1080" loading="eager" decoding="async" alt="Year 2222 · 2026 Year 2222 · 2026 — ongoing Lead AI Visual Designer for an undisclosed startup, in stealth until Q3 2026 launch. A speculative future-world built for an upcoming app and transmedia social-media universe. The project constructs Year 2222 as a coherent visual system — architecture, gar">
+    
+  </figure>
+  <figure class="slide" id="s3">
+    <img src="portfolio/p03.webp" srcset="portfolio/p03-m.webp 1000w, portfolio/p03.webp 1920w" sizes="(max-width: 1100px) 100vw, 1400px" width="1920" height="1080" loading="lazy" decoding="async" alt="Year 2222 · 2026 Work centres on multi-engine generative pipelines. Start-frames are composed in Flux, Nano Banana Pro, Higgsfield Soul 2.0 and Soul Cinema. Transforming startframes to video through Midjourney, Cinema Studio for cinematic camera behaviour, with Kling and Sora for specific motion pro">
+    
+  </figure>
+  <figure class="slide" id="s4">
+    <img src="portfolio/p04.webp" srcset="portfolio/p04-m.webp 1000w, portfolio/p04.webp 1920w" sizes="(max-width: 1100px) 100vw, 1400px" width="1920" height="1080" loading="lazy" decoding="async" alt="Year 2222 · 2026 The hard problem is continuity: the same character, the same object, the same architectural detail must survive across cuts and camera moves. The discipline is closer to traditional film design — production design, costume, art direction — than to single-frame image generation. Save">
+    
+  </figure>
+  <figure class="slide" id="s5">
+    <img src="portfolio/p05.webp" srcset="portfolio/p05-m.webp 1000w, portfolio/p05.webp 1920w" sizes="(max-width: 1100px) 100vw, 1400px" width="1920" height="1080" loading="lazy" decoding="async" alt="Own nothing but a body Become nothing but a body · 2023 Collaboration with Choreographer Natia Chikvaidze Saveliy Sharkov Performance work with choreographer Natia Chikvaidze Music composition, video installation, and light design by Saveliy Sharkov. Generative AI video integrated with shot footage ">
+    <a class="hot" href="https://ownnothingbutabody.netlify.app/" target="_blank" rel="noopener" style="left:43.33%;top:92.42%;width:22.26%;height:2.47%" aria-label="https://ownnothingbutabody.netlify.app/"></a>
+  </figure>
+  <figure class="slide" id="s6">
+    <img src="portfolio/p06.webp" srcset="portfolio/p06-m.webp 1000w, portfolio/p06.webp 1920w" sizes="(max-width: 1100px) 100vw, 1400px" width="1920" height="1080" loading="lazy" decoding="async" alt="Own nothing but a body Become nothing but a body · 2023 Collaboration with Choreographer Natia Chikvaidze This was my first sustained engagement with AI-generated moving image, made at the very beginning of the medium&#x27;s emergence — when the engines could not yet produce the controlled, cinematic out">
+    
+  </figure>
+  <figure class="slide" id="s7">
+    <img src="portfolio/p07.webp" srcset="portfolio/p07-m.webp 1000w, portfolio/p07.webp 1920w" sizes="(max-width: 1100px) 100vw, 1400px" width="1920" height="1080" loading="lazy" decoding="async" alt="Cryo preservation · 2021 Cryopreservation · 2021 Interactive installation and performance Centre of Contemporary Arts, Tbilisi A cryopreservation chamber holds a human subject in cryodreaming suspension. Arduino-driven 3D-printed mechanisms produce a continuous Morse-like paper output, representing ">
+    
+  </figure>
+  <figure class="slide" id="s8">
+    <img src="portfolio/p08.webp" srcset="portfolio/p08-m.webp 1000w, portfolio/p08.webp 1920w" sizes="(max-width: 1100px) 100vw, 1400px" width="1920" height="1080" loading="lazy" decoding="async" alt="Cryo preservation · 2021 The work treats cryogenic preservation and AI consciousness reconstruction as a single speculative practice: if consciousness is data, it can be extracted, supplemented with external personal data, and rebooted. With Abou Farman (The New School) and Preston Chaunsumlit. Styl">
+    <a class="hot" href="https://cryopreservation1.netlify.app/" target="_blank" rel="noopener" style="left:3.12%;top:92.58%;width:20.33%;height:2.49%" aria-label="https://cryopreservation1.netlify.app/"></a><a class="hot" href="https://www.youtube.com/watch?v=QaVBPTrbMoQ&amp;t=1s" target="_blank" rel="noopener" style="left:58.02%;top:93.13%;width:31.28%;height:2.49%" aria-label="https://www.youtube.com/watch?v=QaVBPTrbMoQ&amp;t=1s"></a>
+  </figure>
+  <figure class="slide" id="s9">
+    <img src="portfolio/p09.webp" srcset="portfolio/p09-m.webp 1000w, portfolio/p09.webp 1920w" sizes="(max-width: 1100px) 100vw, 1400px" width="1920" height="1080" loading="lazy" decoding="async" alt="I feel calmer when there are insects in the air because I know I’m in an environment suitable for life forms · 2025 I feel calmer when there are insects in the air, because I know I&#x27;m in an environment suitable for life forms · 2025 Solo. Self-published online exhibition, curated by Schrocher Galler">
+    
+  </figure>
+  <figure class="slide" id="s10">
+    <img src="portfolio/p10.webp" srcset="portfolio/p10-m.webp 1000w, portfolio/p10.webp 1920w" sizes="(max-width: 1100px) 100vw, 1400px" width="1920" height="1080" loading="lazy" decoding="async" alt="I feel calmer when there are insects in the air because I know I’m in an environment suitable for life forms · 2025 The Red-faced Demon mask, recurring since childhood, operates as both character and mechanism — a possession, a succubus that attaches to the face and blocks exit. Saveliy Sharkov 10">
+    
+  </figure>
+  <figure class="slide" id="s11">
+    <img src="portfolio/p11.webp" srcset="portfolio/p11-m.webp 1000w, portfolio/p11.webp 1920w" sizes="(max-width: 1100px) 100vw, 1400px" width="1920" height="1080" loading="lazy" decoding="async" alt="Capsule · 2024 — present, in development. Founder, sole operator Saveliy Sharkov A time-locked digital storage platform investigating temporal ethics in digital archives — deferred communication, delayed disclosure, self-confrontation across time. Files are sealed until a specified future date, gove">
+    
+  </figure>
+  <figure class="slide" id="s12">
+    <img src="portfolio/p12.webp" srcset="portfolio/p12-m.webp 1000w, portfolio/p12.webp 1920w" sizes="(max-width: 1100px) 100vw, 1400px" width="1920" height="1080" loading="lazy" decoding="async" alt="DUST Tbilisi · 2022-2024 DUST Tbilisi · 2022 — 2024 Program &amp; Art Director An underground cultural and community space — a dungeon, a cave — built to serve local communities and emerging youth-driven groups. On weekdays, a venue for seminars, workshops, screenings, and public talks. On weekends, a c">
+    
+  </figure>
+  <figure class="slide" id="s13">
+    <img src="portfolio/p13.webp" srcset="portfolio/p13-m.webp 1000w, portfolio/p13.webp 1920w" sizes="(max-width: 1100px) 100vw, 1400px" width="1920" height="1080" loading="lazy" decoding="async" alt="DUST Tbilisi · 2022-2024 video URL https://dust1tbilisi1.netlify.app/ Saveliy Sharkov 13">
+    <a class="hot" href="https://dust1tbilisi1.netlify.app/" target="_blank" rel="noopener" style="left:1.82%;top:94.44%;width:16.93%;height:2.45%" aria-label="https://dust1tbilisi1.netlify.app/"></a>
+  </figure>
+  <figure class="slide" id="s14">
+    <img src="portfolio/p14.webp" srcset="portfolio/p14-m.webp 1000w, portfolio/p14.webp 1920w" sizes="(max-width: 1100px) 100vw, 1400px" width="1920" height="1080" loading="lazy" decoding="async" alt="Eternal Artefact · 2025 Eternal Artefact · 2025 Collaboration with Peter Kroshchinskiy for Design Academy Eindhoven Director: Peter Kroshchinskiy Cinematographer, AI sound composer, Editor, Colorist, Production Consultant: Saveliy Sharkov The film centres on a steel soil sampler placed against the n">
+    
+  </figure>
+  <figure class="slide" id="s15">
+    <img src="portfolio/p15.webp" srcset="portfolio/p15-m.webp 1000w, portfolio/p15.webp 1920w" sizes="(max-width: 1100px) 100vw, 1400px" width="1920" height="1080" loading="lazy" decoding="async" alt="Eternal Artefact · 2025 Collaboration with Peter Kroshchinskiy for Design Academy Eindhoven Full video URL https://youtu.be/m2iZtW2tDFo 15">
+    <a class="hot" href="https://youtu.be/m2iZtW2tDFo" target="_blank" rel="noopener" style="left:78.96%;top:76.94%;width:16.81%;height:2.48%" aria-label="https://youtu.be/m2iZtW2tDFo"></a>
+  </figure>
+  <figure class="slide" id="s16">
+    <img src="portfolio/p16.webp" srcset="portfolio/p16-m.webp 1000w, portfolio/p16.webp 1920w" sizes="(max-width: 1100px) 100vw, 1400px" width="1920" height="1080" loading="lazy" decoding="async" alt="The Ball and the Polo Stick, or the Book of Ecstasy · 2023 Collaboration with researcher and publisher Furqat Palvan-Zade The Ball and the Polo Stick, or the Book of Ecstasy · 2023 Diploma film at A for Facts MA program, Sandberg Instituut Amsterdam Director: Furqat Palvan-Zade (researcher, filmmake">
+    <a class="hot" href="https://www.youtube.com/watch?v=ZhQemKWmxyg" target="_blank" rel="noopener" style="left:1.93%;top:80.63%;width:28.81%;height:2.49%" aria-label="https://www.youtube.com/watch?v=ZhQemKWmxyg"></a><a class="hot" href="https://vimeo.com/1128536717" target="_blank" rel="noopener" style="left:1.93%;top:89.43%;width:16.98%;height:2.49%" aria-label="https://vimeo.com/1128536717"></a>
+  </figure>
+  <figure class="slide" id="s17">
+    <img src="portfolio/p17.webp" srcset="portfolio/p17-m.webp 1000w, portfolio/p17.webp 1920w" sizes="(max-width: 1100px) 100vw, 1400px" width="1920" height="1080" loading="lazy" decoding="async" alt="Obsolescence 2020 — ongoing Metal wire, insulation, fence; archive textiles. Series of lamps made from materials found on the curb, at abandoned factories and dumps in Tbilisi. The textiles were produced in the Soviet Union and are no longer in production. Obsolescence · 2020-ongoing Accompanying ph">
+    
+  </figure>
+  <figure class="slide" id="s18">
+    <img src="portfolio/p18.webp" srcset="portfolio/p18-m.webp 1000w, portfolio/p18.webp 1920w" sizes="(max-width: 1100px) 100vw, 1400px" width="1920" height="1080" loading="lazy" decoding="async" alt="Obsolescence · 2020-ongoing Saveliy Sharkov 19">
+    
+  </figure>
+  <figure class="slide" id="s19">
+    <img src="portfolio/p19.webp" srcset="portfolio/p19-m.webp 1000w, portfolio/p19.webp 1920w" sizes="(max-width: 1100px) 100vw, 1400px" width="1920" height="1080" loading="lazy" decoding="async" alt="Schrocher Gallery, Tbilisi. Art Director · 2023 — present Contemporary art gallery. Art-directed solo and group exhibitions including BEKAS-3 by Greyinsay, DUMP/ MEDS (group with Ladooniani_ark, Ceny_4, Bruxiiism), Painsomnia by Ali Kh, and Thunderstorm of the Millennium by Peter Kroshchinskiy. Long">
+    
+  </figure>
+</main>
+<script>
+  const count = document.getElementById('count');
+  const total = 19;
+  const io = new IntersectionObserver(es => {
+    es.forEach(e => { if (e.isIntersecting) count.textContent = e.target.id.slice(1) + ' / ' + total; });
+  }, { rootMargin: '-45% 0px -45% 0px' });
+  document.querySelectorAll('.slide').forEach(s => io.observe(s));
+</script>
+</body>
+</html>

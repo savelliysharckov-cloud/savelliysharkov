@@ -40,9 +40,15 @@
     margin: 0 0 18px 0;
   }
 
+  .btns {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 40px;
+  }
+
   .cv-btn {
     display: inline-block;
-    margin-top: 40px;
     padding: 10px 24px;
     border: 1px solid rgba(255,255,255,0.55);
     color: rgba(255,255,255,0.92);
@@ -233,8 +239,10 @@ window.addEventListener('touchstart', startAudio);
 <div class="content">
     <p>Artist, filmmaker and curator working with moving and still image, installation, performance, sound and food.</p>
     <p>Currently MA in Applied AI for Arts and Design, Elisava, Barcelona.</p>
+  <div class="btns">
+    <a class="cv-btn" href="portfolio.html">portfolio →</a>
+    <a class="cv-btn" href="cv.pdf" target="_blank" rel="noopener">cv →</a>
   </div>
-  <a class="cv-btn" href="cv.pdf" target="_blank" rel="noopener">cv →</a>
 </div>
 
 </body>
