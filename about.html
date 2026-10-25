@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>about — saveliy sharkov</title>
 
 <style>
@@ -10,7 +11,7 @@
     background: #050505;
     color: rgba(255,255,255,0.88);
     font-family: monospace;
-    overflow: hidden;
+    overflow-x: hidden;
   }
 
   canvas {
@@ -68,6 +69,60 @@
       0 0 12px rgba(255,180,80,0.5),
       0 0 28px rgba(255,80,30,0.3);
     border-color: rgba(255,255,255,0.92);
+  }
+
+  /* ================== SITES (мини-превью) ================== */
+  .sites {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    margin-top: 44px;
+  }
+
+  .site {
+    display: block;
+    color: rgba(255,255,255,0.62);
+    text-decoration: none;
+    font-size: 11px;
+    letter-spacing: 0.4px;
+    line-height: 1.35;
+  }
+
+  .site .pic {
+    display: block;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.22);
+    background: #111;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease;
+  }
+
+  .site img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+  }
+
+  .site .name {
+    display: block;
+    margin-top: 8px;
+    transition: color 0.25s ease;
+  }
+
+  .site:hover .pic {
+    border-color: rgba(255,255,255,0.92);
+    box-shadow: 0 0 12px rgba(255,180,80,0.5), 0 0 28px rgba(255,80,30,0.3);
+  }
+  .site:hover img { transform: scale(1.06); }
+  .site:hover .name { color: #fff; animation: burn 0.14s infinite alternate; }
+
+  @media (max-width: 640px) {
+    .content { padding: 90px 20px 120px; }
+    .sites { grid-template-columns: repeat(2, 1fr); gap: 16px 12px; }
+    .back { position: absolute; top: 20px; bottom: auto; }
+    .hint { display: none; }
   }
 
   /* ================== BACK link ================== */
@@ -243,6 +298,28 @@ window.addEventListener('touchstart', startAudio);
     <a class="cv-btn" href="portfolio.html">portfolio →</a>
     <a class="cv-btn" href="cv.pdf" target="_blank" rel="noopener">cv →</a>
   </div>
+  <nav class="sites" aria-label="sites">
+    <a class="site" href="/ai-archive/">
+      <span class="pic"><img src="links/ai-archive.webp" alt="" loading="lazy"></span>
+      <span class="name">AI archive</span>
+    </a>
+    <a class="site" href="/rigas_modes_1975-3.html">
+      <span class="pic"><img src="links/patterns.webp" alt="" loading="lazy"></span>
+      <span class="name">pattern sheets</span>
+    </a>
+    <a class="site" href="https://savelliysharckov-cloud.github.io/vibecode-new-site/" target="_blank" rel="noopener">
+      <span class="pic"><img src="links/cat.webp" alt="" loading="lazy"></span>
+      <span class="name">cat game</span>
+    </a>
+    <a class="site" href="https://livenesscheck.vercel.app/" target="_blank" rel="noopener">
+      <span class="pic"><img src="links/liveness.webp" alt="" loading="lazy"></span>
+      <span class="name">Liveness Check</span>
+    </a>
+    <a class="site" href="/work/">
+      <span class="pic"><img src="links/work.webp" alt="" loading="lazy"></span>
+      <span class="name">video portfolio</span>
+    </a>
+  </nav>
 </div>
 
 </body>
