@@ -6,7 +6,7 @@
 <title>Rude Answering Machine</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@300&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
 :root{
   --paper:#ece8dc;
@@ -27,7 +27,7 @@ body.blink{background:var(--red)}
   padding:clamp(10px,2.2vh,24px) clamp(12px,2.5vw,32px);
 }
 header{display:flex;justify-content:center;min-width:0;overflow:hidden}
-h1{font-family:Anton,Impact,sans-serif;font-weight:400;font-size:clamp(30px,7vh,72px);line-height:.9;text-transform:uppercase;white-space:nowrap;letter-spacing:.02em}
+h1{font-family:Oswald,'Arial Narrow',sans-serif;font-weight:300;font-size:clamp(30px,7vh,72px);line-height:.9;text-transform:uppercase;white-space:nowrap;letter-spacing:.02em}
 
 /* stage: 2 refs | photo | 2 refs */
 .stage{min-height:0;display:grid;grid-template-columns:1fr auto 1fr;gap:clamp(10px,2.2vw,30px)}
@@ -90,12 +90,10 @@ body[data-state=face] .sec[data-show~=face],
 body[data-state=answer] .sec[data-show~=answer]{display:flex}
 .btn{
   font-family:Anton,Impact,sans-serif;font-size:clamp(20px,3.4vh,30px);letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;
-  background:var(--paper);color:var(--ink);border:3px solid var(--paper);padding:.3em .8em;cursor:pointer;
-  box-shadow:5px 5px 0 var(--red);transition:transform .08s,box-shadow .08s;flex:1;
+  background:none;color:var(--paper);border:0;padding:.2em .4em;cursor:pointer;
 }
-.btn:active{transform:translate(4px,4px);box-shadow:1px 1px 0 var(--red)}
-.btn.ghost{background:transparent;color:var(--paper);box-shadow:5px 5px 0 var(--red)}
-.btn.slim{flex:0 0 auto}
+.btn:hover{text-decoration:underline;text-underline-offset:.18em}
+.btn:active{opacity:.6}
 .link{background:none;border:0;font:inherit;font-size:12px;text-transform:uppercase;letter-spacing:.1em;text-decoration:underline;cursor:pointer;color:var(--paper);white-space:nowrap}
 .q{flex:1;min-width:0;font-family:inherit;font-size:16px;background:transparent;border:0;border-bottom:3px solid var(--paper);padding:10px 2px;color:var(--paper);outline:none}
 .q::placeholder{color:#8a867c}
@@ -167,8 +165,7 @@ body[data-state=answer] .sec[data-show~=answer]{display:flex}
       <button class="link" id="uploadBtn">or upload a photo</button>
     </div>
     <div class="sec" data-show="face">
-      <input class="q" id="question" placeholder="ask your question" autocomplete="off" maxlength="120">
-      <button class="btn slim" id="askBtn">Spill it</button>
+      <input class="q" id="question" placeholder="type a yes/no question and press enter" autocomplete="off" enterkeyhint="send" maxlength="120">
     </div>
     <div class="sec" data-show="answer">
       <button class="btn ghost" id="againBtn">Ask again</button>
@@ -579,7 +576,6 @@ operaEl.addEventListener('click', () => operaEl.hidden = true);
 
 $('#startBtn').addEventListener('click', () => { unlockAudio(); startCamera(); });
 $('#uploadBtn').addEventListener('click', () => { unlockAudio(); $('#file').click(); });
-$('#askBtn').addEventListener('click', ask);
 $('#question').addEventListener('keydown', e => { if (e.key === 'Enter') ask(); });
 $('#againBtn').addEventListener('click', () => { $('#question').value = ''; clearAnswer(); setState('face'); });
 
