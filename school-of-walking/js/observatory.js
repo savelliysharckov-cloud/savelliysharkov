@@ -129,7 +129,7 @@
       p.visible = e.isIntersecting;
       if (e.isIntersecting && !p.userPaused && players.every(q => q === p || q.video.paused)) p.play();
       if (!e.isIntersecting && !p.video.paused) p.pause(false);
-    }), { threshold: 0.55 });
+    }), { threshold: 0.35 });
     players.forEach(p => io.observe(p.root));
   }
 })();
