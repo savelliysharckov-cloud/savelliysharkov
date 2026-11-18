@@ -51,6 +51,31 @@
     }
     .hint.hidden { opacity: 0; }
 
+    /* «press me!» — через 4 секунды показывает, что рожица ведёт на about */
+    .press-me {
+      position: fixed;
+      left: 150px;          /* точное место ставит JS по правому краю рожицы */
+      bottom: 42px;
+      color: rgba(255,255,255,0.85);
+      font-family: monospace;
+      font-size: 13px;
+      letter-spacing: 0.3px;
+      white-space: nowrap;
+      z-index: 20;
+      pointer-events: none;
+      user-select: none;
+      opacity: 0;
+      transition: opacity 0.8s ease;
+    }
+    .press-me.show {
+      opacity: 1;
+      animation: pressNudge 1.4s ease-in-out infinite;
+    }
+    @keyframes pressNudge {
+      0%, 100% { transform: translate(0, 0); }
+      50%      { transform: translate(-4px, 3px); }
+    }
+
     .flash-overlay {
       position: fixed;
       inset: 0;
@@ -117,6 +142,7 @@
 <body>
 
 <a class="face" href="about.html">─=≡Σ((((͡× ͜ʖ ͡×)</a>
+<div class="press-me" id="pressMe" aria-hidden="true">↙ press me!</div>
 <a class="email" href="mailto:savelsharkov@gmail.com" id="emailBtn">savelsharkov@gmail.com</a>
 
 <div class="hint" id="hint">click for sound</div>
@@ -988,6 +1014,18 @@ function setupInteractiveButton(el) {
 
 setupInteractiveButton(document.querySelector('.face'));
 setupInteractiveButton(document.querySelector('.email'));
+
+// «press me!» появляется через 4 секунды у правого края рожицы, стрелкой на неё
+(function () {
+  const face = document.querySelector('.face');
+  const pressMe = document.getElementById('pressMe');
+  function place() {
+    pressMe.style.left = Math.round(face.getBoundingClientRect().right - 8) + 'px';
+  }
+  place();
+  window.addEventListener('resize', place);
+  setTimeout(() => { place(); pressMe.classList.add('show'); }, 4000);
+})();
 
 document.getElementById('emailBtn').addEventListener('click', () => {
   if (navigator.clipboard) {
