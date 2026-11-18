@@ -71,6 +71,16 @@
     border-color: rgba(255,255,255,0.92);
   }
 
+  /* ================== PORTFOLIO (два больших превью наверху) ================== */
+  .featured {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px 14px;
+    margin-top: 40px;
+  }
+  .featured .site { font-size: 12px; }
+  .featured + .btns { margin-top: 30px; }
+
   /* ================== SITES (мини-превью) ================== */
   .sites {
     display: grid;
@@ -121,6 +131,7 @@
   @media (max-width: 640px) {
     .content { padding: 90px 20px 120px; }
     .sites { grid-template-columns: repeat(2, 1fr); gap: 16px 12px; }
+    .featured { grid-template-columns: 1fr; gap: 18px; }
     .back { position: absolute; top: 20px; bottom: auto; }
     .hint { display: none; }
   }
@@ -294,8 +305,17 @@ window.addEventListener('touchstart', startAudio);
 <div class="content">
     <p>Artist, filmmaker and curator working with moving and still image, installation, performance, sound and food.</p>
     <p>Currently MA in Applied AI for Arts and Design, Elisava, Barcelona.</p>
+  <nav class="featured" aria-label="portfolio">
+    <a class="site" href="/work/">
+      <span class="pic"><img src="links/work.webp" alt="" loading="lazy"></span>
+      <span class="name">video portfolio</span>
+    </a>
+    <a class="site" href="portfolio.html">
+      <span class="pic"><img src="links/portfolio-maiad.webp" alt="" loading="lazy"></span>
+      <span class="name">portfolio for MAIAD</span>
+    </a>
+  </nav>
   <div class="btns">
-    <a class="cv-btn" href="portfolio.html">portfolio →</a>
     <a class="cv-btn" href="cv.pdf" target="_blank" rel="noopener">cv →</a>
   </div>
   <nav class="sites" aria-label="sites">
@@ -314,10 +334,6 @@ window.addEventListener('touchstart', startAudio);
     <a class="site" href="https://livenesscheck.vercel.app/" target="_blank" rel="noopener">
       <span class="pic"><img src="links/liveness.webp" alt="" loading="lazy"></span>
       <span class="name">Liveness Check</span>
-    </a>
-    <a class="site" href="/work/">
-      <span class="pic"><img src="links/work.webp" alt="" loading="lazy"></span>
-      <span class="name">video portfolio</span>
     </a>
     <a class="site" href="/rude-answering-machine/">
       <span class="pic"><img src="links/rude.webp" alt="" loading="lazy"></span>
